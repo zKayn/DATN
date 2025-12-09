@@ -1,0 +1,31 @@
+{
+  "name": "sports-store-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ứng dụng đa nền tảng bán đồ thể thao tích hợp AI",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "kill": "node kill-ports.js",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "dev:customer": "turbo run dev --filter=customer-web",
+    "dev:admin": "turbo run dev --filter=admin-web",
+    "dev:mobile": "turbo run dev --filter=mobile",
+    "dev:backend": "turbo run dev --filter=backend"
+  },
+  "devDependencies": {
+    "turbo": "^1.11.2",
+    "typescript": "^5.3.3",
+    "@types/node": "^20.10.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
