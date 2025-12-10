@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 interface FilterProps {
   filters: {
     category: string;
+    productType: string;
     priceRange: [number, number];
     brands: string[];
     sizes: string[];
@@ -21,11 +22,13 @@ interface Category {
   ten: string;
   slug: string;
   trangThai: string;
+  loaiSanPham?: string[];
 }
 
 export default function ProductFilter({ filters, onChange }: FilterProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<string[]>([]);
+  const [availableProductTypes, setAvailableProductTypes] = useState<string[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [loadingBrands, setLoadingBrands] = useState(true);
 
@@ -45,6 +48,24 @@ export default function ProductFilter({ filters, onChange }: FilterProps) {
     loadCategories();
     loadBrands();
   }, []);
+
+  useEffect(() => {
+    // Update available product types when category changes
+    if (filters.category) {
+      const selectedCategory = categories.find(cat => cat._id === filters.category);
+      if (selectedCategory && selectedCategory.loaiSanPham) {
+        setAvailableProductTypes(selectedCategory.loaiSanPham);
+      } else {
+        setAvailableProductTypes([]);
+      }
+      // Reset product type when category changes
+      if (filters.productType) {
+        onChange({ ...filters, productType: '' });
+      }
+    } else {
+      setAvailableProductTypes([]);
+    }
+  }, [filters.category, categories]);
 
   const loadCategories = async () => {
     setLoadingCategories(true);
@@ -86,203 +107,184 @@ export default function ProductFilter({ filters, onChange }: FilterProps) {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Sort */}
-      <div className="bg-white rounded-lg p-4 border">
-        <h3 className="font-semibold text-gray-900 mb-3">Sắp Xếp</h3>
-        <select
-          value={filters.sort}
-          onChange={(e) => onChange({ ...filters, sort: e.target.value })}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-          <option value="newest">Mới nhất</option>
-          <option value="price-low">Giá thấp → cao</option>
-          <option value="price-high">Giá cao → thấp</option>
-          <option value="popular">Bán chạy</option>
-          <option value="rating">Đánh giá cao</option>
-        </select>
-      </div>
-
-      {/* Category */}
-      <div className="bg-white rounded-lg p-4 border">
-        <h3 className="font-semibold text-gray-900 mb-3">Danh Mục</h3>
-        {loadingCategories ? (
-          <div className="animate-pulse space-y-2">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-5 bg-gray-200 rounded" />
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <label className="flex items-center cursor-pointer">
-              <input
-                type="radio"
-                name="category"
-                checked={filters.category === ''}
-                onChange={() => onChange({ ...filters, category: '' })}
-                className="w-4 h-4 text-blue-600"
-              />
-              <span className="ml-2 text-sm text-gray-700">Tất cả</span>
-            </label>
-            {categories.map((cat) => (
-              <label key={cat._id} className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  name="category"
-                  checked={filters.category === cat._id}
-                  onChange={() => onChange({ ...filters, category: cat._id })}
-                  className="w-4 h-4 text-blue-600"
-                />
-                <span className="ml-2 text-sm text-gray-700">{cat.ten}</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Price Range */}
-      <div className="bg-white rounded-lg p-4 border">
-        <h3 className="font-semibold text-gray-900 mb-3">Khoảng Giá</h3>
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <input
-              type="number"
-              placeholder="Từ"
-              value={filters.priceRange[0]}
-              onChange={(e) => onChange({ ...filters, priceRange: [+e.target.value, filters.priceRange[1]] })}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-            />
-            <span className="text-gray-500">-</span>
-            <input
-              type="number"
-              placeholder="Đến"
-              value={filters.priceRange[1]}
-              onChange={(e) => onChange({ ...filters, priceRange: [filters.priceRange[0], +e.target.value] })}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-            />
-          </div>
-          <div className="text-xs text-gray-500 text-center">
-            {filters.priceRange[0].toLocaleString('vi-VN')} ₫ - {filters.priceRange[1].toLocaleString('vi-VN')} ₫
-          </div>
-        </div>
-      </div>
-
-      {/* Brands */}
-      {brands.length > 0 && (
-        <div className="bg-white rounded-lg p-4 border">
-          <h3 className="font-semibold text-gray-900 mb-3">Thương Hiệu</h3>
-          {loadingBrands ? (
-            <div className="animate-pulse space-y-2">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-5 bg-gray-200 rounded" />
-              ))}
+    <div className="space-y-4">
+      {/* Main Horizontal Filters */}
+      <div className="bg-white rounded-lg shadow-sm border">
+        <div className="px-6 py-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {/* Sort */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Sắp xếp</label>
+              <select
+                value={filters.sort}
+                onChange={(e) => onChange({ ...filters, sort: e.target.value })}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="newest">Mới nhất</option>
+                <option value="price-low">Giá thấp → cao</option>
+                <option value="price-high">Giá cao → thấp</option>
+                <option value="popular">Bán chạy</option>
+                <option value="rating">Đánh giá cao</option>
+              </select>
             </div>
-          ) : (
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {brands.sort().map((brand) => (
-                <label key={brand} className="flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={filters.brands.includes(brand)}
-                    onChange={() => toggleArrayFilter('brands', brand)}
-                    className="w-4 h-4 text-blue-600 rounded"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">{brand}</span>
-                </label>
-              ))}
+
+            {/* Category */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Danh mục</label>
+              {loadingCategories ? (
+                <div className="h-[38px] bg-gray-200 rounded-md animate-pulse" />
+              ) : (
+                <select
+                  value={filters.category}
+                  onChange={(e) => onChange({ ...filters, category: e.target.value, productType: '' })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Tất cả</option>
+                  {categories.map((cat) => (
+                    <option key={cat._id} value={cat._id}>{cat.ten}</option>
+                  ))}
+                </select>
+              )}
             </div>
-          )}
-        </div>
-      )}
 
-      {/* Sizes */}
-      <div className="bg-white rounded-lg p-4 border">
-        <h3 className="font-semibold text-gray-900 mb-3">Kích Thước</h3>
-        <div className="flex flex-wrap gap-2">
-          {sizes.map((size) => (
-            <button
-              key={size}
-              onClick={() => toggleArrayFilter('sizes', size)}
-              className={`px-3 py-2 rounded-lg border-2 text-sm font-medium transition-colors ${
-                filters.sizes.includes(size)
-                  ? 'border-blue-600 bg-blue-50 text-blue-600'
-                  : 'border-gray-300 text-gray-700 hover:border-gray-400'
-              }`}
-            >
-              {size}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Colors */}
-      <div className="bg-white rounded-lg p-4 border">
-        <h3 className="font-semibold text-gray-900 mb-3">Màu Sắc</h3>
-        <div className="flex flex-wrap gap-3">
-          {colors.map((color) => (
-            <button
-              key={color.name}
-              onClick={() => toggleArrayFilter('colors', color.name)}
-              className={`w-10 h-10 rounded-full border-2 transition-all ${
-                filters.colors.includes(color.name)
-                  ? 'border-blue-600 scale-110'
-                  : 'border-gray-300 hover:scale-105'
-              }`}
-              style={{
-                backgroundColor: color.code,
-                boxShadow: filters.colors.includes(color.name) ? '0 0 0 2px white, 0 0 0 4px #3B82F6' : 'none'
-              }}
-              title={color.name}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Rating */}
-      <div className="bg-white rounded-lg p-4 border">
-        <h3 className="font-semibold text-gray-900 mb-3">Đánh Giá</h3>
-        <div className="space-y-2">
-          {[5, 4, 3, 2, 1].map((rating) => (
-            <label key={rating} className="flex items-center cursor-pointer">
-              <input
-                type="radio"
-                name="rating"
-                checked={filters.rating === rating}
-                onChange={() => onChange({ ...filters, rating })}
-                className="w-4 h-4 text-blue-600"
-              />
-              <div className="ml-2 flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <svg
-                    key={i}
-                    className={`w-4 h-4 ${i < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                  </svg>
+            {/* Product Type */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Loại sản phẩm</label>
+              <select
+                value={filters.productType}
+                onChange={(e) => onChange({ ...filters, productType: e.target.value })}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                disabled={!filters.category || availableProductTypes.length === 0}
+              >
+                <option value="">Tất cả</option>
+                {availableProductTypes.map((type, index) => (
+                  <option key={index} value={type}>{type}</option>
                 ))}
-                <span className="ml-1 text-sm text-gray-600">trở lên</span>
-              </div>
-            </label>
-          ))}
+              </select>
+            </div>
+
+            {/* Brand */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Thương hiệu</label>
+              {loadingBrands ? (
+                <div className="h-[38px] bg-gray-200 rounded-md animate-pulse" />
+              ) : (
+                <select
+                  value={filters.brands.length > 0 ? filters.brands[0] : ''}
+                  onChange={(e) => onChange({ ...filters, brands: e.target.value ? [e.target.value] : [] })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Tất cả</option>
+                  {brands.sort().map((brand) => (
+                    <option key={brand} value={brand}>{brand}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            {/* Size */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Size giày</label>
+              <select
+                value={filters.sizes.length > 0 ? filters.sizes[0] : ''}
+                onChange={(e) => onChange({ ...filters, sizes: e.target.value ? [e.target.value] : [] })}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Tất cả</option>
+                {['38', '39', '40', '41', '42', '43', '44', '45'].map((size) => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Size Clothing */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Size quần áo</label>
+              <select
+                value={filters.sizes.length > 0 && !['38', '39', '40', '41', '42', '43', '44', '45'].includes(filters.sizes[0]) ? filters.sizes[0] : ''}
+                onChange={(e) => onChange({ ...filters, sizes: e.target.value ? [e.target.value] : [] })}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Tất cả</option>
+                {['S', 'M', 'L', 'XL', '2XL', '3XL'].map((size) => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Reset Button */}
-      <button
-        onClick={() => onChange({
-          category: '',
-          priceRange: [0, 10000000],
-          brands: [],
-          sizes: [],
-          colors: [],
-          rating: 0,
-          sort: 'newest'
-        })}
-        className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-      >
-        Xóa Bộ Lọc
-      </button>
+      {/* Secondary Filters */}
+      <div className="bg-white rounded-lg shadow-sm border">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-gray-900">Bộ lọc bổ sung</h3>
+            <button
+              onClick={() => onChange({
+                category: '',
+                productType: '',
+                priceRange: [0, 10000000],
+                brands: [],
+                sizes: [],
+                colors: [],
+                rating: 0,
+                sort: 'newest'
+              })}
+              className="text-xs text-blue-600 hover:text-blue-700 font-medium hover:underline"
+            >
+              Xóa bộ lọc
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Price Range */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 mb-3">Khoảng giá</h4>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={filters.priceRange[0]}
+                  onChange={(e) => onChange({ ...filters, priceRange: [+e.target.value, filters.priceRange[1]] })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <span className="text-gray-400">-</span>
+                <input
+                  type="number"
+                  placeholder="10000000"
+                  value={filters.priceRange[1]}
+                  onChange={(e) => onChange({ ...filters, priceRange: [filters.priceRange[0], +e.target.value] })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* Colors */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 mb-3">Màu sắc</h4>
+              <div className="flex flex-wrap gap-2">
+                {colors.map((color) => (
+                  <button
+                    key={color.name}
+                    onClick={() => toggleArrayFilter('colors', color.name)}
+                    className={`w-9 h-9 rounded-full border-2 transition-all ${
+                      filters.colors.includes(color.name)
+                        ? 'border-blue-600 scale-110'
+                        : 'border-gray-300 hover:scale-105'
+                    }`}
+                    style={{
+                      backgroundColor: color.code,
+                      boxShadow: filters.colors.includes(color.name) ? '0 0 0 2px white, 0 0 0 4px #3B82F6' : 'none'
+                    }}
+                    title={color.name}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

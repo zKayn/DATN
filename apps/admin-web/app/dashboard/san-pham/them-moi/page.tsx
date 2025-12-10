@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 interface Category {
   _id: string;
   ten: string;
+  loaiSanPham?: string[];
 }
 
 interface Brand {
@@ -24,6 +25,8 @@ export default function AddProductPage() {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [sizeType, setSizeType] = useState<'clothing' | 'shoes'>('clothing');
+  const [selectedCategoryTypes, setSelectedCategoryTypes] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     ten: '',
     moTa: '',
@@ -31,6 +34,7 @@ export default function AddProductPage() {
     gia: 0,
     giaKhuyenMai: 0,
     danhMuc: '',
+    loaiSanPham: '',
     thuongHieu: '',
     hinhAnh: [] as string[],
     kichThuoc: ['S', 'M', 'L', 'XL'],
@@ -45,6 +49,20 @@ export default function AddProductPage() {
     loadCategories();
     loadBrands();
   }, []);
+
+  useEffect(() => {
+    // Cập nhật loại sản phẩm khi chọn danh mục
+    if (formData.danhMuc) {
+      const selectedCategory = categories.find(cat => cat._id === formData.danhMuc);
+      if (selectedCategory && selectedCategory.loaiSanPham) {
+        setSelectedCategoryTypes(selectedCategory.loaiSanPham);
+      } else {
+        setSelectedCategoryTypes([]);
+      }
+      // Reset loại sản phẩm khi đổi danh mục
+      setFormData(prev => ({ ...prev, loaiSanPham: '' }));
+    }
+  }, [formData.danhMuc, categories]);
 
   const loadCategories = async () => {
     try {
@@ -202,6 +220,24 @@ export default function AddProductPage() {
     setFormData({ ...formData, mauSac: newColors });
   };
 
+  const addSize = () => {
+    setFormData({
+      ...formData,
+      kichThuoc: [...formData.kichThuoc, '']
+    });
+  };
+
+  const updateSize = (index: number, value: string) => {
+    const newSizes = [...formData.kichThuoc];
+    newSizes[index] = value;
+    setFormData({ ...formData, kichThuoc: newSizes });
+  };
+
+  const removeSize = (index: number) => {
+    const newSizes = formData.kichThuoc.filter((_, i) => i !== index);
+    setFormData({ ...formData, kichThuoc: newSizes });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-5xl mx-auto">
@@ -249,6 +285,26 @@ export default function AddProductPage() {
                   ))}
                 </select>
               </div>
+
+              {selectedCategoryTypes.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">
+                    Loại sản phẩm
+                  </label>
+                  <select
+                    value={formData.loaiSanPham}
+                    onChange={(e) => setFormData({ ...formData, loaiSanPham: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Chọn loại sản phẩm</option>
+                    {selectedCategoryTypes.map((type, index) => (
+                      <option key={index} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">
@@ -536,6 +592,144 @@ export default function AddProductPage() {
                   </svg>
                 </div>
                 <p className="text-sm text-gray-500">Chưa có màu sắc nào. Nhấn "Thêm màu" để thêm màu cho sản phẩm</p>
+              </div>
+            )}
+          </div>
+
+          {/* Sizes */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900">Kích Thước</h2>
+              <button
+                type="button"
+                onClick={addSize}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Thêm kích thước
+              </button>
+            </div>
+
+            {/* Size Type Selection */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-900 mb-3">Loại kích thước</label>
+              <div className="flex gap-4">
+                <label className="flex items-center cursor-pointer px-4 py-3 border-2 rounded-lg transition-all hover:bg-gray-50"
+                  style={{
+                    borderColor: sizeType === 'clothing' ? '#2563eb' : '#d1d5db',
+                    backgroundColor: sizeType === 'clothing' ? '#eff6ff' : 'white'
+                  }}>
+                  <input
+                    type="radio"
+                    name="sizeType"
+                    value="clothing"
+                    checked={sizeType === 'clothing'}
+                    onChange={(e) => setSizeType(e.target.value as 'clothing' | 'shoes')}
+                    className="w-4 h-4 text-blue-600 mr-3"
+                  />
+                  <div>
+                    <div className="font-semibold text-gray-900">Size quần áo</div>
+                    <div className="text-xs text-gray-500">S, M, L, XL, XXL...</div>
+                  </div>
+                </label>
+                <label className="flex items-center cursor-pointer px-4 py-3 border-2 rounded-lg transition-all hover:bg-gray-50"
+                  style={{
+                    borderColor: sizeType === 'shoes' ? '#2563eb' : '#d1d5db',
+                    backgroundColor: sizeType === 'shoes' ? '#eff6ff' : 'white'
+                  }}>
+                  <input
+                    type="radio"
+                    name="sizeType"
+                    value="shoes"
+                    checked={sizeType === 'shoes'}
+                    onChange={(e) => setSizeType(e.target.value as 'clothing' | 'shoes')}
+                    className="w-4 h-4 text-blue-600 mr-3"
+                  />
+                  <div>
+                    <div className="font-semibold text-gray-900">Size giày</div>
+                    <div className="text-xs text-gray-500">35, 36, 37, 38, 39...</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Quick Add Buttons */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Thêm nhanh</label>
+              {sizeType === 'clothing' ? (
+                <div className="flex flex-wrap gap-2">
+                  {['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'].map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => {
+                        if (!formData.kichThuoc.includes(size)) {
+                          setFormData({ ...formData, kichThuoc: [...formData.kichThuoc, size] });
+                        }
+                      }}
+                      className="px-3 py-1.5 text-sm border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {['35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45'].map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => {
+                        if (!formData.kichThuoc.includes(size)) {
+                          setFormData({ ...formData, kichThuoc: [...formData.kichThuoc, size] });
+                        }
+                      }}
+                      className="px-3 py-1.5 text-sm border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {formData.kichThuoc.map((size, index) => (
+                <div key={index} className="relative border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition-colors">
+                  <input
+                    type="text"
+                    value={size}
+                    onChange={(e) => updateSize(index, sizeType === 'clothing' ? e.target.value.toUpperCase() : e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-center font-semibold focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder={sizeType === 'clothing' ? 'S' : '39'}
+                    required
+                  />
+                  {formData.kichThuoc.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeSize(index)}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors flex items-center justify-center"
+                      title="Xóa kích thước"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {formData.kichThuoc.length === 0 && (
+              <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                </div>
+                <p className="text-sm text-gray-500">Chưa có kích thước nào. Nhấn "Thêm kích thước" hoặc chọn từ các size phổ biến ở trên</p>
               </div>
             )}
           </div>

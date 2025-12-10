@@ -10,6 +10,7 @@ export interface IProduct extends Document {
   giaKhuyenMai?: number;
   hinhAnh: string[];
   danhMuc: mongoose.Types.ObjectId;
+  loaiSanPham?: string; // Loại sản phẩm con
   thuongHieu: string;
   kichThuoc: string[];
   mauSac: {
@@ -70,6 +71,9 @@ const ProductSchema = new Schema<IProduct>(
       type: Schema.Types.ObjectId,
       ref: 'Category',
       required: [true, 'Vui lòng chọn danh mục']
+    },
+    loaiSanPham: {
+      type: String
     },
     thuongHieu: {
       type: String,

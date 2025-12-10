@@ -23,6 +23,7 @@ interface Category {
   ten: string;
   slug: string;
   trangThai: string;
+  loaiSanPham?: string[];
 }
 
 export default function Header() {
@@ -253,10 +254,35 @@ export default function Header() {
               </Link>
             </li>
             {categories.map((category) => (
-              <li key={category._id}>
-                <Link href={`/danh-muc/${category.slug}`} className="hover:text-primary-600 transition-colors">
+              <li key={category._id} className="relative group">
+                <Link
+                  href={`/danh-muc/${category.slug}`}
+                  className="hover:text-primary-600 transition-colors flex items-center gap-1"
+                >
                   {category.ten}
+                  {category.loaiSanPham && category.loaiSanPham.length > 0 && (
+                    <svg className="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  )}
                 </Link>
+
+                {/* Dropdown menu for product types */}
+                {category.loaiSanPham && category.loaiSanPham.length > 0 && (
+                  <div className="absolute left-0 top-full mt-0 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50">
+                    <div className="bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[200px] mt-1">
+                      {category.loaiSanPham.map((type, index) => (
+                        <Link
+                          key={index}
+                          href={`/danh-muc/${category.slug}?loaiSanPham=${encodeURIComponent(type)}`}
+                          className="block px-4 py-2 hover:bg-primary-50 hover:text-primary-600 transition-colors text-sm"
+                        >
+                          {type}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </li>
             ))}
             <li>
@@ -272,7 +298,7 @@ export default function Header() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t bg-white animate-slide-down">
           <nav className="container mx-auto px-4 py-4">
-            <ul className="space-y-4">
+            <ul className="space-y-2">
               <li>
                 <Link href="/san-pham" className="block py-2 font-medium hover:text-primary-600">
                   Tất Cả Sản Phẩm
@@ -280,9 +306,23 @@ export default function Header() {
               </li>
               {categories.map((category) => (
                 <li key={category._id}>
-                  <Link href={`/danh-muc/${category.slug}`} className="block py-2 hover:text-primary-600">
+                  <Link href={`/danh-muc/${category.slug}`} className="block py-2 hover:text-primary-600 font-medium">
                     {category.ten}
                   </Link>
+                  {category.loaiSanPham && category.loaiSanPham.length > 0 && (
+                    <ul className="ml-4 mt-1 space-y-1">
+                      {category.loaiSanPham.map((type, index) => (
+                        <li key={index}>
+                          <Link
+                            href={`/danh-muc/${category.slug}?loaiSanPham=${encodeURIComponent(type)}`}
+                            className="block py-1.5 text-sm text-gray-600 hover:text-primary-600"
+                          >
+                            • {type}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </li>
               ))}
               <li>

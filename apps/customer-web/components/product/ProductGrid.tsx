@@ -22,6 +22,8 @@ interface Product {
   daBan: number;
   thuongHieu: string;
   danhMuc: any;
+  kichThuoc?: string[];
+  mauSac?: Array<{ ten: string; ma: string }>;
 }
 
 export default function ProductGrid({ filters }: ProductGridProps) {
@@ -43,6 +45,10 @@ export default function ProductGrid({ filters }: ProductGridProps) {
 
       if (filters.category) {
         params.danhMuc = filters.category;
+      }
+
+      if (filters.productType) {
+        params.loaiSanPham = filters.productType;
       }
 
       if (filters.priceRange) {
@@ -84,6 +90,22 @@ export default function ProductGrid({ filters }: ProductGridProps) {
         // Client-side filtering for filters not supported by API
         if (filters.brands && filters.brands.length > 0) {
           data = data.filter((p: Product) => filters.brands.includes(p.thuongHieu));
+        }
+
+        if (filters.sizes && filters.sizes.length > 0) {
+          data = data.filter((p: Product) => {
+            // Check if product has any of the selected sizes
+            return filters.sizes.some(size => p.kichThuoc?.includes(size));
+          });
+        }
+
+        if (filters.colors && filters.colors.length > 0) {
+          data = data.filter((p: Product) => {
+            // Check if product has any of the selected colors
+            return filters.colors.some(color =>
+              p.mauSac?.some((mau: any) => mau.ten === color)
+            );
+          });
         }
 
         if (filters.rating > 0) {

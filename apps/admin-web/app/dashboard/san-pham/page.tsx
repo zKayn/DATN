@@ -15,7 +15,9 @@ interface Product {
   danhMuc: {
     _id: string;
     ten: string;
+    loaiSanPham?: string[];
   };
+  loaiSanPham?: string;
   thuongHieu: string;
   soLuongTonKho: number;
   daBan: number;
@@ -23,26 +25,98 @@ interface Product {
   createdAt: string;
 }
 
+interface Category {
+  _id: string;
+  ten: string;
+  loaiSanPham?: string[];
+}
+
+interface Brand {
+  _id: string;
+  ten: string;
+}
+
 export default function ProductsManagementPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedProductType, setSelectedProductType] = useState('');
+  const [selectedBrand, setSelectedBrand] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('');
+  const [availableProductTypes, setAvailableProductTypes] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10;
 
   useEffect(() => {
+    loadCategories();
+    loadBrands();
+  }, []);
+
+  useEffect(() => {
     loadProducts();
-  }, [currentPage, searchTerm]);
+  }, [currentPage, searchTerm, selectedCategory, selectedProductType, selectedBrand, selectedStatus]);
+
+  useEffect(() => {
+    // Cập nhật loại sản phẩm khi chọn danh mục
+    if (selectedCategory) {
+      const category = categories.find(cat => cat._id === selectedCategory);
+      if (category && category.loaiSanPham) {
+        setAvailableProductTypes(category.loaiSanPham);
+      } else {
+        setAvailableProductTypes([]);
+      }
+      setSelectedProductType(''); // Reset loại sản phẩm khi đổi danh mục
+    } else {
+      setAvailableProductTypes([]);
+      setSelectedProductType('');
+    }
+  }, [selectedCategory, categories]);
+
+  const loadCategories = async () => {
+    try {
+      const response = await api.getCategories();
+      if (response.success && response.data) {
+        const responseData = response.data as any;
+        const data = Array.isArray(responseData) ? responseData : responseData.categories || [];
+        setCategories(data);
+      }
+    } catch (error) {
+      console.error('Lỗi khi tải danh mục:', error);
+    }
+  };
+
+  const loadBrands = async () => {
+    try {
+      const response = await api.getBrands();
+      if (response.success && response.data) {
+        const responseData = response.data as any;
+        const data = Array.isArray(responseData) ? responseData : responseData.brands || [];
+        setBrands(data);
+      }
+    } catch (error) {
+      console.error('Lỗi khi tải thương hiệu:', error);
+    }
+  };
 
   const loadProducts = async () => {
     setLoading(true);
     try {
-      const response = await api.getProducts({
+      const params: any = {
         page: currentPage,
         limit: itemsPerPage,
         search: searchTerm,
-      });
+        trangThai: selectedStatus || 'all', // Show all products if no status filter selected
+      };
+
+      if (selectedCategory) params.danhMuc = selectedCategory;
+      if (selectedProductType) params.loaiSanPham = selectedProductType;
+      if (selectedBrand) params.thuongHieu = selectedBrand;
+
+      const response = await api.getProducts(params);
 
       if (response.success && response.data) {
         const responseData = response.data as any;
@@ -107,22 +181,86 @@ export default function ProductsManagementPage() {
 
         {/* Search & Filter */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
+          <div className="space-y-4">
+            {/* Search Bar */}
+            <div className="flex gap-3">
               <input
                 type="text"
-                placeholder="Tìm kiếm sản phẩm theo tên, SKU..."
+                placeholder="Tìm kiếm sản phẩm theo tên..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
+              <button
+                onClick={() => {
+                  setSelectedCategory('');
+                  setSelectedProductType('');
+                  setSelectedBrand('');
+                  setSelectedStatus('');
+                  setSearchTerm('');
+                }}
+                className="bg-gray-100 text-gray-700 px-6 py-2.5 rounded-lg hover:bg-gray-200 transition-colors font-medium whitespace-nowrap"
+              >
+                Xóa bộ lọc
+              </button>
             </div>
-            <button
-              onClick={loadProducts}
-              className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-            >
-              Tìm kiếm
-            </button>
+
+            {/* Filters Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              {/* Category Filter */}
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              >
+                <option value="">Tất cả danh mục</option>
+                {categories.map((cat) => (
+                  <option key={cat._id} value={cat._id}>
+                    {cat.ten}
+                  </option>
+                ))}
+              </select>
+
+              {/* Product Type Filter */}
+              <select
+                value={selectedProductType}
+                onChange={(e) => setSelectedProductType(e.target.value)}
+                className="border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                disabled={!selectedCategory || availableProductTypes.length === 0}
+              >
+                <option value="">Tất cả loại sản phẩm</option>
+                {availableProductTypes.map((type, index) => (
+                  <option key={index} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+
+              {/* Brand Filter */}
+              <select
+                value={selectedBrand}
+                onChange={(e) => setSelectedBrand(e.target.value)}
+                className="border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              >
+                <option value="">Tất cả thương hiệu</option>
+                {brands.map((brand) => (
+                  <option key={brand._id} value={brand.ten}>
+                    {brand.ten}
+                  </option>
+                ))}
+              </select>
+
+              {/* Status Filter */}
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              >
+                <option value="">Tất cả trạng thái</option>
+                <option value="active">Đang bán</option>
+                <option value="inactive">Tạm ẩn</option>
+              </select>
+            </div>
           </div>
         </div>
 

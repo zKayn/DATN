@@ -92,13 +92,21 @@ class ApiService {
     page?: number;
     limit?: number;
     search?: string;
-    category?: string;
+    danhMuc?: string;
+    loaiSanPham?: string;
+    thuongHieu?: string;
+    trangThai?: string;
+    sort?: string;
   }) {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.search) queryParams.append('search', params.search);
-    if (params?.category) queryParams.append('category', params.category);
+    if (params?.danhMuc) queryParams.append('danhMuc', params.danhMuc);
+    if (params?.loaiSanPham) queryParams.append('loaiSanPham', params.loaiSanPham);
+    if (params?.thuongHieu) queryParams.append('thuongHieu', params.thuongHieu);
+    if (params?.trangThai) queryParams.append('trangThai', params.trangThai);
+    if (params?.sort) queryParams.append('sort', params.sort);
 
     return this.request(`/products?${queryParams.toString()}`);
   }
