@@ -7,6 +7,7 @@ export interface ICategory extends Document {
   moTa?: string;
   hinhAnh?: string;
   danhMucCha?: mongoose.Types.ObjectId;
+  loaiSanPham?: string[]; // Các loại sản phẩm con (subcategories)
   thuTu: number;
   trangThai: 'active' | 'inactive';
   seoTitle?: string;
@@ -38,6 +39,10 @@ const CategorySchema = new Schema<ICategory>(
       type: Schema.Types.ObjectId,
       ref: 'Category',
       default: null
+    },
+    loaiSanPham: {
+      type: [String],
+      default: []
     },
     thuTu: {
       type: Number,

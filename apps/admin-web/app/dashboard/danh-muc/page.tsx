@@ -9,6 +9,7 @@ interface Category {
   slug: string;
   moTa?: string;
   hinhAnh?: string;
+  loaiSanPham?: string[];
   thuTu: number;
   trangThai: 'active' | 'inactive';
   createdAt: string;
@@ -23,9 +24,11 @@ export default function CategoriesManagementPage() {
     ten: '',
     moTa: '',
     hinhAnh: '',
+    loaiSanPham: [] as string[],
     thuTu: 0,
     trangThai: 'active' as 'active' | 'inactive'
   });
+  const [newProductType, setNewProductType] = useState('');
 
   useEffect(() => {
     loadCategories();
@@ -57,6 +60,7 @@ export default function CategoriesManagementPage() {
         ten: category.ten,
         moTa: category.moTa || '',
         hinhAnh: category.hinhAnh || '',
+        loaiSanPham: category.loaiSanPham || [],
         thuTu: category.thuTu,
         trangThai: category.trangThai
       });
@@ -66,6 +70,7 @@ export default function CategoriesManagementPage() {
         ten: '',
         moTa: '',
         hinhAnh: '',
+        loaiSanPham: [],
         thuTu: categories.length,
         trangThai: 'active'
       });
@@ -76,13 +81,34 @@ export default function CategoriesManagementPage() {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingId(null);
+    setNewProductType('');
     setFormData({
       ten: '',
       moTa: '',
       hinhAnh: '',
+      loaiSanPham: [],
       thuTu: 0,
       trangThai: 'active'
     });
+  };
+
+  const handleAddProductType = () => {
+    if (newProductType.trim()) {
+      if (!formData.loaiSanPham.includes(newProductType.trim())) {
+        setFormData({
+          ...formData,
+          loaiSanPham: [...formData.loaiSanPham, newProductType.trim()]
+        });
+        setNewProductType('');
+      } else {
+        alert('Loại sản phẩm này đã tồn tại!');
+      }
+    }
+  };
+
+  const handleRemoveProductType = (index: number) => {
+    const newTypes = formData.loaiSanPham.filter((_, i) => i !== index);
+    setFormData({ ...formData, loaiSanPham: newTypes });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -179,9 +205,24 @@ export default function CategoriesManagementPage() {
                     </span>
                   </div>
 
-                  <div className="text-sm text-gray-600 mb-4">
+                  <div className="text-sm text-gray-600 mb-4 space-y-1">
                     <p>Thứ tự: {category.thuTu}</p>
                     <p>Slug: {category.slug}</p>
+                    {category.loaiSanPham && category.loaiSanPham.length > 0 && (
+                      <div className="mt-2">
+                        <p className="font-medium text-gray-700 mb-1">Loại sản phẩm:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {category.loaiSanPham.map((type, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-block bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs"
+                            >
+                              {type}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex gap-2 pt-4 border-t">
@@ -256,6 +297,54 @@ export default function CategoriesManagementPage() {
                     className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="https://example.com/image.jpg"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Loại sản phẩm</label>
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newProductType}
+                        onChange={(e) => setNewProductType(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddProductType();
+                          }
+                        }}
+                        className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Nhập loại sản phẩm (VD: Giày chạy bộ, Giày đá bóng...)"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddProductType}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium whitespace-nowrap"
+                      >
+                        Thêm
+                      </button>
+                    </div>
+
+                    {formData.loaiSanPham.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        {formData.loaiSanPham.map((type, index) => (
+                          <div
+                            key={index}
+                            className="relative border border-gray-300 rounded-lg px-3 py-2 bg-gray-50"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveProductType(index)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 transition-colors text-xs"
+                            >
+                              ×
+                            </button>
+                            <p className="text-sm text-gray-900 pr-3">{type}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div>

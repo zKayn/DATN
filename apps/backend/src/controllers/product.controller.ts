@@ -15,10 +15,27 @@ export const getProducts = async (
     const skip = (page - 1) * limit;
 
     // Filters
-    const query: any = { trangThai: 'active' };
+    const query: any = {};
+
+    // Filter by status
+    // If trangThai is provided, use it (can be 'active', 'inactive', or 'all')
+    // If not provided, default to showing only active products (for public API)
+    if (req.query.trangThai) {
+      if (req.query.trangThai !== 'all') {
+        query.trangThai = req.query.trangThai;
+      }
+      // If trangThai is 'all', don't add any status filter (show all products)
+    } else {
+      // Default to active for public API when no status is specified
+      query.trangThai = 'active';
+    }
 
     if (req.query.danhMuc) {
       query.danhMuc = req.query.danhMuc;
+    }
+
+    if (req.query.loaiSanPham) {
+      query.loaiSanPham = req.query.loaiSanPham;
     }
 
     if (req.query.thuongHieu) {

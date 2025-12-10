@@ -47,6 +47,9 @@ class ApiService {
   // Products
   async getProducts(params?: {
     danhMuc?: string;
+    loaiSanPham?: string;
+    thuongHieu?: string;
+    trangThai?: string;
     page?: number;
     limit?: number;
     sort?: string;

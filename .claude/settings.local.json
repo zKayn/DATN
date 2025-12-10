@@ -21,7 +21,8 @@
       "Bash(npx create-expo-app@latest mobile-app --template blank-typescript)",
       "Bash(npm uninstall:*)",
       "Bash(npx expo start:*)",
-      "Bash(npx expo install:*)"
+      "Bash(npx expo install:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
