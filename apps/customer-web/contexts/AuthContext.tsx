@@ -10,6 +10,11 @@ interface User {
   email: string;
   soDienThoai?: string;
   vaiTro: string;
+  avatar?: string;
+  anhDaiDien?: string;
+  gioiTinh?: string;
+  ngaySinh?: string;
+  diaChi?: any[];
 }
 
 interface AuthContextType {
@@ -19,6 +24,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
   register: (data: { hoTen: string; email: string; matKhau: string; soDienThoai?: string }) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
+  updateProfile: (data: Partial<User>) => Promise<{ success: boolean; message?: string }>;
+  refreshProfile: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -108,6 +115,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateProfile = async (data: Partial<User>) => {
+    if (!token) {
+      return { success: false, message: 'Vui lòng đăng nhập' };
+    }
+
+    try {
+      const response = await api.updateProfile(token, data);
+
+      if (response.success && response.data) {
+        setUser(response.data);
+        return { success: true };
+      } else {
+        return { success: false, message: response.message || 'Cập nhật thất bại' };
+      }
+    } catch (error: any) {
+      console.error('Update profile error:', error);
+      return { success: false, message: error.message || 'Cập nhật thất bại' };
+    }
+  };
+
+  const refreshProfile = async () => {
+    if (!token) return;
+
+    try {
+      const response = await api.getProfile(token);
+      if (response.success && response.data) {
+        setUser(response.data);
+      }
+    } catch (error) {
+      console.error('Refresh profile error:', error);
+    }
+  };
+
   const logout = () => {
     // Xóa token
     localStorage.removeItem('token');
@@ -142,6 +182,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         logout,
+        updateProfile,
+        refreshProfile,
         isAuthenticated
       }}
     >

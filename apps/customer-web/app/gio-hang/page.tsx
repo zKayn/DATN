@@ -1,32 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
-import { api } from '@/lib/api';
+import { useSettings } from '@/contexts/SettingsContext';
 
 export default function CartPage() {
   const { cartItems, updateQuantity, removeFromCart, cartTotal } = useCart();
+  const { settings } = useSettings();
   const [selectedItems, setSelectedItems] = useState<string[]>(cartItems.map(item => item.id));
-  const [shippingFeeSettings, setShippingFeeSettings] = useState(30000);
-  const [freeShippingThreshold, setFreeShippingThreshold] = useState(500000);
 
-  useEffect(() => {
-    loadSettings();
-  }, []);
-
-  const loadSettings = async () => {
-    try {
-      const response = await api.getSettings();
-      if (response.success && response.data) {
-        setShippingFeeSettings(response.data.shippingFee || 30000);
-        setFreeShippingThreshold(response.data.freeShippingThreshold || 500000);
-      }
-    } catch (error) {
-      console.error('Error loading settings:', error);
-    }
-  };
+  const shippingFeeSettings = settings?.shippingFee || 30000;
+  const freeShippingThreshold = settings?.freeShippingThreshold || 500000;
 
   const toggleSelectItem = (id: string) => {
     setSelectedItems(selected =>

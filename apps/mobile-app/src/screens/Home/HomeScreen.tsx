@@ -10,11 +10,13 @@ import {
   FlatList,
   ActivityIndicator,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SIZES } from '../../constants/config';
 import ProductCard from '../../components/ProductCard';
+import { useCart } from '../../contexts/CartContext';
 import api from '../../services/api';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
 
@@ -47,7 +49,9 @@ const banners = [
 ];
 
 const HomeScreen = () => {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp>();
+  const { cartCount } = useCart();
   const [currentBanner, setCurrentBanner] = useState(0);
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
   const [newProducts, setNewProducts] = useState<any[]>([]);
@@ -128,7 +132,7 @@ const HomeScreen = () => {
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>{title}</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('MainTab', { screen: 'Products' })}>
+        <TouchableOpacity onPress={() => navigation.navigate('Products' as never)}>
           <Text style={styles.seeAllText}>Xem tất cả</Text>
         </TouchableOpacity>
       </View>
@@ -154,17 +158,27 @@ const HomeScreen = () => {
   return (
     <ScrollView style={styles.container} ref={scrollViewRef} showsVerticalScrollIndicator={false}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + SIZES.safeAreaTop }]}>
         <View>
           <Text style={styles.greetingText}>Xin chào 👋</Text>
           <Text style={styles.headerTitle}>Thể Thao Pro</Text>
         </View>
-        <TouchableOpacity style={styles.cartButton} onPress={() => navigation.navigate('Cart')}>
-          <Ionicons name="cart-outline" size={28} color={COLORS.white} />
-          <View style={styles.cartBadge}>
-            <Text style={styles.cartBadgeText}>0</Text>
-          </View>
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            style={styles.searchButton}
+            onPress={() => navigation.navigate('Search')}
+          >
+            <Ionicons name="search-outline" size={24} color={COLORS.white} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.cartButton} onPress={() => navigation.navigate('Cart')}>
+            <Ionicons name="cart-outline" size={28} color={COLORS.white} />
+            {cartCount > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{cartCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Banner Carousel */}
@@ -197,12 +211,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: SIZES.padding,
-    paddingTop: 50,
     paddingBottom: 16,
     backgroundColor: COLORS.primary,
   },
   greetingText: { fontSize: SIZES.small, color: COLORS.white, opacity: 0.9 },
   headerTitle: { fontSize: SIZES.h2, fontWeight: 'bold', color: COLORS.white, marginTop: 4 },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  searchButton: {
+    padding: 4,
+  },
   cartButton: { position: 'relative' },
   cartBadge: {
     position: 'absolute',

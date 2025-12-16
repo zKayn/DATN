@@ -11,7 +11,8 @@ import {
   addAddress,
   updateAddress,
   deleteAddress,
-  setDefaultAddress
+  setDefaultAddress,
+  uploadAvatar
 } from '../controllers/auth.controller';
 import { protect } from '../middlewares/auth';
 
@@ -22,6 +23,7 @@ router.post('/register-admin', registerAdmin);
 router.post('/login', login);
 router.get('/me', protect, getMe);
 router.put('/update-profile', protect, updateProfile);
+router.post('/upload-avatar', protect, uploadAvatar);
 router.put('/change-password', protect, changePassword);
 router.post('/forgot-password', forgotPassword);
 router.put('/reset-password/:token', resetPassword);

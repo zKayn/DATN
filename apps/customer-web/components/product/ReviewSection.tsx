@@ -1,11 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { api } from '@/lib/api';
 
 interface ReviewSectionProps {
   productId: string;
+  productSlug?: string;
+  productName?: string;
+  averageRating?: number;
+  totalReviews?: number;
 }
 
 interface Review {
@@ -106,7 +111,14 @@ const MOCK_REVIEWS = [
   }
 ];
 
-export default function ReviewSection({ productId }: ReviewSectionProps) {
+export default function ReviewSection({
+  productId,
+  productSlug,
+  productName,
+  averageRating: propAverageRating,
+  totalReviews: propTotalReviews
+}: ReviewSectionProps) {
+  const router = useRouter();
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<number>(0); // 0 = all, 1-5 = specific rating
@@ -441,11 +453,17 @@ export default function ReviewSection({ productId }: ReviewSectionProps) {
         ))}
       </div>
 
-      {/* Load More */}
-      {filteredReviews.length > 0 && (
+      {/* View All Reviews Button */}
+      {filteredReviews.length > 0 && totalReviews > 5 && productSlug && (
         <div className="text-center mt-8">
-          <button className="text-blue-600 hover:text-blue-700 font-medium">
-            Xem thêm đánh giá
+          <button
+            onClick={() => router.push(`/san-pham/${productSlug}/danh-gia`)}
+            className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-2"
+          >
+            Xem tất cả {totalReviews} đánh giá
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </button>
         </div>
       )}

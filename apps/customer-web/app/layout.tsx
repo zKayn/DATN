@@ -8,6 +8,7 @@ import { Toaster } from 'react-hot-toast'
 import { CartProvider } from '@/contexts/CartContext'
 import { WishlistProvider } from '@/contexts/WishlistContext'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { SettingsProvider } from '@/contexts/SettingsContext'
 
 const inter = Inter({ subsets: ['latin', 'vietnamese'] })
 
@@ -25,21 +26,23 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body className={inter.className}>
-        <AuthProvider>
-          <WishlistProvider>
-            <CartProvider>
-              <div className="min-h-screen flex flex-col">
-                <Header />
-                <main className="flex-1">
-                  {children}
-                </main>
-                <Footer />
-                <ChatAI />
-              </div>
-              <Toaster position="top-right" />
-            </CartProvider>
-          </WishlistProvider>
-        </AuthProvider>
+        <SettingsProvider>
+          <AuthProvider>
+            <WishlistProvider>
+              <CartProvider>
+                <div className="min-h-screen flex flex-col">
+                  <Header />
+                  <main className="flex-1">
+                    {children}
+                  </main>
+                  <Footer />
+                  <ChatAI />
+                </div>
+                <Toaster position="top-right" />
+              </CartProvider>
+            </WishlistProvider>
+          </AuthProvider>
+        </SettingsProvider>
       </body>
     </html>
   )

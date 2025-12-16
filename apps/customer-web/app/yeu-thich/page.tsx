@@ -105,21 +105,21 @@ export default function WishlistPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {wishlistItems.map((item) => (
             <div
-              key={item.id}
+              key={item._id}
               className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow group"
             >
               {/* Product Image */}
               <Link href={`/san-pham/${item.slug}`} className="block relative aspect-square bg-gray-100">
                 <Image
-                  src={item.image}
-                  alt={item.name}
+                  src={item.hinhAnh?.[0] || '/placeholder.png'}
+                  alt={item.ten}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                {item.salePrice && (
+                {item.giaKhuyenMai && (
                   <div className="absolute top-3 left-3">
                     <span className="bg-red-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                      -{Math.round(((item.price - item.salePrice) / item.price) * 100)}%
+                      -{Math.round(((item.gia - item.giaKhuyenMai) / item.gia) * 100)}%
                     </span>
                   </div>
                 )}
@@ -128,7 +128,7 @@ export default function WishlistPage() {
                 <button
                   onClick={(e) => {
                     e.preventDefault();
-                    handleRemove(item.productId);
+                    handleRemove(item._id);
                   }}
                   className="absolute top-3 right-3 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
                   aria-label="Xóa khỏi yêu thích"
@@ -141,7 +141,7 @@ export default function WishlistPage() {
               <div className="p-4">
                 <Link href={`/san-pham/${item.slug}`}>
                   <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-primary-600 transition-colors">
-                    {item.name}
+                    {item.ten}
                   </h3>
                 </Link>
 
@@ -152,7 +152,7 @@ export default function WishlistPage() {
                       <svg
                         key={i}
                         className={`w-4 h-4 ${
-                          i < Math.floor(item.rating)
+                          i < Math.floor(item.danhGia?.trungBinh || 0)
                             ? 'text-yellow-400 fill-yellow-400'
                             : 'text-gray-300'
                         }`}
@@ -163,32 +163,32 @@ export default function WishlistPage() {
                     ))}
                   </div>
                   <span className="text-sm text-gray-500">
-                    ({item.reviewCount})
+                    ({item.danhGia?.soLuong || 0})
                   </span>
                 </div>
 
                 {/* Price */}
                 <div className="flex items-baseline gap-2 mb-3">
-                  {item.salePrice ? (
+                  {item.giaKhuyenMai ? (
                     <>
                       <span className="text-xl font-bold text-red-600">
-                        {formatPrice(item.salePrice)}
+                        {formatPrice(item.giaKhuyenMai)}
                       </span>
                       <span className="text-sm text-gray-400 line-through">
-                        {formatPrice(item.price)}
+                        {formatPrice(item.gia)}
                       </span>
                     </>
                   ) : (
                     <span className="text-xl font-bold text-gray-900">
-                      {formatPrice(item.price)}
+                      {formatPrice(item.gia)}
                     </span>
                   )}
                 </div>
 
                 {/* Stock Status */}
-                {item.stock > 0 ? (
+                {(item.tonKho || 0) > 0 ? (
                   <p className="text-sm text-green-600 mb-3">
-                    Còn {item.stock} sản phẩm
+                    Còn {item.tonKho} sản phẩm
                   </p>
                 ) : (
                   <p className="text-sm text-red-600 mb-3">
@@ -199,7 +199,7 @@ export default function WishlistPage() {
                 {/* Add to Cart Button */}
                 <button
                   onClick={() => handleAddToCart(item)}
-                  disabled={item.stock === 0}
+                  disabled={(item.tonKho || 0) === 0}
                   className="w-full bg-primary-600 text-white py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <ShoppingCart className="w-5 h-5" />

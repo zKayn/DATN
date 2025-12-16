@@ -70,8 +70,21 @@ export default function ReviewsManagementPage() {
 
       if (response.success && response.data) {
         const data = response.data as any;
-        setReviews(data.reviews || []);
-        setTotalPages(data.totalPages || 1);
+        // Handle different response structures
+        const reviewsList = Array.isArray(data) ? data : (data.reviews || data.data || []);
+        setReviews(reviewsList);
+
+        // Calculate total pages from pagination or data
+        const pagination = (response as any).pagination;
+        if (pagination?.pages) {
+          setTotalPages(pagination.pages);
+        } else if (pagination?.total) {
+          setTotalPages(Math.ceil(pagination.total / itemsPerPage));
+        } else if (data.totalPages) {
+          setTotalPages(data.totalPages);
+        } else {
+          setTotalPages(1);
+        }
       } else if (response.error) {
         console.error('Lỗi khi tải đánh giá:', response.error);
       }
@@ -191,23 +204,29 @@ export default function ReviewsManagementPage() {
                       <tr key={review._id} className="hover:bg-gray-50">
                         <td className="px-6 py-4">
                           <div>
-                            <p className="font-medium text-gray-900">{review.sanPham?.ten || 'N/A'}</p>
-                            <p className="text-sm text-gray-600">#{review.donHang?.maDonHang || 'N/A'}</p>
+                            <p className="font-medium text-gray-900">
+                              {review.sanPham?.ten || (typeof review.sanPham === 'string' ? 'Sản phẩm đã xóa' : 'N/A')}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              #{review.donHang?.maDonHang || (review.donHang ? 'Không có mã' : 'N/A')}
+                            </p>
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <div>
-                            <p className="font-medium text-gray-900">{review.nguoiDung?.hoTen || 'N/A'}</p>
-                            <p className="text-sm text-gray-600">{review.nguoiDung?.email || 'N/A'}</p>
+                            <p className="font-medium text-gray-900">
+                              {review.nguoiDung?.hoTen || (typeof review.nguoiDung === 'string' ? 'Người dùng đã xóa' : 'N/A')}
+                            </p>
+                            <p className="text-sm text-gray-600">{review.nguoiDung?.email || ''}</p>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          {renderStars(review.danhGia)}
+                          {renderStars(review.danhGia || 0)}
                         </td>
                         <td className="px-6 py-4">
                           <div className="max-w-xs">
-                            <p className="font-medium text-gray-900 mb-1">{review.tieuDe}</p>
-                            <p className="text-sm text-gray-600 line-clamp-2">{review.noiDung}</p>
+                            <p className="font-medium text-gray-900 mb-1">{review.tieuDe || 'Không có tiêu đề'}</p>
+                            <p className="text-sm text-gray-600 line-clamp-2">{review.noiDung || ''}</p>
                             <button
                               onClick={() => setSelectedReview(review)}
                               className="text-sm text-blue-600 hover:text-blue-700 mt-1"

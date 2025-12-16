@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { api } from '@/lib/api';
@@ -11,8 +11,9 @@ import AddressModal from '@/components/account/AddressModal';
 
 export default function AccountPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { logout } = useAuth();
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'profile');
   const [loading, setLoading] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [userInfo, setUserInfo] = useState({
@@ -38,6 +39,16 @@ export default function AccountPage() {
   useEffect(() => {
     loadUserProfile();
   }, []);
+
+  // Update active tab when URL changes
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab) {
+      setActiveTab(tab);
+    } else {
+      setActiveTab('profile');
+    }
+  }, [searchParams]);
 
   const loadUserProfile = async () => {
     setLoading(true);
@@ -107,8 +118,9 @@ export default function AccountPage() {
       if (uploadResponse.success && uploadResponse.data) {
         const avatarUrl = uploadResponse.data.url;
 
-        // Update profile with new avatar URL
+        // Update profile with new avatar URL (cập nhật cả avatar và anhDaiDien)
         const updateResponse = await api.updateProfile(token, {
+          avatar: avatarUrl,
           anhDaiDien: avatarUrl
         });
 
@@ -291,6 +303,7 @@ export default function AccountPage() {
   const menuItems = [
     { id: 'profile', label: 'Thông Tin Cá Nhân', icon: 'user' },
     { id: 'orders', label: 'Đơn Hàng Của Tôi', icon: 'shopping-bag', href: '/tai-khoan/don-hang' },
+    { id: 'reviews', label: 'Đánh Giá Của Tôi', icon: 'star', href: '/tai-khoan/danh-gia' },
     { id: 'wishlist', label: 'Sản Phẩm Yêu Thích', icon: 'heart', href: '/tai-khoan/yeu-thich' },
     { id: 'addresses', label: 'Địa Chỉ Nhận Hàng', icon: 'map-pin' },
     { id: 'password', label: 'Đổi Mật Khẩu', icon: 'lock' },
@@ -304,6 +317,9 @@ export default function AccountPage() {
       ),
       'shopping-bag': (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+      ),
+      'star': (
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
       ),
       'heart': (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -322,110 +338,46 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">Tài Khoản Của Tôi</h1>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              {/* User Avatar */}
-              <div className="text-center mb-6 pb-6 border-b">
-                <div className="relative w-24 h-24 mx-auto mb-4 group">
-                  <Image
-                    src={userInfo.avatar}
-                    alt={userInfo.name}
-                    fill
-                    className="rounded-full object-cover"
-                  />
-                  {/* Upload Avatar Button */}
-                  <label
-                    htmlFor="avatar-upload"
-                    className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                  >
-                    {uploadingAvatar ? (
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                    ) : (
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                    )}
-                  </label>
-                  <input
-                    id="avatar-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    disabled={uploadingAvatar}
-                    className="hidden"
-                  />
-                </div>
-                <h3 className="font-bold text-gray-900">{userInfo.name}</h3>
-                <p className="text-sm text-gray-600 mt-1">{userInfo.email}</p>
-              </div>
-
-              {/* Menu Items */}
-              <nav className="space-y-1">
-                {menuItems.map((item) => {
-                  if (item.href) {
-                    return (
-                      <Link
-                        key={item.id}
-                        href={item.href}
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          {renderIcon(item.icon)}
-                        </svg>
-                        <span className="font-medium">{item.label}</span>
-                      </Link>
-                    );
-                  }
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveTab(item.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                        activeTab === item.id
-                          ? 'bg-blue-50 text-blue-600'
-                          : 'text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        {renderIcon(item.icon)}
-                      </svg>
-                      <span className="font-medium">{item.label}</span>
-                    </button>
-                  );
-                })}
-
-                {/* Logout */}
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors mt-4"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  <span className="font-medium">Đăng Xuất</span>
-                </button>
-              </nav>
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="lg:col-span-3">
+    <div className="space-y-6">
             {/* Profile Tab */}
             {activeTab === 'profile' && (
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Thông Tin Cá Nhân</h2>
+
+                {/* Avatar Upload Section */}
+                <div className="flex justify-center mb-8">
+                  <div className="relative w-32 h-32 group">
+                    <Image
+                      src={userInfo.avatar}
+                      alt={userInfo.name}
+                      fill
+                      className="rounded-full object-cover"
+                    />
+                    {/* Upload Avatar Button */}
+                    <label
+                      htmlFor="avatar-upload"
+                      className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                    >
+                      {uploadingAvatar ? (
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                      ) : (
+                        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      )}
+                    </label>
+                    <input
+                      id="avatar-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                      disabled={uploadingAvatar}
+                      className="hidden"
+                    />
+                  </div>
+                </div>
+
                 <form onSubmit={handleUpdateProfile}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="md:col-span-2">
@@ -659,9 +611,6 @@ export default function AccountPage() {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      </div>
 
       {/* Address Modal */}
       <AddressModal

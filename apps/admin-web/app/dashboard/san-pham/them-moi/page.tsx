@@ -25,7 +25,7 @@ export default function AddProductPage() {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const [sizeType, setSizeType] = useState<'clothing' | 'shoes'>('clothing');
+  const [sizeType, setSizeType] = useState<'clothing' | 'shoes' | 'custom'>('clothing');
   const [selectedCategoryTypes, setSelectedCategoryTypes] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     ten: '',
@@ -37,7 +37,7 @@ export default function AddProductPage() {
     loaiSanPham: '',
     thuongHieu: '',
     hinhAnh: [] as string[],
-    kichThuoc: ['S', 'M', 'L', 'XL'],
+    kichThuoc: [] as string[], // Bắt đầu với mảng rỗng
     mauSac: [{ ten: 'Đen', ma: '#000000' }],
     soLuongTonKho: 0,
     trangThai: 'active' as 'active' | 'inactive',
@@ -615,7 +615,7 @@ export default function AddProductPage() {
             {/* Size Type Selection */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-900 mb-3">Loại kích thước</label>
-              <div className="flex gap-4">
+              <div className="flex gap-4 flex-wrap">
                 <label className="flex items-center cursor-pointer px-4 py-3 border-2 rounded-lg transition-all hover:bg-gray-50"
                   style={{
                     borderColor: sizeType === 'clothing' ? '#2563eb' : '#d1d5db',
@@ -626,7 +626,7 @@ export default function AddProductPage() {
                     name="sizeType"
                     value="clothing"
                     checked={sizeType === 'clothing'}
-                    onChange={(e) => setSizeType(e.target.value as 'clothing' | 'shoes')}
+                    onChange={(e) => setSizeType(e.target.value as 'clothing' | 'shoes' | 'custom')}
                     className="w-4 h-4 text-blue-600 mr-3"
                   />
                   <div>
@@ -644,7 +644,7 @@ export default function AddProductPage() {
                     name="sizeType"
                     value="shoes"
                     checked={sizeType === 'shoes'}
-                    onChange={(e) => setSizeType(e.target.value as 'clothing' | 'shoes')}
+                    onChange={(e) => setSizeType(e.target.value as 'clothing' | 'shoes' | 'custom')}
                     className="w-4 h-4 text-blue-600 mr-3"
                   />
                   <div>
@@ -652,15 +652,88 @@ export default function AddProductPage() {
                     <div className="text-xs text-gray-500">35, 36, 37, 38, 39...</div>
                   </div>
                 </label>
+                <label className="flex items-center cursor-pointer px-4 py-3 border-2 rounded-lg transition-all hover:bg-gray-50"
+                  style={{
+                    borderColor: sizeType === 'custom' ? '#2563eb' : '#d1d5db',
+                    backgroundColor: sizeType === 'custom' ? '#eff6ff' : 'white'
+                  }}>
+                  <input
+                    type="radio"
+                    name="sizeType"
+                    value="custom"
+                    checked={sizeType === 'custom'}
+                    onChange={(e) => setSizeType(e.target.value as 'clothing' | 'shoes' | 'custom')}
+                    className="w-4 h-4 text-blue-600 mr-3"
+                  />
+                  <div>
+                    <div className="font-semibold text-gray-900">Tùy chọn</div>
+                    <div className="text-xs text-gray-500">3,3mm, Không có, v.v.</div>
+                  </div>
+                </label>
               </div>
             </div>
 
             {/* Quick Add Buttons */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Thêm nhanh</label>
-              {sizeType === 'clothing' ? (
+            {sizeType !== 'custom' && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Thêm nhanh</label>
+                {sizeType === 'clothing' ? (
+                  <div className="flex flex-wrap gap-2">
+                    {['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'].map((size) => (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => {
+                          if (!formData.kichThuoc.includes(size)) {
+                            setFormData({ ...formData, kichThuoc: [...formData.kichThuoc, size] });
+                          }
+                        }}
+                        className="px-3 py-1.5 text-sm border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {['35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45'].map((size) => (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => {
+                          if (!formData.kichThuoc.includes(size)) {
+                            setFormData({ ...formData, kichThuoc: [...formData.kichThuoc, size] });
+                          }
+                        }}
+                        className="px-3 py-1.5 text-sm border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Custom size help text */}
+            {sizeType === 'custom' && (
+              <div className="mb-4">
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-3">
+                  <div className="flex items-start gap-2">
+                    <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <p className="text-sm font-medium text-blue-900">Kích thước tùy chọn</p>
+                      <p className="text-xs text-blue-700 mt-1">
+                        Nhập kích thước tùy chỉnh cho sản phẩm. Ví dụ: "3,3mm" cho vợt cầu lông, "Không có" cho bóng, phụ kiện không có kích thước cụ thể, hoặc bất kỳ giá trị nào khác.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Ví dụ phổ biến (nhấn để thêm)</label>
                 <div className="flex flex-wrap gap-2">
-                  {['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'].map((size) => (
+                  {['Không có', 'Size duy nhất', '3,3mm', '3,5mm', '4mm', '5mm', 'Freesize', 'One Size'].map((size) => (
                     <button
                       key={size}
                       type="button"
@@ -675,25 +748,8 @@ export default function AddProductPage() {
                     </button>
                   ))}
                 </div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {['35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45'].map((size) => (
-                    <button
-                      key={size}
-                      type="button"
-                      onClick={() => {
-                        if (!formData.kichThuoc.includes(size)) {
-                          setFormData({ ...formData, kichThuoc: [...formData.kichThuoc, size] });
-                        }
-                      }}
-                      className="px-3 py-1.5 text-sm border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {formData.kichThuoc.map((size, index) => (
@@ -703,7 +759,7 @@ export default function AddProductPage() {
                     value={size}
                     onChange={(e) => updateSize(index, sizeType === 'clothing' ? e.target.value.toUpperCase() : e.target.value)}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-center font-semibold focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder={sizeType === 'clothing' ? 'S' : '39'}
+                    placeholder={sizeType === 'clothing' ? 'S' : sizeType === 'shoes' ? '39' : 'Nhập kích thước'}
                     required
                   />
                   {formData.kichThuoc.length > 1 && (

@@ -104,26 +104,19 @@ export const deleteReview = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
-export const getAllReviews = async (req: Request, res: Response, next: NextFunction) => {
+export const getUserReviews = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { status, page = 1, limit = 10 } = req.query;
-
-    const query: any = {};
-    if (status) {
-      query.trangThai = status;
-    }
-
+    const { page = 1, limit = 10 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
-    const reviews = await Review.find(query)
-      .populate('nguoiDung', 'hoTen email')
-      .populate('sanPham', 'ten slug')
+    const reviews = await Review.find({ nguoiDung: req.user?._id })
+      .populate('sanPham', 'ten slug hinhAnh gia giaKhuyenMai')
       .populate('donHang', 'maDonHang')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(Number(limit));
 
-    const total = await Review.countDocuments(query);
+    const total = await Review.countDocuments({ nguoiDung: req.user?._id });
 
     res.json({
       success: true,
@@ -134,6 +127,72 @@ export const getAllReviews = async (req: Request, res: Response, next: NextFunct
         totalPages: Math.ceil(total / Number(limit))
       }
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllReviews = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { status, page = 1, limit = 10, minRating } = req.query;
+
+    const query: any = {};
+
+    // Nếu không có user (public request), chỉ trả về đánh giá đã duyệt
+    if (!req.user) {
+      query.trangThai = 'da-duyet';
+    } else if (status) {
+      query.trangThai = status;
+    }
+
+    // Lọc theo rating tối thiểu
+    if (minRating) {
+      query.danhGia = { $gte: Number(minRating) };
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const reviews = await Review.find(query)
+      .populate('nguoiDung', 'hoTen email avatar')
+      .populate('sanPham', 'ten slug')
+      .populate('donHang', 'maDonHang')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit));
+
+    const total = await Review.countDocuments(query);
+
+    // Format dữ liệu cho frontend
+    const formattedReviews = reviews.map(review => {
+      const reviewObj: any = review.toObject();
+      return {
+        ...reviewObj,
+        nguoiDung: {
+          _id: reviewObj.nguoiDung?._id,
+          ten: reviewObj.nguoiDung?.hoTen || 'Người dùng',
+          avatar: reviewObj.nguoiDung?.avatar
+        }
+      };
+    });
+
+    // Nếu là public request, trả về array trực tiếp để dễ sử dụng
+    if (!req.user) {
+      res.json({
+        success: true,
+        data: formattedReviews
+      });
+    } else {
+      // Admin request trả về với pagination info
+      res.json({
+        success: true,
+        data: {
+          reviews: formattedReviews,
+          total,
+          page: Number(page),
+          totalPages: Math.ceil(total / Number(limit))
+        }
+      });
+    }
   } catch (error) {
     next(error);
   }

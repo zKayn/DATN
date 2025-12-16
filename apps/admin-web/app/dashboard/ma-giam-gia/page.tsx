@@ -272,13 +272,13 @@ export default function VoucherPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold">{voucher.daSuDung}</span>
-                      <span className="text-gray-500">/ {voucher.soLuong}</span>
+                      <span className="font-semibold">{voucher.daSuDung || 0}</span>
+                      <span className="text-gray-500">/ {voucher.soLuong || 0}</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
                       <div
                         className="bg-blue-600 h-2 rounded-full"
-                        style={{ width: `${(voucher.daSuDung / voucher.soLuong) * 100}%` }}
+                        style={{ width: `${voucher.soLuong > 0 ? ((voucher.daSuDung || 0) / voucher.soLuong) * 100 : 0}%` }}
                       ></div>
                     </div>
                   </td>

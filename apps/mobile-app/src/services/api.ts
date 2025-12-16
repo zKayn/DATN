@@ -57,36 +57,78 @@ class ApiService {
     return response.data;
   }
 
+  async updateProfile(data: any) {
+    const response = await this.api.put('/auth/update-profile', data);
+    return response.data;
+  }
+
+  async uploadAvatar(formData: FormData) {
+    const response = await this.api.post('/auth/upload-avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  }
+
   // Product APIs
   async getProducts(params?: {
+    danhMuc?: string;
+    loaiSanPham?: string;
+    thuongHieu?: string;
+    trangThai?: string;
     page?: number;
     limit?: number;
-    danhMuc?: string;
-    timKiem?: string;
-    sapXep?: string;
+    sort?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    search?: string;
+    noiBat?: boolean;
+    sanPhamMoi?: boolean;
   }) {
     const response = await this.api.get('/products', { params });
     return response.data;
   }
 
-  async getProductDetail(id: string) {
+  async getProductById(id: string) {
     const response = await this.api.get(`/products/${id}`);
     return response.data;
   }
 
+  async getProductBySlug(slug: string) {
+    const response = await this.api.get(`/products/slug/${slug}`);
+    return response.data;
+  }
+
   async getFeaturedProducts() {
-    const response = await this.api.get('/products/featured');
+    const response = await this.api.get('/products?noiBat=true&limit=8');
     return response.data;
   }
 
   async getNewProducts() {
-    const response = await this.api.get('/products/new-arrivals');
+    const response = await this.api.get('/products?sanPhamMoi=true&limit=8');
+    return response.data;
+  }
+
+  async searchProducts(query: string) {
+    const response = await this.api.get(`/products/search?q=${encodeURIComponent(query)}`);
     return response.data;
   }
 
   // Category APIs
   async getCategories() {
     const response = await this.api.get('/categories');
+    return response.data;
+  }
+
+  async getCategoryBySlug(slug: string) {
+    const response = await this.api.get(`/categories/slug/${slug}`);
+    return response.data;
+  }
+
+  // Settings API
+  async getSettings() {
+    const response = await this.api.get('/settings');
     return response.data;
   }
 
@@ -137,15 +179,123 @@ class ApiService {
     return response.data;
   }
 
-  async createReview(data: {
-    sanPham: string;
-    donHang: string;
+  async createReview(productId: string, data: {
     danhGia: number;
-    binhLuan: string;
-  }) {
-    const response = await this.api.post('/reviews', data);
+    tieuDe: string;
+    noiDung: string;
+    donHang?: string;
+  }, token?: string) {
+    const reviewData = {
+      ...data,
+      sanPham: productId
+    };
+    const response = await this.api.post('/reviews', reviewData);
     return response.data;
   }
+
+  async getUserReviews(params?: { page?: number; limit?: number }) {
+    const response = await this.api.get('/reviews/my-reviews', { params });
+    return response.data;
+  }
+
+  async updateReview(reviewId: string, data: {
+    danhGia?: number;
+    tieuDe?: string;
+    noiDung?: string;
+  }) {
+    const response = await this.api.put(`/reviews/${reviewId}`, data);
+    return response.data;
+  }
+
+  async deleteReview(reviewId: string) {
+    const response = await this.api.delete(`/reviews/${reviewId}`);
+    return response.data;
+  }
+
+  // Address APIs
+  async getAddresses() {
+    // Addresses are in user profile
+    const response = await this.api.get('/auth/me');
+    if (response.data.success && response.data.data?.diaChi) {
+      return {
+        success: true,
+        data: response.data.data.diaChi
+      };
+    }
+    return { success: true, data: [] };
+  }
+
+  async getAddressById(id: string) {
+    const response = await this.api.get('/auth/me');
+    if (response.data.success && response.data.data?.diaChi) {
+      const address = response.data.data.diaChi.find((addr: any) => addr._id === id);
+      return { success: true, data: address };
+    }
+    return { success: false, data: null };
+  }
+
+  async createAddress(data: {
+    hoTen: string;
+    soDienThoai: string;
+    diaChi: string;
+    phuongXa: string;
+    quanHuyen: string;
+    tinhThanh: string;
+    macDinh?: boolean;
+  }) {
+    // Map mobile field names to backend field names
+    const addressData = {
+      hoTen: data.hoTen,
+      soDienThoai: data.soDienThoai,
+      diaChiChiTiet: data.diaChi,
+      xa: data.phuongXa,
+      huyen: data.quanHuyen,
+      tinh: data.tinhThanh,
+      macDinh: data.macDinh || false
+    };
+    const response = await this.api.post('/auth/addresses', addressData);
+    return response.data;
+  }
+
+  async updateAddress(id: string, data: {
+    hoTen?: string;
+    soDienThoai?: string;
+    diaChi?: string;
+    phuongXa?: string;
+    quanHuyen?: string;
+    tinhThanh?: string;
+    macDinh?: boolean;
+  }) {
+    // Map mobile field names to backend field names
+    const addressData: any = {};
+    if (data.hoTen) addressData.hoTen = data.hoTen;
+    if (data.soDienThoai) addressData.soDienThoai = data.soDienThoai;
+    if (data.diaChi) addressData.diaChiChiTiet = data.diaChi;
+    if (data.phuongXa) addressData.xa = data.phuongXa;
+    if (data.quanHuyen) addressData.huyen = data.quanHuyen;
+    if (data.tinhThanh) addressData.tinh = data.tinhThanh;
+    if (data.macDinh !== undefined) addressData.macDinh = data.macDinh;
+
+    const response = await this.api.put(`/auth/addresses/${id}`, addressData);
+    return response.data;
+  }
+
+  async deleteAddress(id: string) {
+    const response = await this.api.delete(`/auth/addresses/${id}`);
+    return response.data;
+  }
+
+  async setDefaultAddress(id: string) {
+    const response = await this.api.put(`/auth/addresses/${id}/set-default`);
+    return response.data;
+  }
+
+  // Voucher APIs
+  async checkVoucher(ma: string, tongTien: number) {
+    const response = await this.api.post('/vouchers/kiem-tra', { ma, tongTien });
+    return response.data;
+  }
+
 }
 
 export default new ApiService();

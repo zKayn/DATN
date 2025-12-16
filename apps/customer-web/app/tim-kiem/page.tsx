@@ -34,6 +34,19 @@ export default function SearchPage() {
     }
   }, [query]);
 
+  // Real-time search khi người dùng gõ
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.trim()) {
+        performSearch(searchQuery);
+      } else {
+        setProducts([]);
+      }
+    }, 500); // Debounce 500ms
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const performSearch = async (searchTerm: string) => {
     if (!searchTerm.trim()) {
       setProducts([]);

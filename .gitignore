@@ -54,3 +54,6 @@ yarn-error.log*
 # Database
 *.db
 *.sqlite
+
+# Windows command output files
+nul

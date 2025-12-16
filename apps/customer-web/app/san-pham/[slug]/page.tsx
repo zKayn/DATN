@@ -495,7 +495,13 @@ export default function ProductDetailPage() {
         </div>
 
         {/* Reviews */}
-        <ReviewSection productId={product._id} />
+        <ReviewSection
+          productId={product._id}
+          productSlug={product.slug}
+          productName={product.ten}
+          averageRating={product.danhGiaTrungBinh}
+          totalReviews={product.soLuongDanhGia}
+        />
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (

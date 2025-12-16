@@ -6,17 +6,20 @@ import {
   deleteReview,
   getAllReviews,
   approveReview,
-  rejectReview
+  rejectReview,
+  getUserReviews
 } from '../controllers/review.controller';
 import { protect, authorize } from '../middlewares/auth';
 
 const router = express.Router();
 
 // Public routes
+router.get('/public', getAllReviews); // Public endpoint for approved reviews
 router.get('/product/:productId', getProductReviews);
 
 // Protected routes
 router.post('/', protect, createReview);
+router.get('/my-reviews', protect, getUserReviews);
 router.put('/:id', protect, updateReview);
 router.delete('/:id', protect, deleteReview);
 

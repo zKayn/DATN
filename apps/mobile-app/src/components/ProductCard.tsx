@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SIZES } from '../constants/config';
+import { useWishlist } from '../contexts/WishlistContext';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ProductCardProps {
   id: string;
@@ -18,6 +20,7 @@ const { width } = Dimensions.get('window');
 const cardWidth = (width - SIZES.padding * 3) / 2;
 
 const ProductCard: React.FC<ProductCardProps> = ({
+  id,
   ten,
   gia,
   giaKhuyenMai,
@@ -26,7 +29,25 @@ const ProductCard: React.FC<ProductCardProps> = ({
   daBan = 0,
   onPress,
 }) => {
+  const { isAuthenticated } = useAuth();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const discount = giaKhuyenMai ? Math.round(((gia - giaKhuyenMai) / gia) * 100) : 0;
+  const inWishlist = isInWishlist(id);
+
+  const handleWishlistToggle = async (e: any) => {
+    e.stopPropagation();
+    if (!isAuthenticated) return;
+
+    try {
+      if (inWishlist) {
+        await removeFromWishlist(id);
+      } else {
+        await addToWishlist(id);
+      }
+    } catch (error) {
+      console.error('Error toggling wishlist:', error);
+    }
+  };
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
@@ -41,6 +62,19 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <View style={styles.discountBadge}>
             <Text style={styles.discountText}>-{discount}%</Text>
           </View>
+        )}
+        {isAuthenticated && (
+          <TouchableOpacity
+            style={styles.wishlistButton}
+            onPress={handleWishlistToggle}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={inWishlist ? 'heart' : 'heart-outline'}
+              size={20}
+              color={inWishlist ? COLORS.danger : COLORS.white}
+            />
+          </TouchableOpacity>
         )}
       </View>
 
@@ -110,6 +144,17 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: SIZES.tiny,
     fontWeight: 'bold',
+  },
+  wishlistButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   info: {
     padding: 12,

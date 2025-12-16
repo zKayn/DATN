@@ -26,16 +26,19 @@ export default function DashboardPage() {
       // Load orders and calculate stats
       const ordersResponse = await api.getOrders();
       if (ordersResponse.success && ordersResponse.data) {
-        const orders = ordersResponse.data as any[];
+        const responseData = ordersResponse.data as any;
+        const orders = Array.isArray(responseData) ? responseData : responseData.orders || [];
 
-        // Calculate stats from orders
+        // Calculate stats from orders - use correct field names from backend
         const totalRevenue = orders.reduce((sum: number, order: any) => {
-          return order.trangThai === 'da-giao' ? sum + order.tongTien : sum;
+          // Backend uses trangThaiDonHang, not trangThai
+          const status = order.trangThaiDonHang || order.trangThai;
+          return status === 'da-giao' ? sum + (order.tongThanhToan || order.tongTien || 0) : sum;
         }, 0);
 
         setStats(prev => ({
           ...prev,
-          totalOrders: orders.length,
+          totalOrders: (ordersResponse as any).pagination?.total || orders.length,
           totalRevenue: totalRevenue
         }));
 
@@ -45,10 +48,11 @@ export default function DashboardPage() {
 
       // Load users count
       const usersResponse = await api.getUsers({ limit: 1 });
-      if (usersResponse.success && (usersResponse as any).pagination) {
+      if (usersResponse.success) {
+        const pagination = (usersResponse as any).pagination;
         setStats(prev => ({
           ...prev,
-          totalCustomers: (usersResponse as any).pagination.total
+          totalCustomers: pagination?.total || 0
         }));
       }
 
@@ -80,20 +84,25 @@ export default function DashboardPage() {
     setLoading(false);
   };
 
+  // Use Vietnamese status codes from backend
   const STATUS_COLORS: Record<string, string> = {
-    pending: 'bg-yellow-100 text-yellow-700',
-    confirmed: 'bg-blue-100 text-blue-700',
-    shipping: 'bg-purple-100 text-purple-700',
-    delivered: 'bg-green-100 text-green-700',
-    cancelled: 'bg-red-100 text-red-700'
+    'cho-xac-nhan': 'bg-yellow-100 text-yellow-700',
+    'da-xac-nhan': 'bg-blue-100 text-blue-700',
+    'dang-chuan-bi': 'bg-purple-100 text-purple-700',
+    'dang-giao': 'bg-indigo-100 text-indigo-700',
+    'da-giao': 'bg-green-100 text-green-700',
+    'da-huy': 'bg-red-100 text-red-700',
+    'tra-hang': 'bg-orange-100 text-orange-700'
   };
 
   const STATUS_LABELS: Record<string, string> = {
-    pending: 'Chờ xác nhận',
-    confirmed: 'Đã xác nhận',
-    shipping: 'Đang giao',
-    delivered: 'Đã giao',
-    cancelled: 'Đã hủy'
+    'cho-xac-nhan': 'Chờ xác nhận',
+    'da-xac-nhan': 'Đã xác nhận',
+    'dang-chuan-bi': 'Đang chuẩn bị',
+    'dang-giao': 'Đang giao',
+    'da-giao': 'Đã giao',
+    'da-huy': 'Đã hủy',
+    'tra-hang': 'Trả hàng'
   };
 
   return (
@@ -296,11 +305,16 @@ export default function DashboardPage() {
                         <td className="py-4 font-medium text-blue-600">{order.maDonHang}</td>
                         <td className="py-4">{order.giaoDich?.nguoiNhan || 'N/A'}</td>
                         <td className="py-4">{order.sanPham?.length || 0} sản phẩm</td>
-                        <td className="py-4 font-medium">₫{order.tongTien.toLocaleString('vi-VN')}</td>
+                        <td className="py-4 font-medium">₫{(order.tongThanhToan || order.tongTien || 0).toLocaleString('vi-VN')}</td>
                         <td className="py-4">
-                          <span className={`px-3 py-1 rounded-full text-xs ${STATUS_COLORS[order.trangThai]}`}>
-                            {STATUS_LABELS[order.trangThai] || order.trangThai}
-                          </span>
+                          {(() => {
+                            const status = order.trangThaiDonHang || order.trangThai || 'cho-xac-nhan';
+                            return (
+                              <span className={`px-3 py-1 rounded-full text-xs ${STATUS_COLORS[status] || 'bg-gray-100 text-gray-700'}`}>
+                                {STATUS_LABELS[status] || status}
+                              </span>
+                            );
+                          })()}
                         </td>
                         <td className="py-4 text-gray-600">
                           {new Date(order.createdAt).toLocaleDateString('vi-VN')}
