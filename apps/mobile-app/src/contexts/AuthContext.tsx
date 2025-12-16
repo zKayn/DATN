@@ -8,7 +8,11 @@ interface User {
   email: string;
   soDienThoai?: string;
   avatar?: string;
+  anhDaiDien?: string;
   vaiTro: string;
+  gioiTinh?: string;
+  ngaySinh?: Date | string;
+  diaChi?: any[];
 }
 
 interface AuthContextData {
@@ -24,6 +28,8 @@ interface AuthContextData {
   }) => Promise<void>;
   logout: () => Promise<void>;
   loadUser: () => Promise<void>;
+  updateProfile: (data: Partial<User>) => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -91,6 +97,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const updateProfile = async (data: Partial<User>) => {
+    try {
+      const response = await api.updateProfile(data);
+      if (response.success && response.data) {
+        setUser(response.data);
+        await AsyncStorage.setItem('user', JSON.stringify(response.data));
+      } else {
+        throw new Error(response.message || 'Cập nhật thất bại');
+      }
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || error.message || 'Cập nhật thất bại');
+    }
+  };
+
+  const refreshProfile = async () => {
+    try {
+      const response = await api.getProfile();
+      if (response.success && response.data) {
+        setUser(response.data);
+        await AsyncStorage.setItem('user', JSON.stringify(response.data));
+      }
+    } catch (error) {
+      console.error('Refresh profile error:', error);
+    }
+  };
+
   const logout = async () => {
     await AsyncStorage.removeItem('token');
     await AsyncStorage.removeItem('user');
@@ -107,6 +139,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         register,
         logout,
         loadUser,
+        updateProfile,
+        refreshProfile,
       }}
     >
       {children}

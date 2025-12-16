@@ -22,7 +22,22 @@
       "Bash(npm uninstall:*)",
       "Bash(npx expo start:*)",
       "Bash(npx expo install:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(del \"d:\\DATN\\apps\\mobile-app\\src\\screens\\Product\\ProductDetailScreen.tsx\")",
+      "Bash(timeout:*)",
+      "Bash(set NODE_OPTIONS=--preserve-symlinks)",
+      "Bash(node kill-ports.js)",
+      "Bash(git checkout:*)",
+      "Bash(tee:*)",
+      "Bash(set \"EXPO_NO_METRO_WORKSPACE_ROOT=1\")",
+      "Bash(node:*)",
+      "Bash(npm run android:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run build:check:*)",
+      "Bash(npm run android:check:*)",
+      "Bash(ls:*)",
+      "Bash(chmod:*)",
+      "Bash(./cleanup-nul.sh:*)"
     ],
     "deny": [],
     "ask": []

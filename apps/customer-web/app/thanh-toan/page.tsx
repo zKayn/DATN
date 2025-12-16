@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { cartItems, clearCart } = useCart();
+  const { settings } = useSettings();
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>('');
   const [showAddressSelector, setShowAddressSelector] = useState(false);
@@ -112,7 +114,9 @@ export default function CheckoutPage() {
     return sum + price * item.quantity;
   }, 0);
 
-  const shippingFee = subtotal >= 500000 ? 0 : 30000;
+  const freeShippingThreshold = settings?.freeShippingThreshold || 500000;
+  const shippingFeeAmount = settings?.shippingFee || 30000;
+  const shippingFee = subtotal >= freeShippingThreshold ? 0 : shippingFeeAmount;
   const pointsDiscount = usePoints ? 50000 : 0;
   const voucherDiscount = appliedVoucher?.giaTriGiamThucTe || 0;
   const total = subtotal + shippingFee - pointsDiscount - voucherDiscount;
@@ -562,65 +566,93 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Phương Thức Thanh Toán</h2>
 
                 <div className="space-y-3">
-                  <label className="flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${paymentMethod === 'cod' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}">
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="cod"
-                      checked={paymentMethod === 'cod'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'cod')}
-                      className="w-5 h-5 text-blue-600"
-                    />
-                    <div className="ml-4 flex-1">
-                      <div className="flex items-center gap-2">
-                        <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        <span className="font-semibold text-gray-900">Thanh toán khi nhận hàng (COD)</span>
-                      </div>
-                      <p className="text-sm text-gray-600 mt-1">Thanh toán bằng tiền mặt khi nhận hàng</p>
-                    </div>
-                  </label>
-
-                  <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${paymentMethod === 'vnpay' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}`}>
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="vnpay"
-                      checked={paymentMethod === 'vnpay'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'vnpay')}
-                      className="w-5 h-5 text-blue-600"
-                    />
-                    <div className="ml-4 flex-1">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">VP</span>
+                  {settings?.paymentMethods?.cod && (
+                    <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${paymentMethod === 'cod' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}`}>
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="cod"
+                        checked={paymentMethod === 'cod'}
+                        onChange={(e) => setPaymentMethod(e.target.value as 'cod')}
+                        className="w-5 h-5 text-blue-600"
+                      />
+                      <div className="ml-4 flex-1">
+                        <div className="flex items-center gap-2">
+                          <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                          </svg>
+                          <span className="font-semibold text-gray-900">Thanh toán khi nhận hàng (COD)</span>
                         </div>
-                        <span className="font-semibold text-gray-900">VNPay</span>
+                        <p className="text-sm text-gray-600 mt-1">Thanh toán bằng tiền mặt khi nhận hàng</p>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">Thanh toán qua cổng VNPay</p>
-                    </div>
-                  </label>
+                    </label>
+                  )}
 
-                  <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${paymentMethod === 'momo' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}`}>
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="momo"
-                      checked={paymentMethod === 'momo'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'momo')}
-                      className="w-5 h-5 text-blue-600"
-                    />
-                    <div className="ml-4 flex-1">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-pink-600 rounded flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">M</span>
+                  {settings?.paymentMethods?.vnpay && (
+                    <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${paymentMethod === 'vnpay' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}`}>
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="vnpay"
+                        checked={paymentMethod === 'vnpay'}
+                        onChange={(e) => setPaymentMethod(e.target.value as 'vnpay')}
+                        className="w-5 h-5 text-blue-600"
+                      />
+                      <div className="ml-4 flex-1">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
+                            <span className="text-white text-xs font-bold">VP</span>
+                          </div>
+                          <span className="font-semibold text-gray-900">VNPay</span>
                         </div>
-                        <span className="font-semibold text-gray-900">MoMo</span>
+                        <p className="text-sm text-gray-600 mt-1">Thanh toán qua cổng VNPay</p>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">Thanh toán qua ví điện tử MoMo</p>
-                    </div>
-                  </label>
+                    </label>
+                  )}
+
+                  {settings?.paymentMethods?.momo && (
+                    <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${paymentMethod === 'momo' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}`}>
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="momo"
+                        checked={paymentMethod === 'momo'}
+                        onChange={(e) => setPaymentMethod(e.target.value as 'momo')}
+                        className="w-5 h-5 text-blue-600"
+                      />
+                      <div className="ml-4 flex-1">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 bg-pink-600 rounded flex items-center justify-center">
+                            <span className="text-white text-xs font-bold">M</span>
+                          </div>
+                          <span className="font-semibold text-gray-900">MoMo</span>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">Thanh toán qua ví điện tử MoMo</p>
+                      </div>
+                    </label>
+                  )}
+
+                  {settings?.paymentMethods?.bankTransfer && (
+                    <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${paymentMethod === 'bankTransfer' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}`}>
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="bankTransfer"
+                        checked={paymentMethod === 'bankTransfer'}
+                        onChange={(e) => setPaymentMethod(e.target.value as any)}
+                        className="w-5 h-5 text-blue-600"
+                      />
+                      <div className="ml-4 flex-1">
+                        <div className="flex items-center gap-2">
+                          <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                          </svg>
+                          <span className="font-semibold text-gray-900">Chuyển khoản ngân hàng</span>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">Thanh toán qua chuyển khoản ngân hàng</p>
+                      </div>
+                    </label>
+                  )}
                 </div>
               </div>
 

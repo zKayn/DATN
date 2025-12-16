@@ -222,11 +222,20 @@ export const searchProducts = async (
       });
     }
 
+    const searchQuery = q as string;
+
+    // Sử dụng regex để tìm kiếm linh hoạt hơn, hỗ trợ cả 1 ký tự
     const products = await Product.find({
-      $text: { $search: q as string },
+      $or: [
+        { ten: { $regex: searchQuery, $options: 'i' } },
+        { moTa: { $regex: searchQuery, $options: 'i' } },
+        { slug: { $regex: searchQuery, $options: 'i' } }
+      ],
       trangThai: 'active'
     })
       .populate('danhMuc', 'ten slug')
+      .populate('thuongHieu', 'ten')
+      .sort({ daBan: -1, danhGiaTrungBinh: -1 }) // Ưu tiên sản phẩm bán chạy và đánh giá cao
       .limit(20);
 
     res.json({

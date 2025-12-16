@@ -147,58 +147,7 @@ export default function OrderHistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Breadcrumb */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Link href="/" className="hover:text-primary-600">Trang chủ</Link>
-            <ChevronRight className="w-4 h-4" />
-            <Link href="/tai-khoan" className="hover:text-primary-600">Tài khoản</Link>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-gray-900">Đơn hàng của tôi</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar */}
-          <div className="lg:w-64">
-            <div className="bg-white rounded-lg p-4 sticky top-20">
-              <h2 className="font-semibold text-gray-900 mb-4">Tài khoản của tôi</h2>
-              <nav className="space-y-1">
-                <Link
-                  href="/tai-khoan"
-                  className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  <span>Thông tin cá nhân</span>
-                </Link>
-                <Link
-                  href="/tai-khoan/don-hang"
-                  className="flex items-center gap-3 px-4 py-2 text-primary-600 bg-primary-50 rounded-lg font-medium"
-                >
-                  <Package className="w-5 h-5" />
-                  <span>Đơn hàng của tôi</span>
-                </Link>
-                <Link
-                  href="/yeu-thich"
-                  className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                  <span>Sản phẩm yêu thích</span>
-                </Link>
-              </nav>
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="flex-1">
+    <>
             {/* Header */}
             <div className="bg-white rounded-lg p-6 mb-6">
               <h1 className="text-2xl font-bold text-gray-900 mb-4">Đơn Hàng Của Tôi</h1>
@@ -351,9 +300,6 @@ export default function OrderHistoryPage() {
                 })}
               </div>
             )}
-          </div>
-        </div>
-      </div>
-    </div>
+    </>
   );
 }

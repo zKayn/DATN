@@ -34,9 +34,21 @@ export default function UsersPage() {
     setLoading(true);
     try {
       const response = await api.getUsers({ page: currentPage, limit: 20 });
-      if (response.success) {
-        setUsers(response.data as User[]);
-        setTotalPages((response as any).pagination?.pages || 1);
+      if (response.success && response.data) {
+        // Handle different response structures
+        const data = response.data as any;
+        const usersList = Array.isArray(data) ? data : (data.users || data.data || []);
+        setUsers(usersList);
+
+        // Calculate total pages from pagination
+        const pagination = (response as any).pagination;
+        if (pagination?.pages) {
+          setTotalPages(pagination.pages);
+        } else if (pagination?.total) {
+          setTotalPages(Math.ceil(pagination.total / 20));
+        } else {
+          setTotalPages(1);
+        }
       }
     } catch (error: any) {
       console.error('Error loading users:', error);

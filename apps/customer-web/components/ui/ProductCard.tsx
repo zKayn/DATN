@@ -40,22 +40,24 @@ export default function ProductCard({
   const isWishlisted = isInWishlist(id)
   const discountPercent = salePrice ? Math.round(((price - salePrice) / price) * 100) : 0
 
-  const handleWishlistToggle = (e: React.MouseEvent) => {
+  const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault()
     if (isWishlisted) {
-      removeFromWishlist(id)
+      await removeFromWishlist(id)
       toast.success('Đã xóa khỏi danh sách yêu thích')
     } else {
-      addToWishlist({
-        productId: id,
-        name,
+      await addToWishlist({
+        _id: id,
+        ten: name,
         slug,
-        image,
-        price,
-        salePrice: salePrice || null,
-        rating,
-        reviewCount,
-        stock
+        hinhAnh: [image],
+        gia: price,
+        giaKhuyenMai: salePrice || undefined,
+        danhGia: {
+          trungBinh: rating,
+          soLuong: reviewCount
+        },
+        tonKho: stock
       })
       toast.success('Đã thêm vào danh sách yêu thích')
     }

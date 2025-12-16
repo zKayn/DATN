@@ -94,6 +94,16 @@ class ApiService {
   }
 
   // Reviews
+  async getReviews(params?: { page?: number; limit?: number; minRating?: number }) {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.minRating) queryParams.append('minRating', params.minRating.toString());
+
+    const queryString = queryParams.toString();
+    return this.request(`/reviews/public${queryString ? `?${queryString}` : ''}`);
+  }
+
   async getProductReviews(productId: string) {
     return this.request(`/reviews/product/${productId}`);
   }
@@ -118,6 +128,49 @@ class ApiService {
       method: 'POST',
       headers,
       body: JSON.stringify(reviewData),
+    });
+  }
+
+  async getUserReviews(token: string, params?: { page?: number; limit?: number }) {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+
+    const queryString = queryParams.toString();
+    const endpoint = queryString ? `/reviews/my-reviews?${queryString}` : '/reviews/my-reviews';
+
+    return this.request(endpoint, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+
+  async updateReview(token: string, reviewId: string, data: {
+    danhGia?: number;
+    tieuDe?: string;
+    noiDung?: string;
+  }) {
+    return this.request(`/reviews/${reviewId}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteReview(token: string, reviewId: string) {
+    return this.request(`/reviews/${reviewId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
   }
 
@@ -307,6 +360,39 @@ class ApiService {
       headers,
       body: JSON.stringify({ ma, tongTien }),
     });
+  }
+
+  // Wishlist APIs
+  async getWishlist(token: string) {
+    return this.request('/users/wishlist', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+
+  async addToWishlist(token: string, productId: string) {
+    return this.request('/users/wishlist', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ sanPham: productId }),
+    });
+  }
+
+  async removeFromWishlist(token: string, productId: string) {
+    return this.request(`/users/wishlist/${productId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+
+  // Settings
+  async getSettings() {
+    return this.request('/settings');
   }
 }
 

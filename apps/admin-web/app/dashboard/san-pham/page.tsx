@@ -124,7 +124,16 @@ export default function ProductsManagementPage() {
           ? responseData
           : (responseData.products || []);
         setProducts(products);
-        setTotalPages(Math.ceil((responseData.total || products.length || 0) / itemsPerPage));
+
+        // Use pagination.pages from API response if available
+        const pagination = (response as any).pagination;
+        if (pagination?.pages) {
+          setTotalPages(pagination.pages);
+        } else if (pagination?.total) {
+          setTotalPages(Math.ceil(pagination.total / itemsPerPage));
+        } else {
+          setTotalPages(Math.ceil(products.length / itemsPerPage));
+        }
       } else if (response.error) {
         console.error('Lỗi khi tải sản phẩm:', response.error);
         // Don't show alert for auth errors, just show empty state

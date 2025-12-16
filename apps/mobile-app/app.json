@@ -1,18 +1,11 @@
 {
   "expo": {
-    "name": "Thể Thao Pro",
-    "slug": "the-thao-pro",
+    "name": "mobile-app",
+    "slug": "mobile-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": false,
-    "developmentClient": {
-      "silentLaunch": false
-    },
-    "plugins": [
-      "expo-dev-client"
-    ],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",

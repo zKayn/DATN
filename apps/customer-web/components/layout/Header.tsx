@@ -13,10 +13,12 @@ import {
   Package,
   UserCircle
 } from 'lucide-react'
+import Image from 'next/image'
 import { api } from '@/lib/api'
 import { useCart } from '@/contexts/CartContext'
 import { useWishlist } from '@/contexts/WishlistContext'
 import { useAuth } from '@/contexts/AuthContext'
+import { useSettings } from '@/contexts/SettingsContext'
 
 interface Category {
   _id: string;
@@ -26,15 +28,28 @@ interface Category {
   loaiSanPham?: string[];
 }
 
+interface Product {
+  _id: string;
+  ten: string;
+  slug?: string;
+  gia: number;
+  giaKhuyenMai?: number;
+  hinhAnh: string[];
+}
+
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [searchResults, setSearchResults] = useState<Product[]>([])
+  const [showSearchResults, setShowSearchResults] = useState(false)
+  const [searchLoading, setSearchLoading] = useState(false)
   const { cartCount } = useCart()
   const { wishlistCount } = useWishlist()
   const { user, isAuthenticated, logout } = useAuth()
+  const { settings } = useSettings()
 
   const handleLogout = () => {
     logout()
@@ -44,6 +59,20 @@ export default function Header() {
   useEffect(() => {
     loadCategories()
   }, [])
+
+  // Real-time search khi người dùng gõ
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.trim()) {
+        performSearch(searchQuery)
+      } else {
+        setSearchResults([])
+        setShowSearchResults(false)
+      }
+    }, 300) // Debounce 300ms
+
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   const loadCategories = async () => {
     try {
@@ -58,11 +87,39 @@ export default function Header() {
     }
   }
 
+  const performSearch = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([])
+      setShowSearchResults(false)
+      return
+    }
+
+    setSearchLoading(true)
+    try {
+      const response = await api.searchProducts(query)
+      if (response.success && response.data) {
+        setSearchResults(response.data.slice(0, 5)) // Giới hạn 5 kết quả
+        setShowSearchResults(true)
+      }
+    } catch (error) {
+      console.error('Lỗi khi tìm kiếm:', error)
+      setSearchResults([])
+    }
+    setSearchLoading(false)
+  }
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
+      setShowSearchResults(false)
       window.location.href = `/tim-kiem?q=${encodeURIComponent(searchQuery)}`
     }
+  }
+
+  const handleProductClick = (slug: string) => {
+    setShowSearchResults(false)
+    setSearchQuery('')
+    window.location.href = `/san-pham/${slug}`
   }
 
   return (
@@ -71,8 +128,13 @@ export default function Header() {
       <div className="bg-gradient-to-r from-primary-600 to-secondary-600 text-white py-2">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center text-sm">
-            <p>🔥 Miễn phí vận chuyển cho đơn hàng từ 500.000đ</p>
+            <p>🔥 Miễn phí vận chuyển cho đơn hàng từ {settings?.freeShippingThreshold?.toLocaleString('vi-VN') || '500,000'}₫</p>
             <div className="hidden md:flex items-center gap-4">
+              {settings?.storePhone && (
+                <a href={`tel:${settings.storePhone}`} className="hover:underline">
+                  📞 {settings.storePhone}
+                </a>
+              )}
               <Link href="/lien-he" className="hover:underline">Liên hệ</Link>
               <Link href="/theo-doi-don-hang" className="hover:underline">Theo dõi đơn hàng</Link>
             </div>
@@ -85,33 +147,112 @@ export default function Header() {
         <div className="flex items-center justify-between gap-8">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white p-2 rounded-lg">
-              <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z" />
-              </svg>
-            </div>
+            {settings?.storeLogo ? (
+              <div className="relative w-12 h-12">
+                <Image
+                  src={settings.storeLogo}
+                  alt={settings.storeName || 'Store Logo'}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            ) : (
+              <div className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white p-2 rounded-lg">
+                <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z" />
+                </svg>
+              </div>
+            )}
             <div className="hidden md:block">
               <h1 className="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-                Thể Thao Pro
+                {settings?.storeName || 'Thể Thao Pro'}
               </h1>
-              <p className="text-xs text-gray-500">Chuyên đồ thể thao</p>
+              <p className="text-xs text-gray-500">{settings?.storeDescription || 'Chuyên đồ thể thao'}</p>
             </div>
           </Link>
 
           {/* Search bar - Desktop */}
-          <form onSubmit={handleSearch} className="hidden lg:flex flex-1 max-w-2xl">
+          <form onSubmit={handleSearch} className="hidden lg:flex flex-1 max-w-2xl relative">
             <div className="relative w-full">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
                 placeholder="Tìm kiếm sản phẩm, thương hiệu..."
                 className="w-full px-4 py-3 pr-12 rounded-lg border-2 border-gray-200 focus:border-primary-500 focus:outline-none transition-colors"
               />
               <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary-600 text-white p-2 rounded-md hover:bg-primary-700 transition-colors">
                 <Search className="w-5 h-5" />
               </button>
+
+              {/* Search Results Dropdown */}
+              {showSearchResults && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-2xl border border-gray-200 max-h-96 overflow-y-auto z-50">
+                  {searchLoading ? (
+                    <div className="p-4 text-center text-gray-500">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+                      <p className="mt-2">Đang tìm kiếm...</p>
+                    </div>
+                  ) : searchResults.length > 0 ? (
+                    <>
+                      {searchResults.map((product) => (
+                        <div
+                          key={product._id}
+                          onClick={() => handleProductClick(product.slug || product._id)}
+                          className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0 transition-colors"
+                        >
+                          <img
+                            src={product.hinhAnh[0] || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100'}
+                            alt={product.ten}
+                            className="w-16 h-16 object-cover rounded-md"
+                          />
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900 line-clamp-1">{product.ten}</h4>
+                            <div className="flex items-center gap-2 mt-1">
+                              {product.giaKhuyenMai ? (
+                                <>
+                                  <span className="text-primary-600 font-semibold">
+                                    {product.giaKhuyenMai.toLocaleString('vi-VN')}₫
+                                  </span>
+                                  <span className="text-gray-400 line-through text-sm">
+                                    {product.gia.toLocaleString('vi-VN')}₫
+                                  </span>
+                                </>
+                              ) : (
+                                <span className="text-gray-900 font-semibold">
+                                  {product.gia.toLocaleString('vi-VN')}₫
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      <div className="p-3 text-center border-t bg-gray-50">
+                        <button
+                          type="submit"
+                          className="text-primary-600 hover:text-primary-700 font-medium text-sm"
+                        >
+                          Xem tất cả kết quả cho "{searchQuery}"
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="p-4 text-center text-gray-500">
+                      Không tìm thấy sản phẩm nào
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
+
+            {/* Overlay to close dropdown when clicking outside */}
+            {showSearchResults && (
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowSearchResults(false)}
+              />
+            )}
           </form>
 
           {/* Icons */}

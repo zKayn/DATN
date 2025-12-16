@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import multer from 'multer';
+import { v2 as cloudinary } from 'cloudinary';
 import User from '../models/User';
 
 // Tạo JWT token
@@ -49,7 +51,11 @@ export const register = async (
           hoTen: user.hoTen,
           email: user.email,
           vaiTro: user.vaiTro,
-          avatar: user.avatar
+          avatar: user.avatar,
+          anhDaiDien: user.anhDaiDien,
+          soDienThoai: user.soDienThoai,
+          gioiTinh: user.gioiTinh,
+          ngaySinh: user.ngaySinh
         }
       }
     });
@@ -100,7 +106,11 @@ export const registerAdmin = async (
           hoTen: user.hoTen,
           email: user.email,
           vaiTro: user.vaiTro,
-          avatar: user.avatar
+          avatar: user.avatar,
+          anhDaiDien: user.anhDaiDien,
+          soDienThoai: user.soDienThoai,
+          gioiTinh: user.gioiTinh,
+          ngaySinh: user.ngaySinh
         }
       }
     });
@@ -170,7 +180,11 @@ export const login = async (
           email: user.email,
           vaiTro: user.vaiTro,
           avatar: user.avatar,
-          soDienThoai: user.soDienThoai
+          anhDaiDien: user.anhDaiDien,
+          soDienThoai: user.soDienThoai,
+          gioiTinh: user.gioiTinh,
+          ngaySinh: user.ngaySinh,
+          diaChi: user.diaChi
         }
       }
     });
@@ -534,6 +548,101 @@ export const setDefaultAddress = async (
       data: user.diaChi
     });
   } catch (error) {
+    next(error);
+  }
+};
+
+// Cấu hình multer cho avatar
+const storage = multer.memoryStorage();
+const avatarUpload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Chỉ chấp nhận file ảnh'));
+    }
+  }
+});
+
+// @desc    Upload avatar
+// @route   POST /api/auth/upload-avatar
+// @access  Private
+export const uploadAvatar = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    avatarUpload.single('avatar')(req, res, async (err) => {
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: 'Vui lòng chọn ảnh'
+        });
+      }
+
+      try {
+        // Upload lên Cloudinary
+        const result = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            {
+              folder: 'sports-store/avatars',
+              transformation: [
+                { width: 500, height: 500, crop: 'fill', gravity: 'face' },
+                { quality: 'auto' }
+              ]
+            },
+            (error, result) => {
+              if (error) {
+                reject(error);
+              } else {
+                resolve(result);
+              }
+            }
+          );
+
+          uploadStream.end(req.file!.buffer);
+        });
+
+        const avatarUrl = (result as any).secure_url;
+
+        // Cập nhật avatar của user
+        const user = await User.findByIdAndUpdate(
+          req.user?._id,
+          {
+            avatar: avatarUrl,
+            anhDaiDien: avatarUrl
+          },
+          { new: true }
+        );
+
+        res.json({
+          success: true,
+          message: 'Upload ảnh đại diện thành công',
+          data: {
+            avatar: avatarUrl,
+            user
+          }
+        });
+      } catch (uploadError: any) {
+        return res.status(500).json({
+          success: false,
+          message: uploadError.message || 'Lỗi khi upload ảnh'
+        });
+      }
+    });
+  } catch (error: any) {
     next(error);
   }
 };

@@ -45,16 +45,22 @@ export default function AnalyticsPage() {
       if (ordersRes.success && ordersRes.data) {
         const orders = ordersRes.data as any[];
 
-        // Calculate stats
+        // Calculate stats - use correct field names
         const totalRevenue = orders.reduce((sum: number, order: any) => {
-          return order.trangThai === 'da-giao' ? sum + order.tongTien : sum;
+          const status = order.trangThaiDonHang || order.trangThai;
+          const amount = order.tongThanhToan || order.tongTien || 0;
+          return status === 'da-giao' ? sum + amount : sum;
         }, 0);
 
-        const pendingOrders = orders.filter((o: any) =>
-          ['cho-xac-nhan', 'da-xac-nhan', 'dang-chuan-bi', 'dang-giao'].includes(o.trangThai)
-        ).length;
+        const pendingOrders = orders.filter((o: any) => {
+          const status = o.trangThaiDonHang || o.trangThai;
+          return ['cho-xac-nhan', 'da-xac-nhan', 'dang-chuan-bi', 'dang-giao'].includes(status);
+        }).length;
 
-        const completedOrders = orders.filter((o: any) => o.trangThai === 'da-giao').length;
+        const completedOrders = orders.filter((o: any) => {
+          const status = o.trangThaiDonHang || o.trangThai;
+          return status === 'da-giao';
+        }).length;
 
         // Generate sales data for chart
         const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -64,12 +70,17 @@ export default function AnalyticsPage() {
         });
 
         const salesByDate = last7Days.map(date => {
-          const dayOrders = orders.filter((o: any) =>
-            o.createdAt.startsWith(date) && o.trangThai === 'da-giao'
-          );
+          const dayOrders = orders.filter((o: any) => {
+            const status = o.trangThaiDonHang || o.trangThai;
+            const createdAt = o.createdAt || o.ngayTao || '';
+            return createdAt.startsWith(date) && status === 'da-giao';
+          });
           return {
             date,
-            revenue: dayOrders.reduce((sum: number, o: any) => sum + o.tongTien, 0),
+            revenue: dayOrders.reduce((sum: number, o: any) => {
+              const amount = o.tongThanhToan || o.tongTien || 0;
+              return sum + amount;
+            }, 0),
             orders: dayOrders.length
           };
         });
@@ -86,7 +97,8 @@ export default function AnalyticsPage() {
         // Calculate top products from orders
         const productSales: Record<string, any> = {};
         orders.forEach((order: any) => {
-          if (order.trangThai === 'da-giao' && order.sanPham) {
+          const status = order.trangThaiDonHang || order.trangThai;
+          if (status === 'da-giao' && order.sanPham) {
             order.sanPham.forEach((item: any) => {
               // Use tenSanPham and hinhAnh from order item
               const productKey = item.tenSanPham || 'Unknown';
@@ -99,7 +111,9 @@ export default function AnalyticsPage() {
                 };
               }
               productSales[productKey].quantity += item.soLuong || 0;
-              productSales[productKey].revenue += (item.gia || 0) * (item.soLuong || 0);
+              // Use thanhTien if available, otherwise calculate from gia * soLuong
+              const itemRevenue = item.thanhTien || ((item.gia || 0) * (item.soLuong || 0));
+              productSales[productKey].revenue += itemRevenue;
             });
           }
         });

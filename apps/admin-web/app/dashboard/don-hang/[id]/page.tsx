@@ -28,7 +28,11 @@ interface Order {
   };
   sanPham: OrderItem[];
   tongTien: number;
-  trangThai: string;
+  tongThanhToan?: number;
+  phiVanChuyen?: number;
+  giamGia?: number;
+  trangThaiDonHang: string;
+  trangThaiThanhToan?: string;
   phuongThucThanhToan: string;
   diaChiGiaoHang: {
     hoTen: string;
@@ -39,6 +43,11 @@ interface Order {
     diaChiChiTiet: string;
   };
   ghiChu?: string;
+  lichSuTrangThai?: Array<{
+    trangThai: string;
+    moTa: string;
+    thoiGian: string;
+  }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -58,20 +67,18 @@ export default function OrderDetailPage() {
 
   const loadOrder = async () => {
     try {
-      const response = await api.getOrders();
+      // Use getOrder(id) instead of loading all orders
+      const response = await api.getOrder(orderId);
       if (response.success && response.data) {
-        const orders = response.data as Order[];
-        const foundOrder = orders.find((o: Order) => o._id === orderId);
-        if (foundOrder) {
-          setOrder(foundOrder);
-        } else {
-          toast.error('Không tìm thấy đơn hàng');
-          router.push('/dashboard/don-hang');
-        }
+        setOrder(response.data as Order);
+      } else {
+        toast.error('Không tìm thấy đơn hàng');
+        router.push('/dashboard/don-hang');
       }
     } catch (error: any) {
       console.error('Error loading order:', error);
       toast.error(error.message || 'Không thể tải đơn hàng');
+      router.push('/dashboard/don-hang');
     } finally {
       setLoading(false);
     }
@@ -85,7 +92,7 @@ export default function OrderDetailPage() {
       const response = await api.updateOrderStatus(order._id, newStatus);
       if (response.success) {
         toast.success('Cập nhật trạng thái thành công!');
-        setOrder({ ...order, trangThai: newStatus });
+        setOrder({ ...order, trangThaiDonHang: newStatus });
       }
     } catch (error: any) {
       console.error('Error updating status:', error);
@@ -156,7 +163,7 @@ export default function OrderDetailPage() {
           <p className="text-gray-600">Mã đơn: {order.maDonHang}</p>
         </div>
         <div>
-          {getStatusBadge(order.trangThai)}
+          {getStatusBadge(order.trangThaiDonHang)}
         </div>
       </div>
 
@@ -216,9 +223,9 @@ export default function OrderDetailPage() {
                 <button
                   key={status}
                   onClick={() => handleUpdateStatus(status)}
-                  disabled={updating || order.trangThai === status}
+                  disabled={updating || order.trangThaiDonHang === status}
                   className={`px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 ${
-                    order.trangThai === status
+                    order.trangThaiDonHang === status
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
