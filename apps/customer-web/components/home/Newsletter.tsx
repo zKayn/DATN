@@ -19,13 +19,30 @@ export default function Newsletter() {
 
     setLoading(true)
 
-    // TODO: API call to subscribe
-    setTimeout(() => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/newsletter/subscribe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        setSubscribed(true)
+        toast.success(data.message || 'Đăng ký thành công! Vui lòng kiểm tra email của bạn.')
+        setEmail('')
+      } else {
+        toast.error(data.message || 'Đã có lỗi xảy ra. Vui lòng thử lại.')
+      }
+    } catch (error) {
+      console.error('Newsletter subscription error:', error)
+      toast.error('Không thể kết nối đến server. Vui lòng thử lại sau.')
+    } finally {
       setLoading(false)
-      setSubscribed(true)
-      toast.success('Đăng ký thành công! Cảm ơn bạn đã quan tâm.')
-      setEmail('')
-    }, 1000)
+    }
   }
 
   return (

@@ -20,10 +20,12 @@ const ProfileScreen = ({ navigation }: any) => {
   const { user, logout, isAuthenticated } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
     if (isAuthenticated) {
       loadOrders();
+      loadUnreadNotifications();
     }
   }, [isAuthenticated]);
 
@@ -39,6 +41,17 @@ const ProfileScreen = ({ navigation }: any) => {
       console.error('Error loading orders:', error);
     }
     setLoading(false);
+  };
+
+  const loadUnreadNotifications = async () => {
+    try {
+      const response = await api.getUnreadNotificationCount();
+      if (response.success && response.data) {
+        setUnreadNotifications(response.data.count);
+      }
+    } catch (error) {
+      console.error('Error loading unread notifications:', error);
+    }
   };
 
   const handleLogout = () => {
@@ -169,6 +182,22 @@ const ProfileScreen = ({ navigation }: any) => {
 
         <TouchableOpacity
           style={styles.menuItem}
+          onPress={() => navigation.navigate('Notifications')}
+        >
+          <View style={styles.menuIconContainer}>
+            <Ionicons name="notifications-outline" size={24} color={COLORS.primary} />
+          </View>
+          <Text style={styles.menuText}>Thông báo</Text>
+          {unreadNotifications > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{unreadNotifications}</Text>
+            </View>
+          )}
+          <Ionicons name="chevron-forward" size={20} color={COLORS.gray[400]} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
           onPress={() => navigation.navigate('MyReviews')}
         >
           <View style={styles.menuIconContainer}>
@@ -200,7 +229,21 @@ const ProfileScreen = ({ navigation }: any) => {
           <Ionicons name="chevron-forward" size={20} color={COLORS.gray[400]} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('Points')}
+        >
+          <View style={styles.menuIconContainer}>
+            <Ionicons name="gift-outline" size={24} color={COLORS.warning} />
+          </View>
+          <Text style={styles.menuText}>Điểm tích lũy</Text>
+          <Ionicons name="chevron-forward" size={20} color={COLORS.gray[400]} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('Settings')}
+        >
           <View style={styles.menuIconContainer}>
             <Ionicons name="settings-outline" size={24} color={COLORS.gray[600]} />
           </View>
@@ -427,6 +470,21 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: SIZES.body,
     color: COLORS.dark,
+  },
+  badge: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginRight: 8,
+    minWidth: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: {
+    color: COLORS.white,
+    fontSize: SIZES.tiny,
+    fontWeight: '600',
   },
   logoutButton: {
     marginTop: 8,

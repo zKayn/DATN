@@ -29,6 +29,7 @@ interface Product {
   daBan: number;
   thuongHieu: string;
   danhMuc: any;
+  soLuongTonKho: number;
 }
 
 interface Filters {
@@ -325,6 +326,7 @@ const ProductsScreen = ({ navigation }: any) => {
             hinhAnh={item.hinhAnh[0] || 'https://via.placeholder.com/400'}
             danhGiaTrungBinh={item.danhGiaTrungBinh}
             daBan={item.daBan}
+            soLuongTonKho={item.soLuongTonKho}
             onPress={() => navigation.navigate('ProductDetail', { id: item._id })}
           />
         )}

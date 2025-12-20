@@ -148,6 +148,7 @@ const HomeScreen = () => {
             hinhAnh={product.hinhAnh?.[0] || ''}
             danhGiaTrungBinh={product.danhGiaTrungBinh}
             daBan={product.daBan}
+            soLuongTonKho={product.soLuongTonKho}
             onPress={() => navigation.navigate('ProductDetail', { id: product._id })}
           />
         ))}

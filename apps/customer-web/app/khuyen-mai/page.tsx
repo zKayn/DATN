@@ -16,6 +16,7 @@ interface Product {
   noiBat: boolean;
   sanPhamMoi: boolean;
   daBan: number;
+  soLuongTonKho: number;
 }
 
 export default function PromotionsPage() {
@@ -153,7 +154,7 @@ export default function PromotionsPage() {
 
         {/* Products Grid */}
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="bg-white rounded-lg p-4 animate-pulse">
                 <div className="aspect-square bg-gray-200 rounded-lg mb-4" />
@@ -163,7 +164,7 @@ export default function PromotionsPage() {
             ))}
           </div>
         ) : products.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 items-stretch">
             {products.map((product) => (
               <div key={product._id} className="relative">
                 {/* Discount Badge */}
@@ -182,6 +183,7 @@ export default function PromotionsPage() {
                   isNew={product.sanPhamMoi}
                   isFeatured={product.noiBat}
                   soldCount={product.daBan}
+                  stock={product.soLuongTonKho}
                 />
               </div>
             ))}

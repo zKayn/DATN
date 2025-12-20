@@ -16,6 +16,7 @@ interface Product {
   noiBat: boolean
   sanPhamMoi: boolean
   daBan: number
+  soLuongTonKho: number
 }
 
 export default function FeaturedProducts() {
@@ -42,7 +43,7 @@ export default function FeaturedProducts() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
         {[...Array(8)].map((_, i) => (
           <div key={i} className="animate-pulse">
             <div className="aspect-square bg-gray-200 rounded-2xl mb-4" />
@@ -55,7 +56,7 @@ export default function FeaturedProducts() {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
       {products.map((product) => (
         <ProductCard
           key={product._id}
@@ -70,6 +71,7 @@ export default function FeaturedProducts() {
           isNew={product.sanPhamMoi}
           isFeatured={product.noiBat}
           soldCount={product.daBan}
+          stock={product.soLuongTonKho}
         />
       ))}
     </div>

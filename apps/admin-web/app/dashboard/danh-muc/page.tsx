@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 interface Category {
   _id: string;
@@ -101,7 +102,7 @@ export default function CategoriesManagementPage() {
         });
         setNewProductType('');
       } else {
-        alert('Loại sản phẩm này đã tồn tại!');
+        toast.error('Loại sản phẩm này đã tồn tại!');
       }
     }
   };
@@ -114,28 +115,38 @@ export default function CategoriesManagementPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const response = editingId
-      ? await api.updateCategory(editingId, formData)
-      : await api.createCategory(formData);
+    try {
+      const response = editingId
+        ? await api.updateCategory(editingId, formData)
+        : await api.createCategory(formData);
 
-    if (response.success) {
-      alert(editingId ? 'Cập nhật danh mục thành công!' : 'Thêm danh mục thành công!');
-      handleCloseModal();
-      loadCategories();
-    } else {
-      alert('Lỗi: ' + response.error);
+      if (response.success) {
+        toast.success(editingId ? 'Cập nhật danh mục thành công!' : 'Thêm danh mục thành công!');
+        handleCloseModal();
+        loadCategories();
+      } else {
+        toast.error((response as any).error || 'Có lỗi xảy ra');
+      }
+    } catch (error) {
+      console.error('Error saving category:', error);
+      toast.error('Có lỗi xảy ra khi lưu danh mục');
     }
   };
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Bạn có chắc chắn muốn xóa danh mục "${name}"?`)) return;
 
-    const response = await api.deleteCategory(id);
-    if (response.success) {
-      alert('Xóa danh mục thành công!');
-      loadCategories();
-    } else {
-      alert('Lỗi: ' + response.error);
+    try {
+      const response = await api.deleteCategory(id);
+      if (response.success) {
+        toast.success('Xóa danh mục thành công!');
+        loadCategories();
+      } else {
+        toast.error((response as any).error || 'Không thể xóa danh mục');
+      }
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      toast.error('Có lỗi xảy ra khi xóa danh mục');
     }
   };
 

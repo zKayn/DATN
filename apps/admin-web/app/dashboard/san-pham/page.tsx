@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { api } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 interface Product {
   _id: string;
@@ -147,24 +148,35 @@ export default function ProductsManagementPage() {
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Bạn có chắc chắn muốn xóa sản phẩm "${name}"?`)) return;
 
-    const response = await api.deleteProduct(id);
-    if (response.success) {
-      alert('Xóa sản phẩm thành công!');
-      loadProducts();
-    } else {
-      alert('Lỗi: ' + response.error);
+    try {
+      const response = await api.deleteProduct(id);
+      if (response.success) {
+        toast.success('Xóa sản phẩm thành công!');
+        loadProducts();
+      } else {
+        toast.error((response as any).error || 'Không thể xóa sản phẩm');
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast.error('Có lỗi xảy ra khi xóa sản phẩm');
     }
   };
 
   const handleToggleStatus = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-    const response = await api.updateProduct(id, { trangThai: newStatus });
 
-    if (response.success) {
-      alert('Cập nhật trạng thái thành công!');
-      loadProducts();
-    } else {
-      alert('Lỗi: ' + response.error);
+    try {
+      const response = await api.updateProduct(id, { trangThai: newStatus });
+
+      if (response.success) {
+        toast.success('Cập nhật trạng thái thành công!');
+        loadProducts();
+      } else {
+        toast.error((response as any).error || 'Không thể cập nhật trạng thái');
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast.error('Có lỗi xảy ra khi cập nhật trạng thái');
     }
   };
 

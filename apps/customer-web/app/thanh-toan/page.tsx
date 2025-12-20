@@ -26,8 +26,9 @@ export default function CheckoutPage() {
     ward: '',
     note: ''
   });
-  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'vnpay' | 'momo'>('cod');
-  const [usePoints, setUsePoints] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'vnpay' | 'momo' | 'bankTransfer'>('cod');
+  const [userPoints, setUserPoints] = useState(0);
+  const [pointsToUse, setPointsToUse] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
   // Voucher state
@@ -71,6 +72,9 @@ export default function CheckoutPage() {
               email: user.email || '',
               phone: user.soDienThoai || ''
             }));
+
+            // Set user points
+            setUserPoints(user.diemTichLuy || 0);
 
             // Load saved addresses
             if (user.diaChi && user.diaChi.length > 0) {
@@ -117,7 +121,8 @@ export default function CheckoutPage() {
   const freeShippingThreshold = settings?.freeShippingThreshold || 500000;
   const shippingFeeAmount = settings?.shippingFee || 30000;
   const shippingFee = subtotal >= freeShippingThreshold ? 0 : shippingFeeAmount;
-  const pointsDiscount = usePoints ? 50000 : 0;
+  // Tỷ lệ quy đổi: 1 điểm = 1,000 VND
+  const pointsDiscount = pointsToUse * 1000;
   const voucherDiscount = appliedVoucher?.giaTriGiamThucTe || 0;
   const total = subtotal + shippingFee - pointsDiscount - voucherDiscount;
 
@@ -290,6 +295,11 @@ export default function CheckoutPage() {
         };
       }
 
+      // Add points usage if any
+      if (pointsToUse > 0) {
+        orderData.diemSuDung = pointsToUse;
+      }
+
       const response = await api.createOrder(token, orderData);
 
       if (response.success) {
@@ -302,7 +312,7 @@ export default function CheckoutPage() {
         } else {
           // For online payment, redirect to payment gateway
           // This would be implemented based on payment provider
-          toast.info('Chuyển đến trang thanh toán...');
+          toast('Chuyển đến trang thanh toán...');
         }
       } else {
         toast.error(response.message || 'Đặt hàng thất bại');
@@ -657,20 +667,54 @@ export default function CheckoutPage() {
               </div>
 
               {/* Use Points */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <label className="flex items-center justify-between cursor-pointer">
-                  <div>
-                    <div className="font-semibold text-gray-900">Sử dụng điểm tích lũy</div>
-                    <p className="text-sm text-gray-600 mt-1">Bạn có 500 điểm (≈ ₫50,000)</p>
+              {userPoints > 0 && (
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <h3 className="font-semibold text-gray-900 mb-3">Sử dụng điểm tích lũy</h3>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-gray-600">Số điểm hiện có:</span>
+                      <span className="font-bold text-blue-600 text-lg">{userPoints.toLocaleString()} điểm</span>
+                    </div>
+                    <p className="text-xs text-gray-600">
+                      Tỷ lệ: 1 điểm = ₫1,000 • Tối đa: ₫{(userPoints * 1000).toLocaleString('vi-VN')}
+                    </p>
                   </div>
-                  <input
-                    type="checkbox"
-                    checked={usePoints}
-                    onChange={(e) => setUsePoints(e.target.checked)}
-                    className="w-5 h-5 text-blue-600 rounded"
-                  />
-                </label>
-              </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                      Số điểm muốn sử dụng
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        min="0"
+                        max={userPoints}
+                        value={pointsToUse}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value) || 0;
+                          if (value <= userPoints && value >= 0) {
+                            setPointsToUse(value);
+                          }
+                        }}
+                        className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setPointsToUse(userPoints)}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm whitespace-nowrap"
+                      >
+                        Dùng hết
+                      </button>
+                    </div>
+                    {pointsToUse > 0 && (
+                      <p className="text-sm text-green-600 mt-2">
+                        Giảm giá: ₫{pointsDiscount.toLocaleString('vi-VN')}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Order Summary */}
@@ -775,7 +819,7 @@ export default function CheckoutPage() {
                       )}
                     </span>
                   </div>
-                  {usePoints && (
+                  {pointsToUse > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Điểm tích lũy</span>
                       <span className="font-semibold">-₫{pointsDiscount.toLocaleString('vi-VN')}</span>

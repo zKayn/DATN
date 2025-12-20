@@ -35,6 +35,8 @@ export default function AccountPage() {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<any>(null);
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
+  const [userPoints, setUserPoints] = useState(0);
+  const [pointsHistory, setPointsHistory] = useState<any[]>([]);
 
   useEffect(() => {
     loadUserProfile();
@@ -49,6 +51,27 @@ export default function AccountPage() {
       setActiveTab('profile');
     }
   }, [searchParams]);
+
+  // Load points history when points tab is active
+  useEffect(() => {
+    if (activeTab === 'points') {
+      loadPointsHistory();
+    }
+  }, [activeTab]);
+
+  const loadPointsHistory = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await api.getPointHistory(token, 20);
+      if (response.success && response.data) {
+        setPointsHistory(response.data);
+      }
+    } catch (error: any) {
+      console.error('Lỗi khi tải lịch sử điểm:', error);
+    }
+  };
 
   const loadUserProfile = async () => {
     setLoading(true);
@@ -71,8 +94,9 @@ export default function AccountPage() {
           birthday: user.ngaySinh || '',
           avatar: user.anhDaiDien || user.avatar || 'https://i.pravatar.cc/150?img=12'
         });
-        // Load addresses
+        // Load addresses and points
         setAddresses(user.diaChi || []);
+        setUserPoints(user.diemTichLuy || 0);
       }
     } catch (error: any) {
       console.error('Lỗi khi tải thông tin người dùng:', error);
@@ -304,7 +328,7 @@ export default function AccountPage() {
     { id: 'profile', label: 'Thông Tin Cá Nhân', icon: 'user' },
     { id: 'orders', label: 'Đơn Hàng Của Tôi', icon: 'shopping-bag', href: '/tai-khoan/don-hang' },
     { id: 'reviews', label: 'Đánh Giá Của Tôi', icon: 'star', href: '/tai-khoan/danh-gia' },
-    { id: 'wishlist', label: 'Sản Phẩm Yêu Thích', icon: 'heart', href: '/tai-khoan/yeu-thich' },
+    { id: 'wishlist', label: 'Sản Phẩm Yêu Thích', icon: 'heart', href: '/yeu-thich' },
     { id: 'addresses', label: 'Địa Chỉ Nhận Hàng', icon: 'map-pin' },
     { id: 'password', label: 'Đổi Mật Khẩu', icon: 'lock' },
     { id: 'points', label: 'Điểm Tích Lũy', icon: 'gift' }
@@ -585,29 +609,38 @@ export default function AccountPage() {
 
                 <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white mb-6">
                   <p className="text-sm opacity-90 mb-2">Tổng điểm hiện có</p>
-                  <p className="text-4xl font-bold mb-1">500 điểm</p>
-                  <p className="text-sm opacity-90">≈ ₫50,000</p>
+                  <p className="text-4xl font-bold mb-1">{userPoints.toLocaleString()} điểm</p>
+                  <p className="text-sm opacity-90">≈ ₫{(userPoints * 1000).toLocaleString('vi-VN')}</p>
+                  <p className="text-xs opacity-75 mt-2">Tỷ lệ: 1 điểm = ₫1,000 • 10,000 VND = 1 điểm</p>
                 </div>
 
                 <div className="space-y-4">
                   <h3 className="font-semibold text-gray-900">Lịch sử điểm</h3>
 
-                  {[
-                    { date: '2025-11-25', action: 'Mua hàng #DH00123', points: '+50', color: 'green' },
-                    { date: '2025-11-20', action: 'Sử dụng điểm', points: '-100', color: 'red' },
-                    { date: '2025-11-15', action: 'Mua hàng #DH00098', points: '+30', color: 'green' },
-                    { date: '2025-11-10', action: 'Thưởng sinh nhật', points: '+100', color: 'green' }
-                  ].map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between py-3 border-b border-gray-200">
-                      <div>
-                        <p className="font-medium text-gray-900">{item.action}</p>
-                        <p className="text-sm text-gray-600">{item.date}</p>
-                      </div>
-                      <span className={`font-bold ${item.color === 'green' ? 'text-green-600' : 'text-red-600'}`}>
-                        {item.points}
-                      </span>
+                  {pointsHistory.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>Chưa có lịch sử giao dịch điểm</p>
                     </div>
-                  ))}
+                  ) : (
+                    pointsHistory.map((item, idx) => {
+                      const isAdd = item.loai === 'cong';
+                      const formattedDate = new Date(item.createdAt).toLocaleDateString('vi-VN');
+                      return (
+                        <div key={item._id || idx} className="flex items-center justify-between py-3 border-b border-gray-200">
+                          <div>
+                            <p className="font-medium text-gray-900">{item.moTa}</p>
+                            <p className="text-sm text-gray-600">{formattedDate}</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Số dư sau: {item.soDuSau.toLocaleString()} điểm
+                            </p>
+                          </div>
+                          <span className={`font-bold ${isAdd ? 'text-green-600' : 'text-red-600'}`}>
+                            {isAdd ? '+' : '-'}{item.soLuong}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             )}

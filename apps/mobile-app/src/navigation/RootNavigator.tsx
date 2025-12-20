@@ -1,11 +1,14 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotification } from '../contexts/NotificationContext';
+import NotificationToast from '../components/NotificationToast';
 
 // Screens
 import LoginScreen from '../screens/Auth/LoginScreen';
 import RegisterScreen from '../screens/Auth/RegisterScreen';
+import ChangePasswordScreen from '../screens/Auth/ChangePasswordScreen';
 import MainTabNavigator from './MainTabNavigator';
 import ProductDetailScreen from '../screens/Product/ProductDetailScreen';
 import CartScreen from '../screens/Cart/CartScreen';
@@ -20,6 +23,9 @@ import ReviewScreen from '../screens/Review/ReviewScreen';
 import AllReviewsScreen from '../screens/Review/AllReviewsScreen';
 import MyReviewsScreen from '../screens/Review/MyReviewsScreen';
 import ProfileEditScreen from '../screens/Profile/ProfileEditScreen';
+import PointsScreen from '../screens/Points/PointsScreen';
+import SettingsScreen from '../screens/Settings/SettingsScreen';
+import NotificationsScreen from '../screens/Notifications/NotificationsScreen';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -38,9 +44,37 @@ export type RootStackParamList = {
   AllReviews: { productId: string; productName: string; averageRating: number; totalReviews: number };
   MyReviews: undefined;
   ProfileEdit: undefined;
+  Points: undefined;
+  Settings: undefined;
+  ChangePassword: undefined;
+  Notifications: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
+
+// Component to handle notification toast with navigation
+function NotificationToastWrapper() {
+  const navigation = useNavigation<any>();
+  const { toastNotification, closeToast } = useNotification();
+
+  console.log('🎪 NotificationToastWrapper render. toastNotification:', toastNotification?._id);
+
+  const handleToastPress = (notification: any) => {
+    if (notification.donHang) {
+      navigation.navigate('OrderDetail', { id: notification.donHang._id });
+    } else {
+      navigation.navigate('Notifications');
+    }
+  };
+
+  return (
+    <NotificationToast
+      notification={toastNotification}
+      onClose={closeToast}
+      onPress={handleToastPress}
+    />
+  );
+}
 
 const RootNavigator = () => {
   const { isAuthenticated, loading } = useAuth();
@@ -51,7 +85,12 @@ const RootNavigator = () => {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+          headerBackTitle: 'Quay lại',
+        }}
+      >
         <Stack.Screen name="MainTab" component={MainTabNavigator} />
         <Stack.Screen
           name="Login"
@@ -128,7 +167,28 @@ const RootNavigator = () => {
           component={ProfileEditScreen}
           options={{ headerShown: true, title: 'Chỉnh sửa thông tin' }}
         />
+        <Stack.Screen
+          name="Points"
+          component={PointsScreen}
+          options={{ headerShown: true, title: 'Điểm tích lũy' }}
+        />
+        <Stack.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{ headerShown: true, title: 'Cài đặt' }}
+        />
+        <Stack.Screen
+          name="Notifications"
+          component={NotificationsScreen}
+          options={{ headerShown: true, title: 'Thông báo' }}
+        />
+        <Stack.Screen
+          name="ChangePassword"
+          component={ChangePasswordScreen}
+          options={{ headerShown: false }}
+        />
       </Stack.Navigator>
+      <NotificationToastWrapper />
     </NavigationContainer>
   );
 };

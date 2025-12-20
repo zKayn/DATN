@@ -15,7 +15,7 @@ export default function ChatAI() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: 'Xin chào! 👋 Tôi là trợ lý AI của SportHub. Tôi có thể giúp bạn:\n\n• Tìm sản phẩm phù hợp\n• Tư vấn về giá cả, size, màu sắc\n• Giải đáp chính sách cửa hàng\n\nBạn cần tôi hỗ trợ gì?'
+      content: 'Xin chào! 👋 Tôi là trợ lý AI của \n LP SHOP. Tôi có thể giúp bạn:\n\n• Tìm sản phẩm phù hợp\n• Tư vấn về giá cả, size, màu sắc\n• Giải đáp chính sách cửa hàng\n\nBạn cần tôi hỗ trợ gì?'
     }
   ]);
   const [input, setInput] = useState('');

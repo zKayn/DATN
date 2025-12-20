@@ -11,7 +11,8 @@ import {
   X,
   LogOut,
   Package,
-  UserCircle
+  UserCircle,
+  Bell
 } from 'lucide-react'
 import Image from 'next/image'
 import { api } from '@/lib/api'
@@ -46,6 +47,7 @@ export default function Header() {
   const [searchResults, setSearchResults] = useState<Product[]>([])
   const [showSearchResults, setShowSearchResults] = useState(false)
   const [searchLoading, setSearchLoading] = useState(false)
+  const [unreadNotifications, setUnreadNotifications] = useState(0)
   const { cartCount } = useCart()
   const { wishlistCount } = useWishlist()
   const { user, isAuthenticated, logout } = useAuth()
@@ -59,6 +61,15 @@ export default function Header() {
   useEffect(() => {
     loadCategories()
   }, [])
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadUnreadNotifications()
+      // Poll for new notifications every 30 seconds
+      const interval = setInterval(loadUnreadNotifications, 30000)
+      return () => clearInterval(interval)
+    }
+  }, [isAuthenticated])
 
   // Real-time search khi người dùng gõ
   useEffect(() => {
@@ -84,6 +95,20 @@ export default function Header() {
       }
     } catch (error) {
       console.error('Lỗi khi tải danh mục:', error)
+    }
+  }
+
+  const loadUnreadNotifications = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) return
+
+      const response = await api.getUnreadNotificationCount(token)
+      if (response.success && response.data) {
+        setUnreadNotifications(response.data.count)
+      }
+    } catch (error) {
+      console.error('Lỗi khi tải số thông báo chưa đọc:', error)
     }
   }
 
@@ -278,6 +303,21 @@ export default function Header() {
               )}
             </Link>
 
+            {/* Notifications */}
+            {isAuthenticated && (
+              <Link
+                href="/thong-bao"
+                className="hidden md:flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
+              >
+                <Bell className="w-6 h-6" />
+                {unreadNotifications > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                    {unreadNotifications}
+                  </span>
+                )}
+              </Link>
+            )}
+
             {/* Cart */}
             <Link
               href="/gio-hang"
@@ -325,6 +365,19 @@ export default function Header() {
                     >
                       <Package className="w-5 h-5 text-gray-600" />
                       <span className="text-gray-700">Đơn hàng của tôi</span>
+                    </Link>
+                    <Link
+                      href="/thong-bao"
+                      className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors relative"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      <Bell className="w-5 h-5 text-gray-600" />
+                      <span className="text-gray-700">Thông báo</span>
+                      {unreadNotifications > 0 && (
+                        <span className="ml-auto px-2 py-0.5 bg-primary-600 text-white text-xs rounded-full">
+                          {unreadNotifications}
+                        </span>
+                      )}
                     </Link>
                     <Link
                       href="/yeu-thich"
@@ -477,6 +530,19 @@ export default function Header() {
                   <span>Tài khoản</span>
                 </Link>
               </li>
+              {isAuthenticated && (
+                <li>
+                  <Link href="/thong-bao" className="flex items-center gap-2 py-2 relative">
+                    <Bell className="w-5 h-5" />
+                    <span>Thông báo</span>
+                    {unreadNotifications > 0 && (
+                      <span className="ml-auto px-2 py-0.5 bg-primary-600 text-white text-xs rounded-full">
+                        {unreadNotifications}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link href="/yeu-thich" className="flex items-center gap-2 py-2">
                   <Heart className="w-5 h-5" />

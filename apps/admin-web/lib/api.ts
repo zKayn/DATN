@@ -390,6 +390,14 @@ class ApiService {
       method: 'DELETE',
     });
   }
+
+  // Newsletter APIs
+  async sendVoucherToSubscribers(voucherId: string) {
+    return this.request('/newsletter/send-voucher', {
+      method: 'POST',
+      body: JSON.stringify({ voucherId }),
+    });
+  }
 }
 
 export const api = new ApiService();

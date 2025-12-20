@@ -43,6 +43,10 @@ const CheckoutScreen = ({ route, navigation }: any) => {
   const [appliedVoucher, setAppliedVoucher] = useState<any>(null);
   const [checkingVoucher, setCheckingVoucher] = useState(false);
 
+  // Points state
+  const [userPoints, setUserPoints] = useState(0);
+  const [pointsToUse, setPointsToUse] = useState(0);
+
   useEffect(() => {
     if (!isAuthenticated) {
       Alert.alert('Thông báo', 'Vui lòng đăng nhập để tiếp tục', [
@@ -59,7 +63,18 @@ const CheckoutScreen = ({ route, navigation }: any) => {
     }
 
     loadDefaultAddress();
+    loadUserPoints();
   }, [isAuthenticated, user, selectedItems]);
+
+  const loadUserPoints = async () => {
+    try {
+      if (user && user.diemTichLuy !== undefined) {
+        setUserPoints(user.diemTichLuy || 0);
+      }
+    } catch (error) {
+      console.error('Error loading user points:', error);
+    }
+  };
 
   const loadDefaultAddress = async () => {
     setLoadingAddress(true);
@@ -171,7 +186,8 @@ const CheckoutScreen = ({ route, navigation }: any) => {
   };
 
   const voucherDiscount = appliedVoucher?.giaTriGiamThucTe || 0;
-  const finalTotal = subtotal + shipping - voucherDiscount;
+  const pointsDiscount = pointsToUse * 1000; // 1 điểm = 1,000 VND
+  const finalTotal = subtotal + shipping - voucherDiscount - pointsDiscount;
 
   const handlePlaceOrder = async () => {
     if (!validateForm()) return;
@@ -213,6 +229,11 @@ const CheckoutScreen = ({ route, navigation }: any) => {
           ma: appliedVoucher.voucher.ma,
           giaTriGiam: appliedVoucher.giaTriGiamThucTe,
         };
+      }
+
+      // Add points usage if any
+      if (pointsToUse > 0) {
+        orderData.diemSuDung = pointsToUse;
       }
 
       const response = await api.createOrder(orderData);
@@ -536,6 +557,55 @@ const CheckoutScreen = ({ route, navigation }: any) => {
           )}
         </View>
 
+        {/* Points Section */}
+        {userPoints > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Sử dụng điểm tích lũy</Text>
+
+            <View style={styles.pointsBalanceCard}>
+              <View style={styles.pointsBalanceRow}>
+                <Text style={styles.pointsBalanceLabel}>Số điểm hiện có:</Text>
+                <Text style={styles.pointsBalanceValue}>
+                  {userPoints.toLocaleString()} điểm
+                </Text>
+              </View>
+              <Text style={styles.pointsConversionText}>
+                Tỷ lệ: 1 điểm = ₫1,000 • Tối đa: ₫{(userPoints * 1000).toLocaleString('vi-VN')}
+              </Text>
+            </View>
+
+            <View style={styles.pointsInputContainer}>
+              <TextInput
+                style={styles.pointsInput}
+                placeholder="Nhập số điểm muốn sử dụng"
+                value={pointsToUse > 0 ? pointsToUse.toString() : ''}
+                onChangeText={(text) => {
+                  const value = parseInt(text) || 0;
+                  if (value <= userPoints && value >= 0) {
+                    setPointsToUse(value);
+                  }
+                }}
+                keyboardType="numeric"
+              />
+              <TouchableOpacity
+                style={styles.useAllPointsButton}
+                onPress={() => setPointsToUse(userPoints)}
+              >
+                <Text style={styles.useAllPointsText}>Dùng hết</Text>
+              </TouchableOpacity>
+            </View>
+
+            {pointsToUse > 0 && (
+              <View style={styles.pointsDiscountInfo}>
+                <Ionicons name="checkmark-circle" size={16} color={COLORS.success} />
+                <Text style={styles.pointsDiscountText}>
+                  Giảm giá: ₫{pointsDiscount.toLocaleString('vi-VN')}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+
         {/* Price Summary */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Chi tiết thanh toán</Text>
@@ -561,6 +631,15 @@ const CheckoutScreen = ({ route, navigation }: any) => {
               <Text style={styles.priceLabel}>Mã giảm giá</Text>
               <Text style={[styles.priceValue, { color: COLORS.success }]}>
                 -₫{voucherDiscount.toLocaleString('vi-VN')}
+              </Text>
+            </View>
+          )}
+
+          {pointsDiscount > 0 && (
+            <View style={styles.priceRow}>
+              <Text style={styles.priceLabel}>Điểm tích lũy</Text>
+              <Text style={[styles.priceValue, { color: COLORS.success }]}>
+                -₫{pointsDiscount.toLocaleString('vi-VN')}
               </Text>
             </View>
           )}
@@ -927,6 +1006,73 @@ const styles = StyleSheet.create({
   },
   removeVoucherButton: {
     padding: 4,
+  },
+  // Points styles
+  pointsBalanceCard: {
+    backgroundColor: COLORS.primary + '10',
+    borderRadius: SIZES.borderRadius,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: COLORS.primary + '30',
+  },
+  pointsBalanceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  pointsBalanceLabel: {
+    fontSize: SIZES.small,
+    color: COLORS.gray[600],
+  },
+  pointsBalanceValue: {
+    fontSize: SIZES.h4,
+    fontWeight: 'bold',
+    color: COLORS.primary,
+  },
+  pointsConversionText: {
+    fontSize: SIZES.small,
+    color: COLORS.gray[500],
+  },
+  pointsInputContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+  },
+  pointsInput: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.gray[300],
+    borderRadius: SIZES.borderRadius,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: SIZES.body,
+    color: COLORS.dark,
+  },
+  useAllPointsButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: SIZES.borderRadius,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  useAllPointsText: {
+    color: COLORS.white,
+    fontSize: SIZES.body,
+    fontWeight: '600',
+  },
+  pointsDiscountInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  pointsDiscountText: {
+    fontSize: SIZES.small,
+    color: COLORS.success,
+    fontWeight: '600',
   },
 });
 

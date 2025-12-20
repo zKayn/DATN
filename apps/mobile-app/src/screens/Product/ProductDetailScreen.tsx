@@ -263,7 +263,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
             <Text style={styles.ratingText}>
               {product.danhGiaTrungBinh.toFixed(1)} ({product.soLuongDanhGia} đánh giá)
             </Text>
-            <Text style={styles.soldText}>• Đã bán {product.daBan}</Text>
+            <Text style={styles.soldText}>• Đã bán: {product.daBan || 0}</Text>
           </View>
 
           {/* Price */}

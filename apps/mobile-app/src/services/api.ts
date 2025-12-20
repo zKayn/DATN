@@ -71,6 +71,11 @@ class ApiService {
     return response.data;
   }
 
+  async changePassword(data: { matKhauCu: string; matKhauMoi: string }) {
+    const response = await this.api.put('/auth/change-password', data);
+    return response.data;
+  }
+
   // Product APIs
   async getProducts(params?: {
     danhMuc?: string;
@@ -145,6 +150,11 @@ class ApiService {
 
   async getOrderDetail(id: string) {
     const response = await this.api.get(`/orders/${id}`);
+    return response.data;
+  }
+
+  async cancelOrder(orderId: string, lyDoHuy: string) {
+    const response = await this.api.put(`/orders/${orderId}/cancel`, { lyDoHuy });
     return response.data;
   }
 
@@ -291,8 +301,76 @@ class ApiService {
   }
 
   // Voucher APIs
+  async getAvailableVouchers() {
+    const response = await this.api.get('/vouchers/kha-dung');
+    return response.data;
+  }
+
   async checkVoucher(ma: string, tongTien: number) {
     const response = await this.api.post('/vouchers/kiem-tra', { ma, tongTien });
+    return response.data;
+  }
+
+  // Points APIs
+  async getMyPoints() {
+    const response = await this.api.get('/points/my-points');
+    return response.data;
+  }
+
+  async getPointHistory(limit?: number) {
+    const url = limit ? `/points/history?limit=${limit}` : '/points/history';
+    const response = await this.api.get(url);
+    return response.data;
+  }
+
+  async calculatePointsDiscount(points: number) {
+    const response = await this.api.post('/points/calculate-discount', { points });
+    return response.data;
+  }
+
+  // Notifications APIs
+  async getNotifications(params?: { page?: number; limit?: number; daDoc?: boolean }) {
+    let url = '/notifications';
+    if (params) {
+      const queryParams = new URLSearchParams();
+      if (params.page) queryParams.append('page', params.page.toString());
+      if (params.limit) queryParams.append('limit', params.limit.toString());
+      if (params.daDoc !== undefined) queryParams.append('daDoc', params.daDoc.toString());
+      const queryString = queryParams.toString();
+      if (queryString) url += `?${queryString}`;
+    }
+    const response = await this.api.get(url);
+    return response.data;
+  }
+
+  async getUnreadNotificationCount() {
+    const response = await this.api.get('/notifications/unread-count');
+    return response.data;
+  }
+
+  async markNotificationAsRead(notificationId: string) {
+    const response = await this.api.put(`/notifications/${notificationId}/read`);
+    return response.data;
+  }
+
+  async markAllNotificationsAsRead() {
+    const response = await this.api.put('/notifications/mark-all-read');
+    return response.data;
+  }
+
+  async deleteNotification(notificationId: string) {
+    const response = await this.api.delete(`/notifications/${notificationId}`);
+    return response.data;
+  }
+
+  // Newsletter APIs
+  async subscribeNewsletter(email: string) {
+    const response = await this.api.post('/newsletter/subscribe', { email });
+    return response.data;
+  }
+
+  async unsubscribeNewsletter(email: string) {
+    const response = await this.api.post('/newsletter/unsubscribe', { email });
     return response.data;
   }
 

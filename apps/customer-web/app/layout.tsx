@@ -9,6 +9,7 @@ import { CartProvider } from '@/contexts/CartContext'
 import { WishlistProvider } from '@/contexts/WishlistContext'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { SettingsProvider } from '@/contexts/SettingsContext'
+import { NotificationProvider } from '@/contexts/NotificationContext'
 
 const inter = Inter({ subsets: ['latin', 'vietnamese'] })
 
@@ -28,19 +29,21 @@ export default function RootLayout({
       <body className={inter.className}>
         <SettingsProvider>
           <AuthProvider>
-            <WishlistProvider>
-              <CartProvider>
-                <div className="min-h-screen flex flex-col">
-                  <Header />
-                  <main className="flex-1">
-                    {children}
-                  </main>
-                  <Footer />
-                  <ChatAI />
-                </div>
-                <Toaster position="top-right" />
-              </CartProvider>
-            </WishlistProvider>
+            <NotificationProvider>
+              <WishlistProvider>
+                <CartProvider>
+                  <div className="min-h-screen flex flex-col">
+                    <Header />
+                    <main className="flex-1">
+                      {children}
+                    </main>
+                    <Footer />
+                    <ChatAI />
+                  </div>
+                  <Toaster position="top-right" />
+                </CartProvider>
+              </WishlistProvider>
+            </NotificationProvider>
           </AuthProvider>
         </SettingsProvider>
       </body>

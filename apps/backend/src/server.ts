@@ -22,6 +22,8 @@ import paymentRoutes from './routes/payment.routes';
 import settingsRoutes from './routes/settings.routes';
 import voucherRoutes from './routes/voucher.routes';
 import notificationRoutes from './routes/notification.routes';
+import newsletterRoutes from './routes/newsletter.routes';
+import pointRoutes from './routes/point.routes';
 
 // Load env vars
 dotenv.config();
@@ -60,6 +62,8 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/vouchers', voucherRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/points', pointRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -81,3 +85,4 @@ app.listen(PORT, () => {
 });
 
 export default app;
+

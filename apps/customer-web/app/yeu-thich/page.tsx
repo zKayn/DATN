@@ -116,7 +116,18 @@ export default function WishlistPage() {
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                {item.giaKhuyenMai && (
+
+                {/* Out of Stock Overlay */}
+                {(item.tonKho || 0) === 0 && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <span className="bg-gray-900 text-white px-6 py-3 rounded-lg font-bold text-lg">
+                      HẾT HÀNG
+                    </span>
+                  </div>
+                )}
+
+                {/* Badges - only show if in stock */}
+                {(item.tonKho || 0) > 0 && item.giaKhuyenMai && (
                   <div className="absolute top-3 left-3">
                     <span className="bg-red-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
                       -{Math.round(((item.gia - item.giaKhuyenMai) / item.gia) * 100)}%
@@ -130,7 +141,7 @@ export default function WishlistPage() {
                     e.preventDefault();
                     handleRemove(item._id);
                   }}
-                  className="absolute top-3 right-3 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                  className="absolute top-3 right-3 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100 z-10"
                   aria-label="Xóa khỏi yêu thích"
                 >
                   <Trash2 className="w-5 h-5" />
@@ -203,7 +214,7 @@ export default function WishlistPage() {
                   className="w-full bg-primary-600 text-white py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  {item.stock > 0 ? 'Thêm vào giỏ' : 'Hết hàng'}
+                  {(item.tonKho || 0) > 0 ? 'Thêm vào giỏ' : 'Hết hàng'}
                 </button>
               </div>
             </div>

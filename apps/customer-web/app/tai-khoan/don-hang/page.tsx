@@ -263,7 +263,9 @@ export default function OrderHistoryPage() {
                           <p className="text-sm text-gray-600">
                             {order.diaChiGiaoHang.hoTen} - {order.diaChiGiaoHang.soDienThoai}
                           </p>
-                          <p className="text-sm text-gray-600">{order.diaChiGiaoHang.diaChi}</p>
+                          <p className="text-sm text-gray-600">
+                            {order.diaChiGiaoHang.diaChiChiTiet}, {order.diaChiGiaoHang.xa}, {order.diaChiGiaoHang.huyen}, {order.diaChiGiaoHang.tinh}
+                          </p>
                         </div>
 
                         {/* Order Total and Actions */}
