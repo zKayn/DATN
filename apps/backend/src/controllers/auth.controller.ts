@@ -238,6 +238,13 @@ export const updateProfile = async (
       runValidators: true
     });
 
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng'
+      });
+    }
+
     res.json({
       success: true,
       message: 'Cập nhật thông tin thành công',

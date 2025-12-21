@@ -5,6 +5,56 @@ interface ApiResponse<T = any> {
   data?: T;
   message?: string;
   error?: string;
+  unreadCount?: number;
+}
+
+interface Settings {
+  storeName: string;
+  storeEmail: string;
+  storePhone: string;
+  storeAddress: string;
+  storeLogo: string;
+  storeDescription: string;
+  currency: string;
+  taxRate: number;
+  shippingFee: number;
+  freeShippingThreshold: number;
+  emailNotifications: boolean;
+  orderNotifications: boolean;
+  reviewNotifications: boolean;
+  lowStockAlert: boolean;
+  lowStockThreshold: number;
+  maintenanceMode: boolean;
+  paymentMethods: {
+    cod: boolean;
+    vnpay: boolean;
+    momo: boolean;
+    bankTransfer: boolean;
+  };
+  socialLinks: {
+    facebook: string;
+    instagram: string;
+    youtube: string;
+    tiktok: string;
+  };
+  seo: {
+    metaTitle: string;
+    metaDescription: string;
+    metaKeywords: string;
+  };
+}
+
+interface Notification {
+  _id: string;
+  tieuDe: string;
+  noiDung: string;
+  loai: string;
+  daDoc: boolean;
+  donHang?: {
+    _id: string;
+    maDonHang: string;
+  };
+  createdAt: string;
 }
 
 class ApiService {
@@ -307,7 +357,7 @@ class ApiService {
 
   // Settings APIs
   async getSettings() {
-    return this.request('/settings');
+    return this.request<Settings>('/settings');
   }
 
   async updateSettings(data: any) {
@@ -366,11 +416,11 @@ class ApiService {
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.daDoc !== undefined) queryParams.append('daDoc', params.daDoc.toString());
 
-    return this.request(`/notifications?${queryParams.toString()}`);
+    return this.request<Notification[]>(`/notifications?${queryParams.toString()}`);
   }
 
   async getUnreadCount() {
-    return this.request('/notifications/unread-count');
+    return this.request<{ count: number }>('/notifications/unread-count');
   }
 
   async markNotificationAsRead(id: string) {

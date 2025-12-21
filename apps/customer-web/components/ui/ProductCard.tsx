@@ -7,6 +7,7 @@ import { Heart, ShoppingCart, Star, Eye } from 'lucide-react'
 import { useWishlist } from '@/contexts/WishlistContext'
 import toast from 'react-hot-toast'
 import QuickViewModal from './QuickViewModal'
+import SeasonalBadge from '@/components/decorations/SeasonalBadge'
 
 interface ProductCardProps {
   id: string
@@ -87,24 +88,19 @@ export default function ProductCard({
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {isOutOfStock && (
-            <span className="bg-gray-700 text-white text-xs font-semibold px-3 py-1 rounded-full">
-              Hết hàng
-            </span>
+            <SeasonalBadge type="out-of-stock" />
           )}
           {!isOutOfStock && isNew && (
-            <span className="bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
-              Mới
-            </span>
+            <SeasonalBadge type="new" />
           )}
-          {!isOutOfStock && discountPercent > 0 && (
-            <span className="bg-red-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
-              -{discountPercent}%
-            </span>
+          {!isOutOfStock && discountPercent > 0 && discountPercent >= 30 && (
+            <SeasonalBadge type="noel-special" discount={discountPercent} />
+          )}
+          {!isOutOfStock && discountPercent > 0 && discountPercent < 30 && (
+            <SeasonalBadge type="tet-deal" discount={discountPercent} />
           )}
           {!isOutOfStock && isFeatured && (
-            <span className="bg-yellow-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
-              ⭐ Nổi bật
-            </span>
+            <SeasonalBadge type="lucky-sale" />
           )}
         </div>
 
@@ -114,8 +110,8 @@ export default function ProductCard({
             onClick={handleWishlistToggle}
             className={`p-2 rounded-full backdrop-blur-md transition-all shadow-lg ${
               isWishlisted
-                ? 'bg-red-500 text-white'
-                : 'bg-white/80 text-gray-700 hover:bg-red-500 hover:text-white'
+                ? 'bg-primary-500 text-white shadow-glow-red'
+                : 'bg-white/80 text-gray-700 hover:bg-primary-500 hover:text-white hover:shadow-glow-red'
             }`}
             aria-label="Add to wishlist"
           >
@@ -126,7 +122,7 @@ export default function ProductCard({
               e.preventDefault()
               setIsQuickViewOpen(true)
             }}
-            className="p-2 bg-white/80 backdrop-blur-md text-gray-700 rounded-full hover:bg-primary-500 hover:text-white transition-all shadow-lg"
+            className="p-2 bg-white/80 backdrop-blur-md text-gray-700 rounded-full hover:bg-accent-500 hover:text-white hover:shadow-glow-gold transition-all shadow-lg"
             aria-label="Quick view"
           >
             <Eye className="w-5 h-5" />
@@ -147,7 +143,7 @@ export default function ProductCard({
           <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
             <Link
               href={`/san-pham/${slug}`}
-              className="w-full bg-primary-600 hover:bg-primary-700 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-lg"
+              className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-lg shadow-glow-red"
             >
               <ShoppingCart className="w-5 h-5" />
               Thêm vào giỏ
@@ -160,7 +156,7 @@ export default function ProductCard({
       <div className="p-4 flex flex-col flex-grow">
         {/* Product Name */}
         <Link href={`/san-pham/${slug}`} className="block">
-          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-primary-600 transition-colors min-h-[3rem]">
+          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-accent-600 transition-colors min-h-[3rem]">
             {name}
           </h3>
         </Link>
@@ -188,7 +184,7 @@ export default function ProductCard({
         <div className="flex items-baseline gap-2 mb-2">
           {salePrice ? (
             <>
-              <span className="text-2xl font-bold text-red-600">
+              <span className="text-2xl font-bold text-primary-600">
                 {formatPrice(salePrice)}
               </span>
               <span className="text-sm text-gray-400 line-through">

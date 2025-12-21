@@ -44,6 +44,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
+  const [recalculating, setRecalculating] = useState(false);
   const [settings, setSettings] = useState<Settings>({
     storeName: 'Sport Store',
     storeEmail: 'contact@sportstore.vn',
@@ -198,6 +199,43 @@ export default function SettingsPage() {
     }
   };
 
+  const handleRecalculateSold = async () => {
+    if (!confirm('Bạn có chắc chắn muốn tính lại số lượng đã bán cho tất cả sản phẩm?\n\nThao tác này sẽ cập nhật lại số lượng đã bán dựa trên đơn hàng đã giao thành công.')) {
+      return;
+    }
+
+    setRecalculating(true);
+    try {
+      const token = localStorage.getItem('admin_token');
+      if (!token) {
+        toast.error('Vui lòng đăng nhập');
+        return;
+      }
+
+      const response = await fetch('http://localhost:5000/api/products/recalculate-sold', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(data.message || 'Tính lại số lượng đã bán thành công!');
+        console.log('Kết quả:', data.data);
+      } else {
+        toast.error(data.message || 'Không thể tính lại số lượng đã bán');
+      }
+    } catch (error: any) {
+      console.error('Error recalculating sold:', error);
+      toast.error(error.message || 'Lỗi khi tính lại số lượng đã bán');
+    } finally {
+      setRecalculating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -334,6 +372,44 @@ export default function SettingsPage() {
                     </p>
                   </div>
                 )}
+              </div>
+            </div>
+
+            <div className="border-t pt-6">
+              <h3 className="font-medium text-gray-900 mb-4">Công cụ dữ liệu</h3>
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900 mb-2">Tính lại số lượng đã bán</h4>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Cập nhật lại số lượng đã bán cho tất cả sản phẩm dựa trên đơn hàng đã giao thành công.
+                      Sử dụng công cụ này nếu dữ liệu "Top 5 Sản Phẩm Bán Chạy" hiển thị không chính xác.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleRecalculateSold}
+                      disabled={recalculating}
+                      className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm"
+                    >
+                      {recalculating ? (
+                        <span className="flex items-center gap-2">
+                          <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Đang tính toán...
+                        </span>
+                      ) : (
+                        '🔄 Tính lại ngay'
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

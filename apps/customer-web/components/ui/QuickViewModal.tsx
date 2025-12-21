@@ -372,5 +372,5 @@ export default function QuickViewModal({ isOpen, onClose, productId }: QuickView
     </div>
   )
 
-  return createPortal(modalContent, document.body)
+  return createPortal(modalContent, document.body) as any
 }

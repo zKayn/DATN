@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SIZES } from '../../constants/config';
 import api from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface ProductSuggestion {
   _id: string;
@@ -35,10 +36,11 @@ interface Message {
 
 const ChatScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'Xin chào! Tôi là trợ lý ảo của shop thể thao. Tôi có thể giúp gì cho bạn?',
+      text: 'Xin chào! Tôi là trợ lý ảo của LP SHOP. Tôi có thể giúp gì cho bạn?',
       isUser: false,
       timestamp: new Date(),
     },
@@ -110,31 +112,56 @@ const ChatScreen = ({ navigation }: any) => {
 
   const renderMessage = ({ item }: { item: Message }) => (
     <View style={styles.messageContainer}>
-      <View
-        style={[
-          styles.messageBubble,
-          item.isUser ? styles.userBubble : styles.botBubble,
-        ]}
-      >
-        <Text
+      <View style={[styles.messageRow, item.isUser && styles.messageRowUser]}>
+        {/* Avatar cho AI bot */}
+        {!item.isUser && (
+          <View style={styles.botAvatar}>
+            <Ionicons name="sparkles" size={16} color={COLORS.white} />
+          </View>
+        )}
+
+        <View
           style={[
-            styles.messageText,
-            item.isUser ? styles.userText : styles.botText,
+            styles.messageBubble,
+            item.isUser ? styles.userBubble : styles.botBubble,
           ]}
         >
-          {item.text}
-        </Text>
-        <Text
-          style={[
-            styles.timestamp,
-            item.isUser ? styles.userTimestamp : styles.botTimestamp,
-          ]}
-        >
-          {item.timestamp.toLocaleTimeString('vi-VN', {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        </Text>
+          <Text
+            style={[
+              styles.messageText,
+              item.isUser ? styles.userText : styles.botText,
+            ]}
+          >
+            {item.text}
+          </Text>
+          <Text
+            style={[
+              styles.timestamp,
+              item.isUser ? styles.userTimestamp : styles.botTimestamp,
+            ]}
+          >
+            {item.timestamp.toLocaleTimeString('vi-VN', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </Text>
+        </View>
+
+        {/* Avatar cho user */}
+        {item.isUser && (
+          <View style={styles.userAvatarContainer}>
+            {user?.anhDaiDien || user?.avatar ? (
+              <Image
+                source={{ uri: user.anhDaiDien || user.avatar }}
+                style={styles.userAvatar}
+              />
+            ) : (
+              <View style={styles.userAvatarFallback}>
+                <Ionicons name="person" size={16} color={COLORS.white} />
+              </View>
+            )}
+          </View>
+        )}
       </View>
 
       {/* Product Cards nếu có suggestions */}
@@ -295,20 +322,54 @@ const styles = StyleSheet.create({
   },
   messageContainer: {
     marginBottom: 12,
-    alignItems: 'flex-start',
+    width: '100%',
+  },
+  messageRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
+  },
+  messageRowUser: {
+    justifyContent: 'flex-end',
+  },
+  botAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.warning,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  userAvatarContainer: {
+    width: 32,
+    height: 32,
+    marginBottom: 4,
+  },
+  userAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+  },
+  userAvatarFallback: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.gray[500],
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   messageBubble: {
-    maxWidth: '80%',
+    flex: 1,
+    maxWidth: '70%',
     padding: 12,
     borderRadius: 16,
   },
   userBubble: {
-    alignSelf: 'flex-end',
     backgroundColor: COLORS.primary,
     borderBottomRightRadius: 4,
   },
   botBubble: {
-    alignSelf: 'flex-start',
     backgroundColor: COLORS.white,
     borderBottomLeftRadius: 4,
   },

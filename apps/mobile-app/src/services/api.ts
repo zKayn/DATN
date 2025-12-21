@@ -115,6 +115,11 @@ class ApiService {
     return response.data;
   }
 
+  async getBestsellerProducts() {
+    const response = await this.api.get('/products?sort=-daBan&limit=8');
+    return response.data;
+  }
+
   async searchProducts(query: string) {
     const response = await this.api.get(`/products/search?q=${encodeURIComponent(query)}`);
     return response.data;

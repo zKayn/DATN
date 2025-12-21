@@ -63,11 +63,11 @@ export default function Testimonials() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {[...Array(6)].map((_, i) => (
-          <div key={i} className="bg-white rounded-2xl p-6 shadow-lg animate-pulse">
+          <div key={i} className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl animate-pulse border border-white/30">
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-14 h-14 rounded-full bg-gray-200"></div>
+              <div className="w-16 h-16 rounded-full bg-gray-200"></div>
               <div className="flex-1">
                 <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
                 <div className="h-3 bg-gray-200 rounded w-20"></div>
@@ -85,23 +85,26 @@ export default function Testimonials() {
   if (reviews.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Chưa có đánh giá nào</p>
+        <p className="text-white/70 text-lg">Chưa có đánh giá nào</p>
       </div>
     )
   }
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {reviews.map((review) => (
         <div
           key={review._id}
-          className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-shadow relative"
+          className="group bg-white/95 backdrop-blur-lg rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-300 relative overflow-hidden border border-white/30 hover:transform hover:-translate-y-2"
         >
+          {/* Festive Shine Effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-accent-200/20 via-transparent to-primary-200/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
           {/* Quote Icon */}
-          <Quote className="absolute top-4 right-4 w-10 h-10 text-primary-100" />
+          <Quote className="absolute top-6 right-6 w-12 h-12 text-accent-200/40 group-hover:text-accent-300/60 transition-colors" />
 
           {/* User Info */}
-          <div className="flex items-center gap-4 mb-4">
-            <div className="relative w-14 h-14 rounded-full overflow-hidden ring-4 ring-primary-100 bg-gradient-to-br from-primary-400 to-secondary-400">
+          <div className="flex items-center gap-4 mb-6 relative z-10">
+            <div className="relative w-16 h-16 rounded-full overflow-hidden ring-4 ring-accent-200 group-hover:ring-accent-400 transition-all bg-gradient-to-br from-primary-400 via-accent-400 to-secondary-400 shadow-lg">
               {review.nguoiDung?.avatar ? (
                 <Image
                   src={review.nguoiDung.avatar}
@@ -110,25 +113,25 @@ export default function Testimonials() {
                   className="object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-white font-bold text-xl">
+                <div className="w-full h-full flex items-center justify-center text-white font-bold text-2xl">
                   {review.nguoiDung?.ten?.charAt(0).toUpperCase() || 'U'}
                 </div>
               )}
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900">{review.nguoiDung?.ten || 'Người dùng'}</h4>
-              <p className="text-sm text-gray-500">{getTimeAgo(review.createdAt)}</p>
+              <h4 className="font-bold text-gray-900 text-lg">{review.nguoiDung?.ten || 'Người dùng'}</h4>
+              <p className="text-sm text-gray-600">{getTimeAgo(review.createdAt)}</p>
             </div>
           </div>
 
           {/* Rating */}
-          <div className="flex items-center gap-1 mb-3">
+          <div className="flex items-center gap-1 mb-4 relative z-10">
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
-                className={`w-4 h-4 ${
+                className={`w-5 h-5 ${
                   i < review.danhGia
-                    ? 'text-yellow-400 fill-yellow-400'
+                    ? 'text-accent-500 fill-accent-500'
                     : 'text-gray-300'
                 }`}
               />
@@ -136,14 +139,15 @@ export default function Testimonials() {
           </div>
 
           {/* Comment */}
-          <p className="text-gray-700 mb-4 leading-relaxed">
+          <p className="text-gray-800 mb-6 leading-relaxed text-base italic relative z-10">
             "{review.noiDung}"
           </p>
 
           {/* Product */}
-          <div className="pt-4 border-t border-gray-100">
-            <p className="text-sm text-gray-500">
-              Sản phẩm: <span className="text-primary-600 font-medium">{review.sanPham?.ten || 'N/A'}</span>
+          <div className="pt-4 border-t border-gray-200 relative z-10">
+            <p className="text-sm text-gray-600 flex items-center gap-2">
+              <span className="font-medium">Sản phẩm:</span>
+              <span className="text-primary-600 font-semibold">{review.sanPham?.ten || 'N/A'}</span>
             </p>
           </div>
         </div>

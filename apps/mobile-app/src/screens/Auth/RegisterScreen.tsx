@@ -15,9 +15,13 @@ import { useAuth } from '../../contexts/AuthContext';
 import { COLORS, SIZES } from '../../constants/config';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import type { RootStackParamList } from '../../navigation/RootNavigator';
+
+type NavigationProp = StackNavigationProp<RootStackParamList, 'Register'>;
 
 const RegisterScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const { register } = useAuth();
   const [hoTen, setHoTen] = useState('');
   const [email, setEmail] = useState('');
@@ -41,6 +45,11 @@ const RegisterScreen = () => {
     setLoading(true);
     try {
       await register({ hoTen, email: email.trim(), matKhau, soDienThoai });
+      // Navigate to MainTab after successful registration
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'MainTab' }],
+      });
     } catch (error: any) {
       Alert.alert('Đăng ký thất bại', error.message || 'Có lỗi xảy ra');
     } finally {

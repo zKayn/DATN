@@ -68,11 +68,11 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
       // This is already handled in the usePoints service
     }
 
-    // Cập nhật số lượng tồn kho và số lượng đã bán
+    // Cập nhật số lượng tồn kho (giảm tồn kho khi đặt hàng)
+    // Lưu ý: daBan chỉ được tăng khi đơn hàng giao thành công (trạng thái da-giao)
     for (const item of order.sanPham) {
       await Product.findByIdAndUpdate(item.sanPham, {
         $inc: {
-          daBan: item.soLuong,
           soLuongTonKho: -item.soLuong
         }
       });
@@ -205,6 +205,16 @@ export const updateOrderStatus = async (req: Request, res: Response, next: NextF
       order.giaoThanhCongLuc = new Date();
       order.trangThaiThanhToan = 'da-thanh-toan';
 
+      // Cập nhật số lượng đã bán cho các sản phẩm
+      for (const item of order.sanPham) {
+        await Product.findByIdAndUpdate(item.sanPham, {
+          $inc: {
+            daBan: item.soLuong
+          }
+        });
+      }
+      console.log(`✅ Đã cập nhật số lượng đã bán cho đơn hàng ${order.maDonHang}`);
+
       // Thêm điểm tích lũy cho khách hàng
       const pointResult = await addPointsForOrder(
         order.nguoiDung,
@@ -215,6 +225,19 @@ export const updateOrderStatus = async (req: Request, res: Response, next: NextF
       if (pointResult.success && pointResult.points > 0) {
         console.log(`Đã thêm ${pointResult.points} điểm cho người dùng ${order.nguoiDung}`);
       }
+    }
+
+    // Xử lý trả hàng - giảm daBan và hoàn lại tồn kho
+    if (trangThai === 'tra-hang') {
+      for (const item of order.sanPham) {
+        await Product.findByIdAndUpdate(item.sanPham, {
+          $inc: {
+            daBan: -item.soLuong,
+            soLuongTonKho: item.soLuong
+          }
+        });
+      }
+      console.log(`✅ Đã xử lý trả hàng cho đơn hàng ${order.maDonHang}`);
     }
 
     await order.save();
@@ -304,11 +327,11 @@ export const cancelOrder = async (req: Request, res: Response, next: NextFunctio
 
     await order.save();
 
-    // Hoàn lại số lượng tồn kho
+    // Hoàn lại số lượng tồn kho (vì đã giảm khi tạo đơn)
+    // Không cần giảm daBan vì chưa tăng (chỉ tăng khi giao thành công)
     for (const item of order.sanPham) {
       await Product.findByIdAndUpdate(item.sanPham, {
         $inc: {
-          daBan: -item.soLuong,
           soLuongTonKho: item.soLuong
         }
       });
@@ -335,15 +358,20 @@ export const deleteOrder = async (req: Request, res: Response, next: NextFunctio
       });
     }
 
-    // Chỉ cho phép xóa đơn đã hủy
+    // Hoàn lại số lượng trước khi xóa (nếu cần)
     if (order.trangThaiDonHang !== 'da-huy') {
-      // Nếu đơn chưa hủy, hoàn lại tồn kho trước khi xóa
       for (const item of order.sanPham) {
+        const updateData: any = {
+          soLuongTonKho: item.soLuong
+        };
+
+        // Chỉ giảm daBan nếu đơn đã giao thành công (vì chỉ tăng daBan khi da-giao)
+        if (order.trangThaiDonHang === 'da-giao') {
+          updateData.daBan = -item.soLuong;
+        }
+
         await Product.findByIdAndUpdate(item.sanPham, {
-          $inc: {
-            daBan: -item.soLuong,
-            soLuongTonKho: item.soLuong
-          }
+          $inc: updateData
         });
       }
     }

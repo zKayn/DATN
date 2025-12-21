@@ -14,12 +14,12 @@ export default function HomePage() {
       {/* Danh mục nổi bật */}
       <CategorySection />
 
-      {/* Sản phẩm nổi bật */}
+      {/* Sản phẩm bán chạy */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Sản Phẩm Nổi Bật
+              Sản Phẩm Bán Chạy
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               Những sản phẩm được yêu thích nhất, chất lượng đảm bảo từ các thương hiệu hàng đầu

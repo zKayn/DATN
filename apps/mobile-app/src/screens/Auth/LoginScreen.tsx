@@ -37,6 +37,11 @@ const LoginScreen = () => {
     setLoading(true);
     try {
       await login(email.trim(), matKhau);
+      // Navigate to MainTab after successful login
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'MainTab' }],
+      });
     } catch (error: any) {
       Alert.alert('Đăng nhập thất bại', error.message || 'Có lỗi xảy ra');
     } finally {

@@ -22,14 +22,22 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
-      const result = await response.json();
+
+      // Try to parse JSON response
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        console.error('Failed to parse JSON response:', parseError);
+        throw new Error('Server trả về dữ liệu không hợp lệ');
+      }
 
       if (!response.ok) {
         throw new Error(result.message || 'Đã có lỗi xảy ra');
       }
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error('API Error:', error);
       throw error;
     }
@@ -87,6 +95,10 @@ class ApiService {
 
   async getNewProducts() {
     return this.request('/products?sanPhamMoi=true&limit=8');
+  }
+
+  async getBestsellerProducts() {
+    return this.request('/products?sort=-daBan&limit=8');
   }
 
   async searchProducts(query: string) {

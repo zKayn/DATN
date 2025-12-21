@@ -46,11 +46,11 @@ export const truncateText = (text: string, maxLength: number): string => {
 
 export const getOrderStatusColor = (status: string): string => {
   const statusColors: { [key: string]: string } = {
-    'cho-xac-nhan': '#F59E0B',
-    'dang-xu-ly': '#3B82F6',
-    'dang-giao': '#8B5CF6',
-    'hoan-thanh': '#10B981',
-    'da-huy': '#EF4444',
+    'cho-xac-nhan': '#F59E0B', // Accent Gold - Waiting
+    'dang-xu-ly': '#F59E0B', // Accent Gold - Processing
+    'dang-giao': '#DC2626', // Primary Red - Delivering
+    'hoan-thanh': '#16A34A', // Secondary Green - Completed
+    'da-huy': '#EF4444', // Danger Red - Cancelled
   };
   return statusColors[status] || '#6B7280';
 };

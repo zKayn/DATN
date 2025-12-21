@@ -289,12 +289,12 @@ const getStatusText = (status: string) => {
 const getStatusStyle = (status: string) => {
   const styleMap: { [key: string]: any } = {
     'cho-xac-nhan': { backgroundColor: COLORS.warning + '20', borderColor: COLORS.warning },
-    'da-xac-nhan': { backgroundColor: COLORS.primary + '20', borderColor: COLORS.primary },
-    'dang-chuan-bi': { backgroundColor: COLORS.info + '20', borderColor: COLORS.info },
-    'dang-giao': { backgroundColor: COLORS.info + '20', borderColor: COLORS.info },
-    'da-giao': { backgroundColor: COLORS.success + '20', borderColor: COLORS.success },
+    'da-xac-nhan': { backgroundColor: COLORS.accent + '20', borderColor: COLORS.accent },
+    'dang-chuan-bi': { backgroundColor: COLORS.accent + '20', borderColor: COLORS.accent },
+    'dang-giao': { backgroundColor: COLORS.primary + '20', borderColor: COLORS.primary },
+    'da-giao': { backgroundColor: COLORS.secondary + '20', borderColor: COLORS.secondary },
     'da-huy': { backgroundColor: COLORS.danger + '20', borderColor: COLORS.danger },
-    'tra-hang': { backgroundColor: '#FF6B35' + '20', borderColor: '#FF6B35' },
+    'tra-hang': { backgroundColor: COLORS.warning + '20', borderColor: COLORS.warning },
   };
   return styleMap[status] || {};
 };

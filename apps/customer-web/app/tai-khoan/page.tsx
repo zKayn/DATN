@@ -12,7 +12,7 @@ import AddressModal from '@/components/account/AddressModal';
 export default function AccountPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { logout } = useAuth();
+  const { logout, refreshProfile } = useAuth();
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'profile');
   const [loading, setLoading] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -20,7 +20,7 @@ export default function AccountPage() {
     name: '',
     email: '',
     phone: '',
-    gender: 'male',
+    gender: 'nam',
     birthday: '',
     avatar: 'https://i.pravatar.cc/150?img=12'
   });
@@ -86,12 +86,25 @@ export default function AccountPage() {
       const response = await api.getProfile(token);
       if (response.success && response.data) {
         const user = response.data;
+        // Format birthday for input type="date" (needs YYYY-MM-DD format)
+        let formattedBirthday = '';
+        if (user.ngaySinh) {
+          try {
+            const date = new Date(user.ngaySinh);
+            if (!isNaN(date.getTime())) {
+              formattedBirthday = date.toISOString().split('T')[0];
+            }
+          } catch (error) {
+            console.error('Error formatting birthday:', error);
+          }
+        }
+
         setUserInfo({
           name: user.hoTen || user.ten || '',
           email: user.email || '',
           phone: user.soDienThoai || '',
-          gender: user.gioiTinh || 'male',
-          birthday: user.ngaySinh || '',
+          gender: user.gioiTinh || 'nam',
+          birthday: formattedBirthday,
           avatar: user.anhDaiDien || user.avatar || 'https://i.pravatar.cc/150?img=12'
         });
         // Load addresses and points
@@ -183,14 +196,19 @@ export default function AccountPage() {
       };
 
       const response = await api.updateProfile(token, updateData);
+
       if (response.success) {
         toast.success('Cập nhật thông tin thành công!');
+        // Refresh profile data from server to ensure UI is in sync
+        await loadUserProfile();
+        // Also refresh AuthContext to update header and other components
+        await refreshProfile();
       } else {
         toast.error(response.message || 'Cập nhật thất bại');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Lỗi khi cập nhật thông tin:', error);
-      toast.error('Không thể cập nhật thông tin');
+      toast.error(error.message || 'Không thể cập nhật thông tin');
     }
   };
 
@@ -441,9 +459,9 @@ export default function AccountPage() {
                         onChange={(e) => setUserInfo({ ...userInfo, gender: e.target.value })}
                         className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
-                        <option value="male">Nam</option>
-                        <option value="female">Nữ</option>
-                        <option value="other">Khác</option>
+                        <option value="nam">Nam</option>
+                        <option value="nu">Nữ</option>
+                        <option value="khac">Khác</option>
                       </select>
                     </div>
 

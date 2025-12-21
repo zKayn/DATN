@@ -14,9 +14,18 @@ export const CONFIG = {
 };
 
 export const COLORS = {
-  primary: '#3B82F6',
-  primaryDark: '#2563EB',
-  secondary: '#8B5CF6',
+  // Festive Theme Colors (Christmas & Tết)
+  primary: '#DC2626', // Red - Christmas/Tết
+  primaryDark: '#B91C1C', // Darker Red
+  primaryLight: '#EF4444', // Lighter Red
+  secondary: '#16A34A', // Green - Christmas tree
+  secondaryDark: '#15803D', // Darker Green
+  secondaryLight: '#22C55E', // Lighter Green
+  accent: '#F59E0B', // Gold/Amber - Lucky money
+  accentDark: '#D97706', // Darker Gold
+  accentLight: '#FBBF24', // Lighter Gold
+
+  // Utility Colors
   success: '#10B981',
   danger: '#EF4444',
   warning: '#F59E0B',
@@ -59,6 +68,7 @@ export const SIZES = {
   h3: 20,
   h4: 18,
   body: 16,
+  medium: 15,
   small: 14,
   tiny: 12,
 
@@ -72,6 +82,7 @@ export const SIZES = {
   icon: 24,
   iconSmall: 16,
   iconLarge: 32,
+  large: 28,
 
   // Safe Area constants for consistent header spacing
   safeAreaTop: 16, // Base padding to add to insets.top
