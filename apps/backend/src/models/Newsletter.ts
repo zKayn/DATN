@@ -30,7 +30,7 @@ const NewsletterSchema = new Schema<INewsletter>(
   }
 );
 
-// Index for faster email lookups
-NewsletterSchema.index({ email: 1 });
+// Note: email field already has unique: true which creates an index automatically
+// No need for explicit index declaration
 
 export default mongoose.model<INewsletter>('Newsletter', NewsletterSchema);

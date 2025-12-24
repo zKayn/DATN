@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,8 +11,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SIZES } from '../../constants/config';
-import api from '../../services/api';
 import { useFocusEffect } from '@react-navigation/native';
+import { useNotification } from '../../contexts/NotificationContext';
 
 interface Notification {
   _id: string;
@@ -28,68 +28,28 @@ interface Notification {
 }
 
 const NotificationsScreen = ({ navigation }: any) => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    notifications,
+    unreadCount,
+    loading,
+    refreshNotifications,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+  } = useNotification();
+
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
-  const [unreadCount, setUnreadCount] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
-      loadNotifications();
-      loadUnreadCount();
-    }, [filter])
+      refreshNotifications();
+    }, [])
   );
-
-  const loadNotifications = async () => {
-    try {
-      const params = filter === 'unread' ? { daDoc: false, limit: 50 } : { limit: 50 };
-      const response = await api.getNotifications(params);
-
-      if (response.success) {
-        setNotifications(response.data || []);
-      }
-    } catch (error) {
-      console.error('Lỗi khi tải thông báo:', error);
-      Alert.alert('Lỗi', 'Không thể tải thông báo');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  const loadUnreadCount = async () => {
-    try {
-      const response = await api.getUnreadNotificationCount();
-      if (response.success) {
-        setUnreadCount(response.data.count);
-      }
-    } catch (error) {
-      console.error('Lỗi khi tải số thông báo chưa đọc:', error);
-    }
-  };
-
-  const handleMarkAsRead = async (notificationId: string) => {
-    try {
-      await api.markNotificationAsRead(notificationId);
-
-      // Update local state
-      setNotifications((prev) =>
-        prev.map((n) => (n._id === notificationId ? { ...n, daDoc: true } : n))
-      );
-      loadUnreadCount();
-    } catch (error) {
-      console.error('Lỗi khi đánh dấu đã đọc:', error);
-    }
-  };
 
   const handleMarkAllAsRead = async () => {
     try {
-      await api.markAllNotificationsAsRead();
-
-      // Update local state
-      setNotifications((prev) => prev.map((n) => ({ ...n, daDoc: true })));
-      setUnreadCount(0);
+      await markAllAsRead();
       Alert.alert('Thành công', 'Đã đánh dấu tất cả thông báo là đã đọc');
     } catch (error) {
       console.error('Lỗi khi đánh dấu tất cả đã đọc:', error);
@@ -105,11 +65,7 @@ const NotificationsScreen = ({ navigation }: any) => {
         style: 'destructive',
         onPress: async () => {
           try {
-            await api.deleteNotification(notificationId);
-
-            // Remove from local state
-            setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
-            loadUnreadCount();
+            await deleteNotification(notificationId);
           } catch (error) {
             console.error('Lỗi khi xóa thông báo:', error);
             Alert.alert('Lỗi', 'Không thể xóa thông báo');
@@ -121,7 +77,7 @@ const NotificationsScreen = ({ navigation }: any) => {
 
   const handleNotificationPress = (notification: Notification) => {
     if (!notification.daDoc) {
-      handleMarkAsRead(notification._id);
+      markAsRead(notification._id);
     }
 
     // Navigate to related page if applicable
@@ -180,11 +136,16 @@ const NotificationsScreen = ({ navigation }: any) => {
     return date.toLocaleDateString('vi-VN');
   };
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    loadNotifications();
-    loadUnreadCount();
+    await refreshNotifications();
+    setRefreshing(false);
   };
+
+  // Filter notifications based on selected filter
+  const filteredNotifications = filter === 'unread'
+    ? notifications.filter(n => !n.daDoc)
+    : notifications;
 
   const renderNotification = ({ item }: { item: Notification }) => (
     <TouchableOpacity
@@ -222,7 +183,7 @@ const NotificationsScreen = ({ navigation }: any) => {
             <TouchableOpacity
               onPress={(e) => {
                 e.stopPropagation();
-                handleMarkAsRead(item._id);
+                markAsRead(item._id);
               }}
               style={styles.actionButton}
             >
@@ -298,7 +259,7 @@ const NotificationsScreen = ({ navigation }: any) => {
         </View>
       ) : (
         <FlatList
-          data={notifications}
+          data={filteredNotifications}
           renderItem={renderNotification}
           keyExtractor={(item) => item._id}
           contentContainerStyle={styles.listContainer}

@@ -35,8 +35,13 @@ export default function AdminLoginPage() {
           return;
         }
 
-        // Save token to localStorage
+        // Save token and user info to localStorage
         localStorage.setItem('admin_token', response.data.token);
+        localStorage.setItem('admin_user', JSON.stringify({
+          ten: response.data.user.hoTen,
+          email: response.data.user.email,
+          vaiTro: response.data.user.vaiTro
+        }));
 
         // Redirect to dashboard
         router.push('/dashboard');
@@ -71,8 +76,13 @@ export default function AdminLoginPage() {
       });
 
       if (response.success && response.data) {
-        // Save token to localStorage
+        // Save token and user info to localStorage
         localStorage.setItem('admin_token', response.data.token);
+        localStorage.setItem('admin_user', JSON.stringify({
+          ten: response.data.user.hoTen,
+          email: response.data.user.email,
+          vaiTro: response.data.user.vaiTro
+        }));
 
         alert('Đăng ký tài khoản admin thành công!');
 

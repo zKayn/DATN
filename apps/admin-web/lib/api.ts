@@ -75,6 +75,8 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     try {
+      console.log(`🌐 API Request: ${options.method || 'GET'} ${API_URL}${endpoint}`);
+
       const response = await fetch(`${API_URL}${endpoint}`, {
         ...options,
         headers: {
@@ -83,15 +85,33 @@ class ApiService {
         },
       });
 
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch (jsonError) {
+        console.error('❌ JSON parse error:', jsonError);
+        throw new Error('Server trả về dữ liệu không hợp lệ');
+      }
+
+      console.log(`📦 API Response (${response.status}):`, result);
 
       if (!response.ok) {
-        throw new Error(result.message || 'Đã có lỗi xảy ra');
+        // Check if unauthorized
+        if (response.status === 401) {
+          console.warn('🔐 Unauthorized - Token may be invalid or expired');
+          // Optionally redirect to login
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_user');
+          }
+        }
+        throw new Error(result.message || result.error || 'Đã có lỗi xảy ra');
       }
 
       // Return the API response directly (it already has success, data, message structure)
       return result;
     } catch (error: any) {
+      console.error(`❌ API Error for ${endpoint}:`, error);
       return {
         success: false,
         error: error.message || 'Đã có lỗi xảy ra',

@@ -20,6 +20,13 @@ interface NotificationContextType {
   showToast: (notification: Notification) => void;
   toastNotification: Notification | null;
   closeToast: () => void;
+  unreadCount: number;
+  notifications: Notification[];
+  loading: boolean;
+  refreshNotifications: () => Promise<void>;
+  markAsRead: (notificationId: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
+  deleteNotification: (notificationId: string) => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -28,22 +35,127 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
   const [toastNotification, setToastNotification] = useState<Notification | null>(null);
   const [lastCheckedId, setLastCheckedId] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch unread count
+  const fetchUnreadCount = async () => {
+    if (!isAuthenticated) {
+      setUnreadCount(0);
+      return;
+    }
+
+    try {
+      const response = await api.getUnreadNotificationCount();
+      if (response.success) {
+        setUnreadCount(response.data?.count || 0);
+      }
+    } catch (error) {
+      console.log('Could not fetch unread count');
+    }
+  };
+
+  // Fetch all notifications
+  const refreshNotifications = async () => {
+    if (!isAuthenticated) {
+      setNotifications([]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await api.getNotifications({ limit: 50 });
+      if (response.success && response.data) {
+        const notifs = Array.isArray(response.data) ? response.data : response.data.notifications || [];
+        setNotifications(notifs);
+
+        // Update unread count
+        const unread = notifs.filter((n: Notification) => !n.daDoc).length;
+        setUnreadCount(unread);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Mark notification as read
+  const markAsRead = async (notificationId: string) => {
+    try {
+      const response = await api.markNotificationAsRead(notificationId);
+      if (response.success) {
+        // Update local state
+        setNotifications((prev) =>
+          prev.map((n) => (n._id === notificationId ? { ...n, daDoc: true } : n))
+        );
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  // Mark all as read
+  const markAllAsRead = async () => {
+    try {
+      const response = await api.markAllNotificationsAsRead();
+      if (response.success) {
+        // Update local state
+        setNotifications((prev) => prev.map((n) => ({ ...n, daDoc: true })));
+        setUnreadCount(0);
+      }
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
+  };
+
+  // Delete notification
+  const deleteNotification = async (notificationId: string) => {
+    try {
+      const response = await api.deleteNotification(notificationId);
+      if (response.success) {
+        // Update local state
+        const notification = notifications.find((n) => n._id === notificationId);
+        setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
+        if (notification && !notification.daDoc) {
+          setUnreadCount((prev) => Math.max(0, prev - 1));
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
+  };
 
   useEffect(() => {
     if (!isAuthenticated) {
       setLastCheckedId(null);
+      setUnreadCount(0);
+      setNotifications([]);
       return;
     }
 
-    // Initial check
+    // Initial check for toast notifications
     checkForNewNotifications();
 
-    // Poll every 5 seconds for real-time notifications
-    const interval = setInterval(() => {
+    // Fetch unread count initially
+    fetchUnreadCount();
+
+    // Poll every 10 seconds for unread count (faster for real-time updates when admin updates order status)
+    const countInterval = setInterval(() => {
+      fetchUnreadCount();
+    }, 10000);
+
+    // Poll every 5 seconds for toast notifications
+    const toastInterval = setInterval(() => {
       checkForNewNotifications();
     }, 5000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(countInterval);
+      clearInterval(toastInterval);
+    };
   }, [isAuthenticated]);
 
   const checkForNewNotifications = async () => {
@@ -89,7 +201,20 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <NotificationContext.Provider value={{ showToast, toastNotification, closeToast }}>
+    <NotificationContext.Provider
+      value={{
+        showToast,
+        toastNotification,
+        closeToast,
+        unreadCount,
+        notifications,
+        loading,
+        refreshNotifications,
+        markAsRead,
+        markAllAsRead,
+        deleteNotification,
+      }}
+    >
       {children}
     </NotificationContext.Provider>
   );

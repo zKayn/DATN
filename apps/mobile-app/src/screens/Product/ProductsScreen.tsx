@@ -12,6 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import ProductCard from '../../components/ProductCard';
 import api from '../../services/api';
@@ -30,6 +31,8 @@ interface Product {
   thuongHieu: string;
   danhMuc: any;
   soLuongTonKho: number;
+  noiBat?: boolean;
+  sanPhamMoi?: boolean;
 }
 
 interface Filters {
@@ -38,10 +41,12 @@ interface Filters {
   minPrice: number;
   maxPrice: number;
   sort: string;
+  filter: string; // sale, new, bestseller, featured, all
 }
 
 const ProductsScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
+  const route = useRoute<any>();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,11 +61,58 @@ const ProductsScreen = ({ navigation }: any) => {
     minPrice: 0,
     maxPrice: 10000000,
     sort: 'newest',
+    filter: '',
   });
 
   useEffect(() => {
     loadData();
   }, []);
+
+  // Handle route params (category, filter)
+  useEffect(() => {
+    if (route.params) {
+      const { category, filter } = route.params;
+
+      // Reset filters first
+      const newFilters: Filters = {
+        category: '',
+        brand: '',
+        minPrice: 0,
+        maxPrice: 10000000,
+        sort: 'newest',
+        filter: '',
+      };
+
+      // Handle category param
+      if (category) {
+        // Find category by slug or name
+        const foundCategory = categories.find(
+          (cat) => cat.slug === category || cat.ten === category || cat._id === category
+        );
+        if (foundCategory) {
+          newFilters.category = foundCategory._id;
+        }
+      }
+
+      // Handle filter param (sale, new, bestseller, featured, all)
+      if (filter) {
+        newFilters.filter = filter;
+        newFilters.sort = filter === 'bestseller' ? 'popular' : filter === 'new' ? 'newest' : 'newest';
+      }
+
+      setFilters(newFilters);
+    } else {
+      // No params, reset to default
+      setFilters({
+        category: '',
+        brand: '',
+        minPrice: 0,
+        maxPrice: 10000000,
+        sort: 'newest',
+        filter: '',
+      });
+    }
+  }, [route.params, categories]);
 
   useEffect(() => {
     applyFilters();
@@ -104,6 +156,32 @@ const ProductsScreen = ({ navigation }: any) => {
       );
     }
 
+    // Special filter type (sale, new, bestseller, featured)
+    if (filters.filter) {
+      switch (filters.filter) {
+        case 'sale':
+          // Products with discount
+          filtered = filtered.filter(p => p.giaKhuyenMai && p.giaKhuyenMai < p.gia);
+          break;
+        case 'new':
+          // New products
+          filtered = filtered.filter(p => p.sanPhamMoi === true);
+          break;
+        case 'bestseller':
+          // Sort by sold quantity
+          filtered.sort((a, b) => b.daBan - a.daBan);
+          break;
+        case 'featured':
+          // Featured products
+          filtered = filtered.filter(p => p.noiBat === true);
+          break;
+        case 'all':
+        default:
+          // No special filter
+          break;
+      }
+    }
+
     // Category filter
     if (filters.category) {
       filtered = filtered.filter(p => {
@@ -123,22 +201,24 @@ const ProductsScreen = ({ navigation }: any) => {
       return price >= filters.minPrice && price <= filters.maxPrice;
     });
 
-    // Sort
-    switch (filters.sort) {
-      case 'price-asc':
-        filtered.sort((a, b) => (a.giaKhuyenMai || a.gia) - (b.giaKhuyenMai || b.gia));
-        break;
-      case 'price-desc':
-        filtered.sort((a, b) => (b.giaKhuyenMai || b.gia) - (a.giaKhuyenMai || a.gia));
-        break;
-      case 'popular':
-        filtered.sort((a, b) => b.daBan - a.daBan);
-        break;
-      case 'rating':
-        filtered.sort((a, b) => b.danhGiaTrungBinh - a.danhGiaTrungBinh);
-        break;
-      default: // newest
-        break;
+    // Sort (if not already sorted by filter)
+    if (filters.filter !== 'bestseller') {
+      switch (filters.sort) {
+        case 'price-asc':
+          filtered.sort((a, b) => (a.giaKhuyenMai || a.gia) - (b.giaKhuyenMai || b.gia));
+          break;
+        case 'price-desc':
+          filtered.sort((a, b) => (b.giaKhuyenMai || b.gia) - (a.giaKhuyenMai || a.gia));
+          break;
+        case 'popular':
+          filtered.sort((a, b) => b.daBan - a.daBan);
+          break;
+        case 'rating':
+          filtered.sort((a, b) => b.danhGiaTrungBinh - a.danhGiaTrungBinh);
+          break;
+        default: // newest
+          break;
+      }
     }
 
     setFilteredProducts(filtered);
@@ -151,57 +231,85 @@ const ProductsScreen = ({ navigation }: any) => {
       minPrice: 0,
       maxPrice: 10000000,
       sort: 'newest',
+      filter: '',
     });
     setSearchQuery('');
   };
 
-  const renderHeader = () => (
-    <View style={[styles.header, { paddingTop: insets.top + SIZES.safeAreaTop }]}>
-      {/* Search */}
-      <TouchableOpacity
-        style={styles.searchContainer}
-        onPress={() => navigation.navigate('Search')}
-        activeOpacity={0.7}
-      >
-        <Ionicons name="search" size={20} color={COLORS.gray[400]} />
-        <Text style={styles.searchPlaceholder}>Tìm kiếm sản phẩm...</Text>
-      </TouchableOpacity>
+  const renderHeader = () => {
+    // Get current filter label
+    const getFilterLabel = () => {
+      if (filters.filter === 'sale') return 'Flash Sale';
+      if (filters.filter === 'new') return 'Hàng Mới Về';
+      if (filters.filter === 'bestseller') return 'Bán Chạy';
+      if (filters.filter === 'featured') return 'Nổi Bật';
+      if (filters.category) {
+        const cat = categories.find(c => c._id === filters.category);
+        return cat ? cat.ten : '';
+      }
+      return '';
+    };
 
-      {/* Filter & Sort Buttons */}
-      <View style={styles.filterRow}>
+    const filterLabel = getFilterLabel();
+
+    return (
+      <View style={[styles.header, { paddingTop: insets.top + SIZES.safeAreaTop }]}>
+        {/* Current Filter Label */}
+        {filterLabel && (
+          <View style={styles.currentFilterContainer}>
+            <Text style={styles.currentFilterLabel}>{filterLabel}</Text>
+            <TouchableOpacity onPress={resetFilters}>
+              <Ionicons name="close-circle" size={20} color={COLORS.gray[400]} />
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Search */}
         <TouchableOpacity
-          style={styles.filterButton}
-          onPress={() => setShowFilters(true)}
+          style={styles.searchContainer}
+          onPress={() => navigation.navigate('Search')}
+          activeOpacity={0.7}
         >
-          <Ionicons name="options-outline" size={20} color={COLORS.primary} />
-          <Text style={styles.filterButtonText}>Bộ lọc</Text>
+          <Ionicons name="search" size={20} color={COLORS.gray[400]} />
+          <Text style={styles.searchPlaceholder}>Tìm kiếm sản phẩm...</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.sortButton}
-          onPress={() => {
-            const sortOptions = ['newest', 'popular', 'price-asc', 'price-desc', 'rating'];
-            const currentIndex = sortOptions.indexOf(filters.sort);
-            const nextIndex = (currentIndex + 1) % sortOptions.length;
-            setFilters({ ...filters, sort: sortOptions[nextIndex] });
-          }}
-        >
-          <Ionicons name="swap-vertical" size={20} color={COLORS.primary} />
-          <Text style={styles.sortButtonText}>
-            {filters.sort === 'newest' && 'Mới nhất'}
-            {filters.sort === 'popular' && 'Bán chạy'}
-            {filters.sort === 'price-asc' && 'Giá tăng dần'}
-            {filters.sort === 'price-desc' && 'Giá giảm dần'}
-            {filters.sort === 'rating' && 'Đánh giá cao'}
-          </Text>
-        </TouchableOpacity>
+        {/* Filter & Sort Buttons */}
+        <View style={styles.filterRow}>
+          <TouchableOpacity
+            style={styles.filterButton}
+            onPress={() => setShowFilters(true)}
+          >
+            <Ionicons name="options-outline" size={20} color={COLORS.primary} />
+            <Text style={styles.filterButtonText}>Bộ lọc</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.sortButton}
+            onPress={() => {
+              const sortOptions = ['newest', 'popular', 'price-asc', 'price-desc', 'rating'];
+              const currentIndex = sortOptions.indexOf(filters.sort);
+              const nextIndex = (currentIndex + 1) % sortOptions.length;
+              setFilters({ ...filters, sort: sortOptions[nextIndex] });
+            }}
+          >
+            <Ionicons name="swap-vertical" size={20} color={COLORS.primary} />
+            <Text style={styles.sortButtonText}>
+              {filters.sort === 'newest' && 'Mới nhất'}
+              {filters.sort === 'popular' && 'Bán chạy'}
+              {filters.sort === 'price-asc' && 'Giá tăng dần'}
+              {filters.sort === 'price-desc' && 'Giá giảm dần'}
+              {filters.sort === 'rating' && 'Đánh giá cao'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.resultCount}>
+          {filteredProducts.length} sản phẩm
+        </Text>
       </View>
-
-      <Text style={styles.resultCount}>
-        {filteredProducts.length} sản phẩm
-      </Text>
-    </View>
-  );
+    );
+  };
 
   const renderFiltersModal = () => (
     <Modal visible={showFilters} animationType="slide" transparent>
@@ -357,6 +465,21 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.gray[200],
+  },
+  currentFilterContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.primary + '15',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  currentFilterLabel: {
+    fontSize: SIZES.body,
+    fontWeight: '600',
+    color: COLORS.primary,
   },
   searchContainer: {
     flexDirection: 'row',

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNotification } from '../../contexts/NotificationContext';
 import { COLORS, SIZES } from '../../constants/config';
 import { Ionicons } from '@expo/vector-icons';
 import api from '../../services/api';
@@ -18,15 +19,25 @@ import api from '../../services/api';
 const ProfileScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const { user, logout, isAuthenticated } = useAuth();
+  const { unreadCount } = useNotification();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
     if (isAuthenticated) {
       loadOrders();
-      loadUnreadNotifications();
     }
+  }, [isAuthenticated]);
+
+  // Poll orders every 10 seconds for real-time updates when admin changes order status
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const interval = setInterval(() => {
+      loadOrders();
+    }, 10000); // Poll every 10 seconds
+
+    return () => clearInterval(interval);
   }, [isAuthenticated]);
 
   const loadOrders = async () => {
@@ -41,17 +52,6 @@ const ProfileScreen = ({ navigation }: any) => {
       console.error('Error loading orders:', error);
     }
     setLoading(false);
-  };
-
-  const loadUnreadNotifications = async () => {
-    try {
-      const response = await api.getUnreadNotificationCount();
-      if (response.success && response.data) {
-        setUnreadNotifications(response.data.count);
-      }
-    } catch (error) {
-      console.error('Error loading unread notifications:', error);
-    }
   };
 
   const handleLogout = () => {
@@ -188,9 +188,9 @@ const ProfileScreen = ({ navigation }: any) => {
             <Ionicons name="notifications-outline" size={24} color={COLORS.primary} />
           </View>
           <Text style={styles.menuText}>Thông báo</Text>
-          {unreadNotifications > 0 && (
+          {unreadCount > 0 && (
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>{unreadNotifications}</Text>
+              <Text style={styles.badgeText}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
             </View>
           )}
           <Ionicons name="chevron-forward" size={20} color={COLORS.gray[400]} />

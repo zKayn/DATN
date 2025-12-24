@@ -18,7 +18,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, SIZES } from '../../constants/config';
 import ProductCard from '../../components/ProductCard';
+import AnimatedTouchable from '../../components/AnimatedTouchable';
 import { useCart } from '../../contexts/CartContext';
+import { useNotification } from '../../contexts/NotificationContext';
 import api from '../../services/api';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
 import type { MainTabParamList } from '../../navigation/MainTabNavigator';
@@ -28,63 +30,117 @@ type NavigationProp = CompositeNavigationProp<
   StackNavigationProp<RootStackParamList>
 >;
 
-const { width } = Dimensions.get('window');
-const BANNER_HEIGHT = 180;
-const CARD_WIDTH = (width - SIZES.padding * 3) / 2;
+const { width, height } = Dimensions.get('window');
+const BANNER_HEIGHT = width * 0.5; // Shopee-style compact banner
+const CARD_WIDTH = (width - 48) / 2; // 2 columns with spacing
+
+// Festive Color Palette (matching customer-web)
+const SHOPEE_COLORS = {
+  primary: '#DC2626', // Red - matches customer-web
+  primaryDark: '#B91C1C',
+  secondary: '#16A34A', // Green - matches customer-web
+  red: '#DC2626',
+  orange: '#F59E0B',
+  yellow: '#FBBF24',
+  green: '#16A34A',
+  blue: '#3B82F6',
+  purple: '#9333EA',
+  pink: '#EC4899',
+  teal: '#14B8A6',
+  white: '#FFFFFF',
+  lightGray: '#F3F4F6', // matches COLORS.gray[100]
+  darkGray: '#6B7280', // matches COLORS.gray[500]
+};
 
 const banners = [
   {
     id: 1,
-    title: '🎄 Giáng Sinh Vui Vẻ',
-    subtitle: 'Giảm giá đến 50%',
-    image: 'https://images.unsplash.com/photo-1556906781-9a412961c28c?w=800&h=400&fit=crop',
-    gradient: [COLORS.primary, COLORS.primaryDark],
+    title: 'Siêu Sale 12.12',
+    subtitle: 'Giảm đến 50%',
+    image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&h=400&fit=crop',
+    badge: 'HOT',
+    action: 'sale',
   },
   {
     id: 2,
-    title: '🧧 Tết Đến - Lộc Về',
-    subtitle: 'Nhận lì xì may mắn',
-    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&h=400&fit=crop',
-    gradient: [COLORS.accent, COLORS.accentDark],
+    title: 'Hàng Mới Về',
+    subtitle: 'Sản phẩm mới nhất',
+    image: 'https://images.unsplash.com/photo-1556906781-9a412961c28c?w=800&h=400&fit=crop',
+    badge: 'NEW',
+    action: 'new',
   },
   {
     id: 3,
-    title: '✨ Ưu Đãi Mùa Lễ Hội',
-    subtitle: 'Trang bị hoàn hảo',
-    image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=400&fit=crop',
-    gradient: [COLORS.secondary, COLORS.secondaryDark],
+    title: 'Bán Chạy Nhất',
+    subtitle: 'Top sản phẩm',
+    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&h=400&fit=crop',
+    badge: 'SALE',
+    action: 'bestseller',
   },
 ];
 
-const categories = [
-  { id: 1, name: 'Giày', icon: 'footsteps-outline', color: COLORS.primary, bg: `${COLORS.primary}20` },
-  { id: 2, name: 'Áo', icon: 'shirt-outline', color: COLORS.accent, bg: `${COLORS.accent}20` },
-  { id: 3, name: 'Phụ kiện', icon: 'watch-outline', color: COLORS.secondary, bg: `${COLORS.secondary}20` },
-  { id: 4, name: 'Gym', icon: 'barbell-outline', color: COLORS.primaryLight, bg: `${COLORS.primaryLight}20` },
-];
+// Icon mapping for categories
+const getCategoryIcon = (categoryName: string): string => {
+  const name = categoryName.toLowerCase();
+  if (name.includes('giày') || name.includes('dép')) return 'footsteps-outline';
+  if (name.includes('áo') || name.includes('shirt')) return 'shirt-outline';
+  if (name.includes('quần') || name.includes('pants')) return 'fitness-outline';
+  if (name.includes('phụ kiện') || name.includes('accessories')) return 'watch-outline';
+  if (name.includes('gym') || name.includes('thể thao')) return 'barbell-outline';
+  if (name.includes('túi') || name.includes('ví') || name.includes('balo')) return 'bag-handle-outline';
+  if (name.includes('điện thoại') || name.includes('phone')) return 'phone-portrait-outline';
+  if (name.includes('laptop') || name.includes('máy tính')) return 'laptop-outline';
+  if (name.includes('đồng hồ') || name.includes('watch')) return 'watch-outline';
+  return 'cube-outline';
+};
+
+// Color gradients pool
+const GRADIENT_COLORS = [
+  [SHOPEE_COLORS.blue, '#0066CC'],
+  [SHOPEE_COLORS.pink, '#DB2777'],
+  [SHOPEE_COLORS.purple, '#7C3AED'],
+  [SHOPEE_COLORS.teal, '#0D9488'],
+  [SHOPEE_COLORS.orange, SHOPEE_COLORS.primaryDark],
+  [SHOPEE_COLORS.secondary, '#EAB308'],
+  [SHOPEE_COLORS.green, '#15803D'],
+  [SHOPEE_COLORS.red, '#B91C1C'],
+] as const;
 
 const quickActions = [
-  { id: 1, title: 'Flash Sale', icon: 'flash', color: COLORS.primary, gradient: [COLORS.primary, COLORS.primaryDark] as const },
-  { id: 2, title: 'Mới nhất', icon: 'sparkles', color: COLORS.secondary, gradient: [COLORS.secondary, COLORS.secondaryDark] as const },
-  { id: 3, title: 'Bán chạy', icon: 'trophy', color: COLORS.accent, gradient: [COLORS.accent, COLORS.accentDark] as const },
-  { id: 4, title: 'Ưu đãi', icon: 'gift', color: COLORS.accentLight, gradient: [COLORS.accentLight, COLORS.accent] as const },
+  { id: 1, title: 'Flash Sale', icon: 'flash', gradient: [SHOPEE_COLORS.red, '#DC2626'] as const, filter: 'sale' },
+  { id: 2, title: 'Hàng mới về', icon: 'sparkles', gradient: [SHOPEE_COLORS.pink, '#DB2777'] as const, filter: 'new' },
+  { id: 3, title: 'Bán chạy', icon: 'trophy', gradient: [SHOPEE_COLORS.orange, '#EAB308'] as const, filter: 'bestseller' },
+  { id: 5, title: 'Tất cả sản phẩm', icon: 'apps', gradient: [SHOPEE_COLORS.blue, '#0066CC'] as const, filter: 'all' },
 ];
 
 const HomeScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp>();
   const { cartCount } = useCart();
+  const { unreadCount } = useNotification();
   const [currentBanner, setCurrentBanner] = useState(0);
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
   const [newProducts, setNewProducts] = useState<any[]>([]);
+  const [flashSaleProducts, setFlashSaleProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 45, seconds: 30 });
   const scrollX = useRef(new Animated.Value(0)).current;
+  const scrollY = useRef(new Animated.Value(0)).current;
   const bannerScrollRef = useRef<ScrollView>(null);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    loadProducts();
+    loadData();
+    // Fade in animation
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
   }, []);
 
+  // Auto-rotate banner
   useEffect(() => {
     const timer = setInterval(() => {
       const nextIndex = (currentBanner + 1) % banners.length;
@@ -93,71 +149,225 @@ const HomeScreen = () => {
         x: nextIndex * width,
         animated: true,
       });
-    }, 5000);
+    }, 4000);
     return () => clearInterval(timer);
   }, [currentBanner]);
 
-  const loadProducts = async () => {
+  // Countdown timer for flash sale
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        let { hours, minutes, seconds } = prev;
+        if (seconds > 0) {
+          seconds--;
+        } else if (minutes > 0) {
+          minutes--;
+          seconds = 59;
+        } else if (hours > 0) {
+          hours--;
+          minutes = 59;
+          seconds = 59;
+        }
+        return { hours, minutes, seconds };
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const loadData = async () => {
     try {
       setLoading(true);
-      const [featured, newArr] = await Promise.all([
+      const [featured, newArr, categoriesData] = await Promise.all([
         api.getFeaturedProducts(),
         api.getNewProducts(),
+        api.getCategories(),
       ]);
 
       if (featured.success && featured.data) {
         const data = Array.isArray(featured.data) ? featured.data : featured.data.products || [];
-        setFeaturedProducts(data.slice(0, 6));
+        setFeaturedProducts(data.slice(0, 10));
+        setFlashSaleProducts(data.slice(0, 6));
       }
 
       if (newArr.success && newArr.data) {
         const data = Array.isArray(newArr.data) ? newArr.data : newArr.data.products || [];
-        setNewProducts(data.slice(0, 6));
+        setNewProducts(data.slice(0, 10));
+      }
+
+      if (categoriesData.success && categoriesData.data) {
+        const cats = Array.isArray(categoriesData.data)
+          ? categoriesData.data
+          : categoriesData.data.categories || [];
+
+        // Map categories with icons and gradients
+        const mappedCategories = cats.slice(0, 8).map((cat: any, index: number) => ({
+          id: cat._id,
+          name: cat.ten,
+          slug: cat.slug,
+          icon: getCategoryIcon(cat.ten),
+          gradient: GRADIENT_COLORS[index % GRADIENT_COLORS.length],
+        }));
+
+        setCategories(mappedCategories);
       }
     } catch (error) {
-      console.error('Error loading products:', error);
+      console.error('Error loading data:', error);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleQuickAction = (filter: string) => {
+    switch (filter) {
+      case 'sale':
+        // Navigate to products with sale filter (has discount)
+        navigation.navigate('Products', { filter: 'sale' });
+        break;
+      case 'new':
+        // Navigate to new products
+        navigation.navigate('Products', { filter: 'new' });
+        break;
+      case 'bestseller':
+        // Navigate to bestseller products
+        navigation.navigate('Products', { filter: 'bestseller' });
+        break;
+      case 'featured':
+        // Navigate to featured products
+        navigation.navigate('Products', { filter: 'featured' });
+        break;
+      case 'all':
+        // Navigate to all products
+        navigation.navigate('Products', { filter: 'all' });
+        break;
+      default:
+        navigation.navigate('Products', { filter: 'all' });
+    }
+  };
+
+  const handleBannerClick = (action: string) => {
+    handleQuickAction(action);
+  };
+
+  // HEADER - Shopee/Lazada Style
   const renderHeader = () => (
     <LinearGradient
-      colors={[COLORS.primary, COLORS.accent, COLORS.secondary]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={[styles.header, { paddingTop: insets.top + 12 }]}
+      colors={[SHOPEE_COLORS.primary, SHOPEE_COLORS.primaryDark]}
+      style={[styles.header, { paddingTop: insets.top + 8 }]}
     >
-      <View style={styles.headerContent}>
-        <View>
-          <Text style={styles.greetingText}>Xin chào 👋</Text>
-          <Text style={styles.headerTitle}>LP Shop</Text>
+      {/* Top Bar */}
+      <View style={styles.headerTop}>
+        <View style={styles.logoContainer}>
+          <Text style={styles.logoText}>LP Shop</Text>
+          <Ionicons name="star" size={16} color={SHOPEE_COLORS.secondary} />
         </View>
-        <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => navigation.navigate('Search')}
-          >
-            <Ionicons name="search-outline" size={24} color={COLORS.white} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.cartButton} onPress={() => navigation.navigate('Cart')}>
-            <Ionicons name="cart-outline" size={26} color={COLORS.white} />
-            {cartCount > 0 && (
-              <View style={styles.cartBadge}>
-                <Text style={styles.cartBadgeText}>{cartCount}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
+        <View style={styles.headerIcons}>
+          <AnimatedTouchable onPress={() => navigation.navigate('Notifications')} scaleValue={0.9}>
+            <View style={styles.notificationIcon}>
+              <Ionicons name="notifications-outline" size={24} color={SHOPEE_COLORS.white} />
+              {unreadCount > 0 && (
+                <View style={styles.notificationBadge}>
+                  <Text style={styles.notificationBadgeText}>
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </AnimatedTouchable>
+          <AnimatedTouchable onPress={() => navigation.navigate('Cart')} scaleValue={0.9}>
+            <View style={styles.cartIcon}>
+              <Ionicons name="cart-outline" size={24} color={SHOPEE_COLORS.white} />
+              {cartCount > 0 && (
+                <View style={styles.cartBadge}>
+                  <Text style={styles.cartBadgeText}>{cartCount}</Text>
+                </View>
+              )}
+            </View>
+          </AnimatedTouchable>
         </View>
       </View>
 
-      {/* Curved Bottom */}
-      <View style={styles.curveContainer}>
-        <View style={styles.curve} />
-      </View>
+      {/* Search Bar */}
+      <TouchableOpacity
+        style={styles.searchBar}
+        onPress={() => navigation.navigate('Search')}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="search" size={20} color={SHOPEE_COLORS.darkGray} />
+        <Text style={styles.searchPlaceholder}>Tìm kiếm sản phẩm...</Text>
+      </TouchableOpacity>
     </LinearGradient>
   );
 
+  // FLASH SALE SECTION
+  const renderFlashSale = () => (
+    <View style={styles.flashSaleSection}>
+      <LinearGradient
+        colors={[SHOPEE_COLORS.red, SHOPEE_COLORS.primaryDark]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.flashSaleHeader}
+      >
+        <View style={styles.flashSaleTitleContainer}>
+          <Ionicons name="flash" size={24} color={SHOPEE_COLORS.white} />
+          <Text style={styles.flashSaleTitle}>FLASH SALE</Text>
+        </View>
+        <View style={styles.flashSaleTimer}>
+          <View style={styles.timerBox}>
+            <Text style={styles.timerText}>{String(timeLeft.hours).padStart(2, '0')}</Text>
+          </View>
+          <Text style={styles.timerSeparator}>:</Text>
+          <View style={styles.timerBox}>
+            <Text style={styles.timerText}>{String(timeLeft.minutes).padStart(2, '0')}</Text>
+          </View>
+          <Text style={styles.timerSeparator}>:</Text>
+          <View style={styles.timerBox}>
+            <Text style={styles.timerText}>{String(timeLeft.seconds).padStart(2, '0')}</Text>
+          </View>
+        </View>
+        <TouchableOpacity
+          style={styles.seeAllFlash}
+          onPress={() => handleQuickAction('sale')}
+        >
+          <Text style={styles.seeAllFlashText}>Xem tất cả</Text>
+          <Ionicons name="chevron-forward" size={16} color={SHOPEE_COLORS.white} />
+        </TouchableOpacity>
+      </LinearGradient>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.flashSaleList}
+      >
+        {flashSaleProducts.map((product, index) => (
+          <AnimatedTouchable
+            key={product._id || index}
+            style={styles.flashSaleCard}
+            onPress={() => navigation.navigate('ProductDetail', { id: product._id })}
+            scaleValue={0.95}
+          >
+            <Image
+              source={{ uri: product.hinhAnh?.[0] || 'https://via.placeholder.com/150' }}
+              style={styles.flashSaleImage}
+            />
+            <View style={styles.flashSaleBadge}>
+              <Text style={styles.flashSaleBadgeText}>
+                -{product.giaKhuyenMai ? Math.round(((product.gia - product.giaKhuyenMai) / product.gia) * 100) : Math.floor(Math.random() * 50 + 20)}%
+              </Text>
+            </View>
+            <View style={styles.flashSalePrice}>
+              <Text style={styles.flashSalePriceText}>₫{(product.giaKhuyenMai || product.gia || 0).toLocaleString('vi-VN')}</Text>
+            </View>
+            <View style={styles.flashSaleProgress}>
+              <View style={[styles.flashSaleProgressBar, { width: `${Math.min((product.daBan || 0) / 100 * 100, 90)}%` }]} />
+            </View>
+            <Text style={styles.flashSaleSold}>Đã bán {product.daBan || 0}</Text>
+          </AnimatedTouchable>
+        ))}
+      </ScrollView>
+    </View>
+  );
+
+  // BANNER CAROUSEL
   const renderBannerCarousel = () => (
     <View style={styles.bannerSection}>
       <Animated.ScrollView
@@ -178,35 +388,26 @@ const HomeScreen = () => {
         {banners.map((banner) => (
           <TouchableOpacity
             key={banner.id}
-            activeOpacity={0.9}
             style={styles.bannerItem}
-            onPress={() => navigation.navigate('Products' as never)}
+            activeOpacity={0.9}
+            onPress={() => handleBannerClick(banner.action)}
           >
             <Image source={{ uri: banner.image }} style={styles.bannerImage} />
-            <LinearGradient
-              colors={['transparent', 'rgba(0,0,0,0.7)']}
-              style={styles.bannerGradient}
-            />
-            <View style={styles.bannerContent}>
-              <Text style={styles.bannerTitle}>{banner.title}</Text>
-              <Text style={styles.bannerSubtitle}>{banner.subtitle}</Text>
-              <View style={styles.shopNowButton}>
-                <Text style={styles.shopNowText}>Mua ngay</Text>
-                <Ionicons name="arrow-forward" size={16} color={COLORS.white} />
-              </View>
+            <View style={styles.bannerBadge}>
+              <Text style={styles.bannerBadgeText}>{banner.badge}</Text>
             </View>
           </TouchableOpacity>
         ))}
       </Animated.ScrollView>
 
       {/* Pagination Dots */}
-      <View style={styles.pagination}>
+      <View style={styles.bannerPagination}>
         {banners.map((_, index) => (
           <View
             key={index}
             style={[
-              styles.paginationDot,
-              index === currentBanner && styles.paginationDotActive,
+              styles.bannerDot,
+              index === currentBanner && styles.bannerDotActive,
             ]}
           />
         ))}
@@ -214,128 +415,181 @@ const HomeScreen = () => {
     </View>
   );
 
+  // CATEGORIES - Horizontal Scroll
   const renderCategories = () => (
     <View style={styles.categoriesSection}>
-      <Text style={styles.sectionTitle}>Danh mục</Text>
-      <View style={styles.categoriesGrid}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.categoriesList}
+      >
         {categories.map((category) => (
-          <TouchableOpacity
+          <AnimatedTouchable
             key={category.id}
-            style={[styles.categoryCard, { backgroundColor: category.bg }]}
-            activeOpacity={0.7}
-            onPress={() => navigation.navigate('Products', { category: category.name })}
+            style={styles.categoryItem}
+            onPress={() => navigation.navigate('Products', { category: category.slug || category.name })}
+            scaleValue={0.95}
           >
-            <View style={[styles.categoryIcon, { backgroundColor: category.color }]}>
-              <Ionicons name={category.icon as any} size={24} color={COLORS.white} />
-            </View>
-            <Text style={styles.categoryName}>{category.name}</Text>
-          </TouchableOpacity>
+            <LinearGradient
+              colors={category.gradient}
+              style={styles.categoryIconContainer}
+            >
+              <Ionicons name={category.icon as any} size={28} color={SHOPEE_COLORS.white} />
+            </LinearGradient>
+            <Text style={styles.categoryName} numberOfLines={2}>{category.name}</Text>
+          </AnimatedTouchable>
         ))}
-      </View>
+      </ScrollView>
     </View>
   );
 
-  const handleQuickAction = (actionId: number) => {
-    switch (actionId) {
-      case 1: // Flash Sale
-        navigation.navigate('Products', { filter: 'sale' });
-        break;
-      case 2: // Mới nhất
-        navigation.navigate('Products', { filter: 'new' });
-        break;
-      case 3: // Bán chạy
-        navigation.navigate('Products', { filter: 'bestseller' });
-        break;
-      case 4: // Ưu đãi
-        navigation.navigate('Products', { filter: 'promotion' });
-        break;
-    }
-  };
-
+  // QUICK ACTIONS - Horizontal Scroll
   const renderQuickActions = () => (
     <View style={styles.quickActionsSection}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {quickActions.map((action, index) => (
-          <TouchableOpacity
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.quickActionsList}
+      >
+        {quickActions.map((action) => (
+          <AnimatedTouchable
             key={action.id}
-            style={[styles.quickActionCard, index === 0 && { marginLeft: SIZES.padding }]}
-            activeOpacity={0.8}
-            onPress={() => handleQuickAction(action.id)}
+            style={styles.quickActionItem}
+            onPress={() => handleQuickAction(action.filter)}
+            scaleValue={0.95}
           >
             <LinearGradient
               colors={action.gradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.quickActionGradient}
+              style={styles.quickActionIcon}
             >
-              <Ionicons name={action.icon as any} size={28} color={COLORS.white} />
-              <Text style={styles.quickActionText}>{action.title}</Text>
+              <Ionicons name={action.icon as any} size={24} color={SHOPEE_COLORS.white} />
             </LinearGradient>
-          </TouchableOpacity>
+            <Text style={styles.quickActionText} numberOfLines={2}>{action.title}</Text>
+          </AnimatedTouchable>
         ))}
       </ScrollView>
     </View>
   );
 
-  const renderProductSection = (products: any[], title: string, emoji: string) => (
-    <View style={styles.productSection}>
-      <View style={styles.productHeader}>
-        <View style={styles.productTitleContainer}>
-          <Text style={styles.productEmoji}>{emoji}</Text>
-          <Text style={styles.productTitle}>{title}</Text>
-        </View>
-        <TouchableOpacity onPress={() => navigation.navigate('Products' as never)}>
-          <Text style={styles.seeAllText}>Xem tất cả →</Text>
-        </TouchableOpacity>
-      </View>
+  // PRODUCT SECTION
+  const renderProductSection = (products: any[], title: string, bgColor: string, filter: string = 'all') => {
+    if (products.length === 0) return null;
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={styles.productList}>
-          {products.map((product, index) => (
-            <View
-              key={product._id}
-              style={[styles.productCardWrapper, index === 0 && { marginLeft: SIZES.padding }]}
+    return (
+      <View style={[styles.productSection, { backgroundColor: bgColor }]}>
+        <View style={styles.productHeader}>
+          <Text style={styles.productTitle}>{title}</Text>
+          <TouchableOpacity onPress={() => handleQuickAction(filter)}>
+            <Text style={styles.seeAllText}>Xem tất cả ›</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.productsGrid}>
+          {products.slice(0, 6).map((product, index) => (
+            <TouchableOpacity
+              key={product._id || index}
+              style={styles.productCard}
+              onPress={() => navigation.navigate('ProductDetail', { id: product._id })}
+              activeOpacity={0.9}
             >
-              <ProductCard
-                id={product._id}
-                ten={product.ten}
-                gia={product.gia}
-                giaKhuyenMai={product.giaKhuyenMai}
-                hinhAnh={product.hinhAnh?.[0] || ''}
-                danhGiaTrungBinh={product.danhGiaTrungBinh}
-                daBan={product.daBan}
-                soLuongTonKho={product.soLuongTonKho}
-                onPress={() => navigation.navigate('ProductDetail', { id: product._id })}
+              <Image
+                source={{ uri: product.hinhAnh?.[0] || 'https://via.placeholder.com/150' }}
+                style={styles.productImage}
               />
-            </View>
+
+              {/* Discount Badge */}
+              {product.giaKhuyenMai && (
+                <View style={styles.discountBadge}>
+                  <Text style={styles.discountText}>
+                    -{Math.round(((product.gia - product.giaKhuyenMai) / product.gia) * 100)}%
+                  </Text>
+                </View>
+              )}
+
+              {/* Mall Badge */}
+              {product.noiBat && (
+                <View style={styles.mallBadge}>
+                  <Text style={styles.mallText}>Mall</Text>
+                </View>
+              )}
+
+              <View style={styles.productInfo}>
+                <Text style={styles.productName} numberOfLines={2}>{product.ten}</Text>
+
+                <View style={styles.productPriceRow}>
+                  <Text style={styles.productPrice}>₫{(product.giaKhuyenMai || product.gia || 0).toLocaleString('vi-VN')}</Text>
+                </View>
+
+                <View style={styles.productFooter}>
+                  <View style={styles.productRating}>
+                    <Ionicons name="star" size={12} color={SHOPEE_COLORS.secondary} />
+                    <Text style={styles.ratingText}>{(product.danhGiaTrungBinh || 4.5).toFixed(1)}</Text>
+                  </View>
+                  <Text style={styles.soldText}>Đã bán {product.daBan || 0}</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
           ))}
         </View>
-      </ScrollView>
-    </View>
+      </View>
+    );
+  };
+
+  // FLOATING CHAT BUTTON
+  const renderFloatingButtons = () => (
+    <>
+      <TouchableOpacity
+        style={styles.floatingChat}
+        onPress={() => navigation.navigate('Chat')}
+        activeOpacity={0.9}
+      >
+        <LinearGradient
+          colors={[SHOPEE_COLORS.primary, SHOPEE_COLORS.primaryDark]}
+          style={styles.floatingChatGradient}
+        >
+          <Ionicons name="chatbubble-ellipses" size={24} color={SHOPEE_COLORS.white} />
+        </LinearGradient>
+      </TouchableOpacity>
+    </>
   );
 
   return (
     <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} bounces={true}>
-        {renderHeader()}
+      <Animated.ScrollView
+        showsVerticalScrollIndicator={false}
+        bounces={true}
+        style={{ opacity: fadeAnim }}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
+        scrollEventThrottle={16}
+      >
         {renderBannerCarousel()}
         {renderCategories()}
         {renderQuickActions()}
+        {renderFlashSale()}
 
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
+            <ActivityIndicator size="large" color={SHOPEE_COLORS.primary} />
             <Text style={styles.loadingText}>Đang tải...</Text>
           </View>
         ) : (
           <>
-            {featuredProducts.length > 0 && renderProductSection(featuredProducts, 'Sản phẩm nổi bật', '🔥')}
-            {newProducts.length > 0 && renderProductSection(newProducts, 'Hàng mới về', '✨')}
+            {renderProductSection(featuredProducts, 'GỢI Ý HÔM NAY', SHOPEE_COLORS.white, 'featured')}
+            {renderProductSection(newProducts, 'HÀNG MỚI VỀ', SHOPEE_COLORS.lightGray, 'new')}
           </>
         )}
 
-        <View style={{ height: 30 }} />
-      </ScrollView>
+        <View style={{ height: 60 }} />
+      </Animated.ScrollView>
+
+      {/* Fixed Header */}
+      {renderHeader()}
+
+      {/* Floating Buttons */}
+      {renderFloatingButtons()}
     </View>
   );
 };
@@ -343,256 +597,462 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.gray[50],
+    backgroundColor: SHOPEE_COLORS.lightGray,
   },
 
-  // Header
+  // HEADER
   header: {
-    paddingBottom: 40,
-    position: 'relative',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
   },
-  headerContent: {
+  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: SIZES.padding,
-    paddingBottom: 16,
+    marginBottom: 12,
   },
-  greetingText: {
-    fontSize: SIZES.small,
-    color: COLORS.white,
-    opacity: 0.9,
-    marginBottom: 4,
-  },
-  headerTitle: {
-    fontSize: SIZES.h1,
-    fontWeight: 'bold',
-    color: COLORS.white,
-  },
-  headerActions: {
+  logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 6,
   },
-  iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+  logoText: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: SHOPEE_COLORS.white,
+    letterSpacing: 0.5,
+  },
+  headerIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
+  },
+  notificationIcon: {
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: SHOPEE_COLORS.red,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: SHOPEE_COLORS.white,
   },
-  cartButton: {
+  notificationBadgeText: {
+    color: SHOPEE_COLORS.white,
+    fontSize: 10,
+    fontWeight: 'bold',
+    lineHeight: 12,
+  },
+  cartIcon: {
     position: 'relative',
   },
   cartBadge: {
     position: 'absolute',
     top: -8,
     right: -8,
-    backgroundColor: COLORS.danger,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    backgroundColor: SHOPEE_COLORS.secondary,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: COLORS.white,
+    paddingHorizontal: 4,
   },
   cartBadgeText: {
-    color: COLORS.white,
-    fontSize: 11,
-    fontWeight: 'bold',
+    color: SHOPEE_COLORS.white,
+    fontSize: 10,
+    fontWeight: '700',
   },
-  curveContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 30,
-    overflow: 'hidden',
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: SHOPEE_COLORS.white,
+    borderRadius: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 10,
   },
-  curve: {
-    height: 60,
-    backgroundColor: COLORS.gray[50],
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
+  searchPlaceholder: {
+    flex: 1,
+    fontSize: 14,
+    color: SHOPEE_COLORS.darkGray,
   },
 
-  // Banner
+  // BANNER
   bannerSection: {
-    marginTop: -20,
-    marginBottom: 20,
+    marginTop: 120, // Account for fixed header
+    marginBottom: 8,
   },
   bannerItem: {
     width,
     height: BANNER_HEIGHT,
-    paddingHorizontal: SIZES.padding,
+    paddingHorizontal: 8,
   },
   bannerImage: {
-    width: width - SIZES.padding * 2,
+    width: width - 16,
     height: BANNER_HEIGHT,
-    borderRadius: 20,
+    borderRadius: 8,
   },
-  bannerGradient: {
+  bannerBadge: {
     position: 'absolute',
-    left: SIZES.padding,
-    right: SIZES.padding,
-    bottom: 0,
-    height: BANNER_HEIGHT,
-    borderRadius: 20,
+    top: 12,
+    right: 20,
+    backgroundColor: SHOPEE_COLORS.red,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
-  bannerContent: {
-    position: 'absolute',
-    bottom: 20,
-    left: SIZES.padding * 2,
-    right: SIZES.padding * 2,
+  bannerBadgeText: {
+    color: SHOPEE_COLORS.white,
+    fontSize: 11,
+    fontWeight: '800',
   },
-  bannerTitle: {
-    fontSize: SIZES.h2,
-    fontWeight: 'bold',
-    color: COLORS.white,
-    marginBottom: 4,
-  },
-  bannerSubtitle: {
-    fontSize: SIZES.body,
-    color: COLORS.white,
-    marginBottom: 12,
-  },
-  shopNowButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: COLORS.white,
-    alignSelf: 'flex-start',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  shopNowText: {
-    color: COLORS.primary,
-    fontWeight: '600',
-    fontSize: SIZES.small,
-  },
-  pagination: {
+  bannerPagination: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 6,
     marginTop: 12,
   },
-  paginationDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: COLORS.gray[300],
+  bannerDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: SHOPEE_COLORS.darkGray,
+    opacity: 0.3,
   },
-  paginationDotActive: {
-    width: 24,
-    backgroundColor: COLORS.primary,
+  bannerDotActive: {
+    width: 20,
+    backgroundColor: SHOPEE_COLORS.primary,
+    opacity: 1,
   },
 
-  // Categories
+  // CATEGORIES
   categoriesSection: {
-    paddingHorizontal: SIZES.padding,
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: SIZES.h3,
-    fontWeight: 'bold',
-    color: COLORS.dark,
-    marginBottom: 16,
-  },
-  categoriesGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  categoryCard: {
-    width: (width - SIZES.padding * 2 - 36) / 4,
-    alignItems: 'center',
+    backgroundColor: SHOPEE_COLORS.white,
     paddingVertical: 16,
-    borderRadius: 16,
+    marginBottom: 8,
   },
-  categoryIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+  categoriesList: {
+    paddingHorizontal: 12,
+    gap: 12,
+  },
+  categoryItem: {
+    width: 72,
+    alignItems: 'center',
+  },
+  categoryIconContainer: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   categoryName: {
-    fontSize: SIZES.tiny,
-    color: COLORS.dark,
-    fontWeight: '600',
+    fontSize: 11,
+    color: SHOPEE_COLORS.darkGray,
     textAlign: 'center',
+    fontWeight: '500',
   },
 
-  // Quick Actions
+  // QUICK ACTIONS
   quickActionsSection: {
-    marginBottom: 24,
+    backgroundColor: SHOPEE_COLORS.white,
+    paddingVertical: 12,
+    marginBottom: 8,
   },
-  quickActionCard: {
-    marginRight: 12,
-    marginLeft: 0,
+  quickActionsList: {
+    paddingHorizontal: 12,
+    gap: 12,
   },
-  quickActionGradient: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderRadius: 16,
+  quickActionItem: {
     alignItems: 'center',
-    gap: 6,
-    minWidth: 100,
+    width: 80,
+  },
+  quickActionIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   quickActionText: {
-    color: COLORS.white,
-    fontSize: SIZES.small,
-    fontWeight: '600',
+    fontSize: 11,
+    color: SHOPEE_COLORS.darkGray,
+    textAlign: 'center',
+    fontWeight: '500',
+    lineHeight: 14,
   },
 
-  // Products
+  // FLASH SALE
+  flashSaleSection: {
+    backgroundColor: SHOPEE_COLORS.white,
+    marginBottom: 8,
+    paddingBottom: 16,
+  },
+  flashSaleHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  flashSaleTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  flashSaleTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: SHOPEE_COLORS.white,
+    letterSpacing: 1,
+  },
+  flashSaleTimer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  timerBox: {
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    borderRadius: 4,
+    minWidth: 32,
+    alignItems: 'center',
+  },
+  timerText: {
+    color: SHOPEE_COLORS.white,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  timerSeparator: {
+    color: SHOPEE_COLORS.white,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  seeAllFlash: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  seeAllFlashText: {
+    color: SHOPEE_COLORS.white,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  flashSaleList: {
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  flashSaleCard: {
+    width: 120,
+    backgroundColor: SHOPEE_COLORS.white,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
+  },
+  flashSaleImage: {
+    width: '100%',
+    height: 120,
+    backgroundColor: SHOPEE_COLORS.lightGray,
+  },
+  flashSaleBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: SHOPEE_COLORS.secondary,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderBottomLeftRadius: 8,
+  },
+  flashSaleBadgeText: {
+    color: SHOPEE_COLORS.white,
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  flashSalePrice: {
+    paddingHorizontal: 8,
+    paddingTop: 8,
+  },
+  flashSalePriceText: {
+    color: SHOPEE_COLORS.red,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  flashSaleProgress: {
+    height: 12,
+    backgroundColor: SHOPEE_COLORS.red + '20', // 20% opacity red
+    marginHorizontal: 8,
+    marginTop: 6,
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  flashSaleProgressBar: {
+    height: '100%',
+    backgroundColor: SHOPEE_COLORS.red,
+  },
+  flashSaleSold: {
+    fontSize: 10,
+    color: SHOPEE_COLORS.darkGray,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+
+  // PRODUCTS
   productSection: {
-    marginBottom: 24,
+    paddingVertical: 12,
+    marginBottom: 8,
   },
   productHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: SIZES.padding,
-    marginBottom: 16,
-  },
-  productTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  productEmoji: {
-    fontSize: 24,
+    paddingHorizontal: 16,
+    marginBottom: 12,
   },
   productTitle: {
-    fontSize: SIZES.h3,
-    fontWeight: 'bold',
-    color: COLORS.dark,
+    fontSize: 16,
+    fontWeight: '700',
+    color: SHOPEE_COLORS.darkGray,
+    letterSpacing: 0.5,
   },
   seeAllText: {
-    fontSize: SIZES.small,
-    color: COLORS.primary,
+    fontSize: 14,
+    color: SHOPEE_COLORS.primary,
     fontWeight: '600',
   },
-  productList: {
+  productsGrid: {
     flexDirection: 'row',
-    paddingRight: SIZES.padding,
+    flexWrap: 'wrap',
+    paddingHorizontal: 8,
   },
-  productCardWrapper: {
-    marginRight: 12,
+  productCard: {
     width: CARD_WIDTH,
+    backgroundColor: SHOPEE_COLORS.white,
+    marginHorizontal: 4,
+    marginBottom: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
+  },
+  productImage: {
+    width: '100%',
+    height: CARD_WIDTH,
+    backgroundColor: SHOPEE_COLORS.lightGray,
+  },
+  discountBadge: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    backgroundColor: SHOPEE_COLORS.secondary,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  discountText: {
+    color: SHOPEE_COLORS.white,
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  mallBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    backgroundColor: SHOPEE_COLORS.red,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 2,
+  },
+  mallText: {
+    color: SHOPEE_COLORS.white,
+    fontSize: 9,
+    fontWeight: '700',
+  },
+  productInfo: {
+    padding: 8,
+  },
+  productName: {
+    fontSize: 13,
+    color: SHOPEE_COLORS.darkGray,
+    marginBottom: 6,
+    lineHeight: 18,
+  },
+  productPriceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  productPrice: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: SHOPEE_COLORS.red,
+  },
+  productFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  productRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  ratingText: {
+    fontSize: 11,
+    color: SHOPEE_COLORS.darkGray,
+  },
+  soldText: {
+    fontSize: 11,
+    color: SHOPEE_COLORS.darkGray,
   },
 
-  // Loading
+  // FLOATING BUTTONS
+  floatingChat: {
+    position: 'absolute',
+    bottom: 80,
+    right: 16,
+    zIndex: 100,
+  },
+  floatingChatGradient: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+
+  // LOADING
   loadingContainer: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -600,8 +1060,8 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: SIZES.body,
-    color: COLORS.gray[500],
+    fontSize: 14,
+    color: SHOPEE_COLORS.darkGray,
   },
 });
 

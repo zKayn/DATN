@@ -10,9 +10,28 @@ interface AdminLayoutProps {
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Start closed on mobile
   const [adminInfo, setAdminInfo] = useState<{ ten?: string; email?: string }>({});
   const pathname = usePathname();
+
+  // Auto-open sidebar on desktop, auto-close on mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        // lg breakpoint
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+
+    // Set initial state
+    handleResize();
+
+    // Listen for resize
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     // Load admin info from localStorage
@@ -112,24 +131,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Sidebar */}
       <aside
         className={`fixed left-0 top-0 h-full bg-gray-900 text-white transition-all duration-300 z-40 ${
-          sidebarOpen ? 'w-64' : 'w-20'
+          sidebarOpen ? 'w-64 translate-x-0' : 'w-64 -translate-x-full lg:w-20 lg:translate-x-0'
         }`}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-800">
-          {sidebarOpen ? (
-            <h1 className="text-xl font-bold">Admin Panel</h1>
-          ) : (
-            <span className="text-xl font-bold">AP</span>
+        <div className="h-16 flex items-center justify-center px-6 border-b border-gray-800">
+          <h1 className={`text-xl font-bold ${sidebarOpen || 'lg:hidden'}`}>
+            {sidebarOpen ? 'Admin Panel' : 'AP'}
+          </h1>
+          {!sidebarOpen && (
+            <span className="hidden lg:block text-xl font-bold">AP</span>
           )}
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="lg:hidden text-gray-400 hover:text-white"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
         </div>
 
         {/* Navigation */}
@@ -138,16 +150,24 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors relative group ${
                 isActive(item.href)
                   ? 'bg-blue-600 text-white'
                   : 'text-gray-300 hover:bg-gray-800 hover:text-white'
               }`}
+              title={!sidebarOpen ? item.title : undefined}
             >
               <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {item.icon}
               </svg>
               {sidebarOpen && <span className="font-medium">{item.title}</span>}
+
+              {/* Tooltip for collapsed sidebar */}
+              {!sidebarOpen && (
+                <span className="absolute left-full ml-6 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 hidden lg:block">
+                  {item.title}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
@@ -184,13 +204,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
+      <div className={`transition-all duration-300 ${sidebarOpen ? 'lg:ml-64 ml-0' : 'lg:ml-20 ml-0'}`}>
         {/* Top Header */}
         <header className="h-16 bg-white border-b sticky top-0 z-30">
-          <div className="h-full px-8 flex items-center justify-between">
+          <div className="h-full px-4 lg:px-8 flex items-center justify-between">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="text-gray-600 hover:text-gray-900 lg:block hidden"
+              className="text-gray-600 hover:text-gray-900"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -208,11 +228,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <main>{children}</main>
       </div>
 
-      {/* Mobile Overlay */}
+      {/* Mobile Overlay - only show when sidebar is open on mobile */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
           onClick={() => setSidebarOpen(false)}
+          aria-label="Close menu"
         />
       )}
     </div>
