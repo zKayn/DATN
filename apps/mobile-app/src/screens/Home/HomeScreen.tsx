@@ -446,11 +446,7 @@ const HomeScreen = () => {
   // QUICK ACTIONS - Horizontal Scroll
   const renderQuickActions = () => (
     <View style={styles.quickActionsSection}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.quickActionsList}
-      >
+      <View style={styles.quickActionsList}>
         {quickActions.map((action) => (
           <AnimatedTouchable
             key={action.id}
@@ -462,12 +458,12 @@ const HomeScreen = () => {
               colors={action.gradient}
               style={styles.quickActionIcon}
             >
-              <Ionicons name={action.icon as any} size={24} color={SHOPEE_COLORS.white} />
+              <Ionicons name={action.icon as any} size={28} color={SHOPEE_COLORS.white} />
             </LinearGradient>
             <Text style={styles.quickActionText} numberOfLines={2}>{action.title}</Text>
           </AnimatedTouchable>
         ))}
-      </ScrollView>
+      </View>
     </View>
   );
 
@@ -776,36 +772,39 @@ const styles = StyleSheet.create({
   // QUICK ACTIONS
   quickActionsSection: {
     backgroundColor: SHOPEE_COLORS.white,
-    paddingVertical: 12,
+    paddingVertical: 16,
     marginBottom: 8,
   },
   quickActionsList: {
-    paddingHorizontal: 12,
-    gap: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    paddingHorizontal: 8,
   },
   quickActionItem: {
     alignItems: 'center',
-    width: 80,
+    flex: 1,
+    maxWidth: 90,
   },
   quickActionIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 8,
+    width: 64,
+    height: 64,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 3,
   },
   quickActionText: {
-    fontSize: 11,
+    fontSize: 12,
     color: SHOPEE_COLORS.darkGray,
     textAlign: 'center',
-    fontWeight: '500',
-    lineHeight: 14,
+    fontWeight: '600',
+    lineHeight: 16,
   },
 
   // FLASH SALE

@@ -1,6 +1,6 @@
 // API Configuration
 export const API_URL = __DEV__
-  ? 'http://192.168.1.68:5000/api' // Android Emulator
+  ? 'http://172.20.10.12:5000/api' // Android Emulator
   : 'https://your-production-api.com/api';
 
 // Alternative for iOS Simulator: 'http://localhost:5000/api'
