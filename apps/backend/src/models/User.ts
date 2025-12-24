@@ -23,6 +23,7 @@ export interface IUser extends Document {
   ngaySinh?: Date;
   danhSachYeuThich: mongoose.Types.ObjectId[];
   lichSuTimKiem: string[];
+  diemTichLuy: number;
   createdAt: Date;
   updatedAt: Date;
   soSanhMatKhau(matKhauNhap: string): Promise<boolean>;
@@ -90,7 +91,12 @@ const UserSchema = new Schema<IUser>(
       type: Schema.Types.ObjectId,
       ref: 'Product'
     }],
-    lichSuTimKiem: [String]
+    lichSuTimKiem: [String],
+    diemTichLuy: {
+      type: Number,
+      default: 0,
+      min: [0, 'Điểm tích lũy không được âm']
+    }
   },
   {
     timestamps: true

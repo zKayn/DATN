@@ -13,6 +13,7 @@ interface User {
   gioiTinh?: string;
   ngaySinh?: Date | string;
   diaChi?: any[];
+  diemTichLuy?: number;
 }
 
 interface AuthContextData {

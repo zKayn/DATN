@@ -127,6 +127,31 @@ export default function VoucherPage() {
     }
   };
 
+  const handleSendVoucherEmail = async (voucherId: string, voucherCode: string) => {
+    if (!confirm(`Bạn có chắc chắn muốn gửi voucher ${voucherCode} đến tất cả subscribers?`)) return;
+
+    const loadingToast = toast.loading('Đang gửi email...');
+
+    try {
+      const response = await api.sendVoucherToSubscribers(voucherId);
+
+      if (response.success) {
+        toast.success(response.message || 'Gửi voucher thành công!');
+        if (response.data && typeof response.data === 'object' && 'sent' in response.data && 'total' in response.data) {
+          const data = response.data as { sent: number; total: number };
+          toast.success(`Đã gửi đến ${data.sent}/${data.total} subscribers`);
+        }
+      } else {
+        toast.error((response as any).message || 'Có lỗi xảy ra khi gửi email');
+      }
+    } catch (error) {
+      console.error('Error sending voucher email:', error);
+      toast.error('Có lỗi xảy ra khi gửi email');
+    } finally {
+      toast.dismiss(loadingToast);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       ma: '',
@@ -291,18 +316,27 @@ export default function VoucherPage() {
                     {getStatusBadge(voucher.trangThai)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => handleEdit(voucher)}
-                      className="text-blue-600 hover:text-blue-900 mr-3"
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      onClick={() => handleDelete(voucher._id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Xóa
-                    </button>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => handleSendVoucherEmail(voucher._id, voucher.ma)}
+                        className="text-green-600 hover:text-green-900 px-2 py-1 rounded hover:bg-green-50"
+                        title="Gửi voucher đến subscribers"
+                      >
+                        📧 Gửi Email
+                      </button>
+                      <button
+                        onClick={() => handleEdit(voucher)}
+                        className="text-blue-600 hover:text-blue-900 px-2 py-1 rounded hover:bg-blue-50"
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        onClick={() => handleDelete(voucher._id)}
+                        className="text-red-600 hover:text-red-900 px-2 py-1 rounded hover:bg-red-50"
+                      >
+                        Xóa
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

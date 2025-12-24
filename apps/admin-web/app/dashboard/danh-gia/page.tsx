@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 interface Review {
   _id: string;
@@ -97,26 +98,36 @@ export default function ReviewsManagementPage() {
   const handleApprove = async (reviewId: string) => {
     if (!confirm('Bạn có chắc chắn muốn duyệt đánh giá này?')) return;
 
-    const response = await api.approveReview(reviewId);
+    try {
+      const response = await api.approveReview(reviewId);
 
-    if (response.success) {
-      alert('Duyệt đánh giá thành công!');
-      loadReviews();
-    } else {
-      alert('Lỗi: ' + response.error);
+      if (response.success) {
+        toast.success('Duyệt đánh giá thành công!');
+        loadReviews();
+      } else {
+        toast.error((response as any).error || 'Không thể duyệt đánh giá');
+      }
+    } catch (error) {
+      console.error('Error approving review:', error);
+      toast.error('Có lỗi xảy ra khi duyệt đánh giá');
     }
   };
 
   const handleReject = async (reviewId: string) => {
     if (!confirm('Bạn có chắc chắn muốn từ chối đánh giá này?')) return;
 
-    const response = await api.rejectReview(reviewId);
+    try {
+      const response = await api.rejectReview(reviewId);
 
-    if (response.success) {
-      alert('Từ chối đánh giá thành công!');
-      loadReviews();
-    } else {
-      alert('Lỗi: ' + response.error);
+      if (response.success) {
+        toast.success('Từ chối đánh giá thành công!');
+        loadReviews();
+      } else {
+        toast.error((response as any).error || 'Không thể từ chối đánh giá');
+      }
+    } catch (error) {
+      console.error('Error rejecting review:', error);
+      toast.error('Có lỗi xảy ra khi từ chối đánh giá');
     }
   };
 

@@ -11,7 +11,8 @@ import {
   X,
   LogOut,
   Package,
-  UserCircle
+  UserCircle,
+  Bell
 } from 'lucide-react'
 import Image from 'next/image'
 import { api } from '@/lib/api'
@@ -19,6 +20,7 @@ import { useCart } from '@/contexts/CartContext'
 import { useWishlist } from '@/contexts/WishlistContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSettings } from '@/contexts/SettingsContext'
+import { useNotification } from '@/contexts/NotificationContext'
 
 interface Category {
   _id: string;
@@ -50,6 +52,7 @@ export default function Header() {
   const { wishlistCount } = useWishlist()
   const { user, isAuthenticated, logout } = useAuth()
   const { settings } = useSettings()
+  const { unreadCount } = useNotification()
 
   const handleLogout = () => {
     logout()
@@ -125,10 +128,10 @@ export default function Header() {
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
       {/* Top bar */}
-      <div className="bg-gradient-to-r from-primary-600 to-secondary-600 text-white py-2">
+      <div className="bg-gradient-to-r from-primary-600 via-secondary-600 to-accent-600 text-white py-2">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center text-sm">
-            <p>🔥 Miễn phí vận chuyển cho đơn hàng từ {settings?.freeShippingThreshold?.toLocaleString('vi-VN') || '500,000'}₫</p>
+            <p>🎁 Miễn phí vận chuyển cho đơn hàng từ {settings?.freeShippingThreshold?.toLocaleString('vi-VN') || '500,000'}₫</p>
             <div className="hidden md:flex items-center gap-4">
               {settings?.storePhone && (
                 <a href={`tel:${settings.storePhone}`} className="hover:underline">
@@ -157,14 +160,14 @@ export default function Header() {
                 />
               </div>
             ) : (
-              <div className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white p-2 rounded-lg">
+              <div className="bg-gradient-to-br from-primary-600 to-accent-600 text-white p-2 rounded-lg shadow-glow-red">
                 <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z" />
                 </svg>
               </div>
             )}
             <div className="hidden md:block">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
                 {settings?.storeName || 'Thể Thao Pro'}
               </h1>
               <p className="text-xs text-gray-500">{settings?.storeDescription || 'Chuyên đồ thể thao'}</p>
@@ -180,9 +183,9 @@ export default function Header() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
                 placeholder="Tìm kiếm sản phẩm, thương hiệu..."
-                className="w-full px-4 py-3 pr-12 rounded-lg border-2 border-gray-200 focus:border-primary-500 focus:outline-none transition-colors"
+                className="w-full px-4 py-3 pr-12 rounded-lg border-2 border-gray-200 focus:border-accent-500 focus:outline-none transition-colors"
               />
-              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary-600 text-white p-2 rounded-md hover:bg-primary-700 transition-colors">
+              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary-600 text-white p-2 rounded-md hover:bg-primary-700 transition-colors shadow-glow-red">
                 <Search className="w-5 h-5" />
               </button>
 
@@ -278,6 +281,21 @@ export default function Header() {
               )}
             </Link>
 
+            {/* Notifications */}
+            {isAuthenticated && (
+              <Link
+                href="/thong-bao"
+                className="hidden md:flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
+              >
+                <Bell className="w-6 h-6" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-accent-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full shadow-glow-gold">
+                    {unreadCount}
+                  </span>
+                )}
+              </Link>
+            )}
+
             {/* Cart */}
             <Link
               href="/gio-hang"
@@ -286,7 +304,7 @@ export default function Header() {
               <ShoppingCart className="w-6 h-6" />
               <span className="hidden md:inline">Giỏ hàng</span>
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full shadow-glow-red">
                   {cartCount}
                 </span>
               )}
@@ -299,7 +317,18 @@ export default function Header() {
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <UserCircle className="w-6 h-6" />
+                  {user.anhDaiDien ? (
+                    <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-primary-600">
+                      <Image
+                        src={user.anhDaiDien}
+                        alt={user.hoTen || user.ten || 'Avatar'}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <UserCircle className="w-8 h-8 text-primary-600" />
+                  )}
                   <span className="max-w-[100px] truncate">{user.hoTen || user.ten}</span>
                 </button>
 
@@ -307,8 +336,26 @@ export default function Header() {
                 {showUserMenu && (
                   <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                     <div className="px-4 py-3 border-b border-gray-200">
-                      <p className="font-semibold text-gray-900 truncate">{user.hoTen || user.ten}</p>
-                      <p className="text-sm text-gray-500 truncate">{user.email}</p>
+                      <div className="flex items-center gap-3 mb-2">
+                        {user.anhDaiDien ? (
+                          <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary-600 flex-shrink-0">
+                            <Image
+                              src={user.anhDaiDien}
+                              alt={user.hoTen || user.ten || 'Avatar'}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-600 to-accent-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-glow-gold">
+                            {(user.hoTen || user.ten || 'U').charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-gray-900 truncate">{user.hoTen || user.ten}</p>
+                          <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                        </div>
+                      </div>
                     </div>
                     <Link
                       href="/tai-khoan"
@@ -325,6 +372,19 @@ export default function Header() {
                     >
                       <Package className="w-5 h-5 text-gray-600" />
                       <span className="text-gray-700">Đơn hàng của tôi</span>
+                    </Link>
+                    <Link
+                      href="/thong-bao"
+                      className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors relative"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      <Bell className="w-5 h-5 text-gray-600" />
+                      <span className="text-gray-700">Thông báo</span>
+                      {unreadCount > 0 && (
+                        <span className="ml-auto px-2 py-0.5 bg-accent-600 text-white text-xs rounded-full">
+                          {unreadCount}
+                        </span>
+                      )}
                     </Link>
                     <Link
                       href="/yeu-thich"
@@ -375,9 +435,9 @@ export default function Header() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Tìm kiếm sản phẩm..."
-                className="w-full px-4 py-3 pr-12 rounded-lg border-2 border-gray-200 focus:border-primary-500 focus:outline-none"
+                className="w-full px-4 py-3 pr-12 rounded-lg border-2 border-gray-200 focus:border-accent-500 focus:outline-none"
               />
-              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary-600 text-white p-2 rounded-md">
+              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary-600 text-white p-2 rounded-md shadow-glow-red">
                 <Search className="w-5 h-5" />
               </button>
             </div>
@@ -398,7 +458,7 @@ export default function Header() {
               <li key={category._id} className="relative group">
                 <Link
                   href={`/danh-muc/${category.slug}`}
-                  className="hover:text-primary-600 transition-colors flex items-center gap-1"
+                  className="hover:text-accent-600 transition-colors flex items-center gap-1"
                 >
                   {category.ten}
                   {category.loaiSanPham && category.loaiSanPham.length > 0 && (
@@ -427,8 +487,8 @@ export default function Header() {
               </li>
             ))}
             <li>
-              <Link href="/khuyen-mai" className="text-red-600 font-medium hover:text-red-700 transition-colors">
-                🔥 Khuyến Mãi
+              <Link href="/khuyen-mai" className="text-primary-600 font-medium hover:text-primary-700 transition-colors">
+                🎁 Khuyến Mãi
               </Link>
             </li>
           </ul>
@@ -467,16 +527,52 @@ export default function Header() {
                 </li>
               ))}
               <li>
-                <Link href="/khuyen-mai" className="block py-2 text-red-600 font-medium">
-                  🔥 Khuyến Mãi
+                <Link href="/khuyen-mai" className="block py-2 text-primary-600 font-medium">
+                  🎁 Khuyến Mãi
                 </Link>
               </li>
               <li className="border-t pt-4">
-                <Link href="/tai-khoan" className="flex items-center gap-2 py-2">
-                  <User className="w-5 h-5" />
-                  <span>Tài khoản</span>
-                </Link>
+                {isAuthenticated && user ? (
+                  <Link href="/tai-khoan" className="flex items-center gap-3 py-2">
+                    {user.anhDaiDien ? (
+                      <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-primary-600 flex-shrink-0">
+                        <Image
+                          src={user.anhDaiDien}
+                          alt={user.hoTen || user.ten || 'Avatar'}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-600 to-accent-600 flex items-center justify-center text-white font-bold flex-shrink-0 shadow-glow-gold">
+                        {(user.hoTen || user.ten || 'U').charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900">{user.hoTen || user.ten}</p>
+                      <p className="text-sm text-gray-500">Xem tài khoản</p>
+                    </div>
+                  </Link>
+                ) : (
+                  <Link href="/dang-nhap" className="flex items-center gap-2 py-2">
+                    <User className="w-5 h-5" />
+                    <span>Đăng nhập</span>
+                  </Link>
+                )}
               </li>
+              {isAuthenticated && (
+                <li>
+                  <Link href="/thong-bao" className="flex items-center gap-2 py-2 relative">
+                    <Bell className="w-5 h-5" />
+                    <span>Thông báo</span>
+                    {unreadCount > 0 && (
+                      <span className="ml-auto px-2 py-0.5 bg-accent-600 text-white text-xs rounded-full">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link href="/yeu-thich" className="flex items-center gap-2 py-2">
                   <Heart className="w-5 h-5" />

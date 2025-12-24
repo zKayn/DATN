@@ -15,7 +15,7 @@ import ProfileScreen from '../screens/Profile/ProfileScreen';
 
 export type MainTabParamList = {
   Home: undefined;
-  Products: undefined;
+  Products: { category?: string; filter?: string } | undefined;
   Wishlist: undefined;
   Chat: undefined;
   Profile: undefined;

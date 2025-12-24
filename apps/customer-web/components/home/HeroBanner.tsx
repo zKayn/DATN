@@ -8,30 +8,30 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 const banners = [
   {
     id: 1,
-    title: 'Bộ Sưu Tập Mùa Hè 2025',
-    subtitle: 'Giảm giá đến 50% cho đồ thể thao cao cấp',
-    cta: 'Mua Ngay',
+    title: '🎄 Giáng Sinh Vui Vẻ - Sale Khủng 2025',
+    subtitle: 'Giảm giá đến 50% cho tất cả đồ thể thao - Quà tặng hấp dẫn',
+    cta: '🎁 Mua Ngay',
     ctaLink: '/san-pham',
     image: 'https://images.unsplash.com/photo-1556906781-9a412961c28c?w=1920&h=600&fit=crop',
-    bgColor: 'from-blue-600 to-purple-600'
+    bgColor: 'from-primary-600 to-primary-800'
   },
   {
     id: 2,
-    title: 'Giày Chạy Bộ Chuyên Nghiệp',
-    subtitle: 'Công nghệ đệm khí mới nhất từ Nike & Adidas',
-    cta: 'Khám Phá',
+    title: '🧧 Tết Đến - Lộc Về',
+    subtitle: 'Sắm Tết vui vẻ - Nhận lì xì may mắn khi mua hàng',
+    cta: '🎊 Khám Phá',
     ctaLink: '/danh-muc/giay-the-thao',
     image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1920&h=600&fit=crop',
-    bgColor: 'from-orange-600 to-red-600'
+    bgColor: 'from-accent-600 to-accent-800'
   },
   {
     id: 3,
-    title: 'Dụng Cụ Tập Gym',
-    subtitle: 'Trang bị đầy đủ cho phòng tập tại nhà',
-    cta: 'Xem Thêm',
-    ctaLink: '/danh-muc/dung-cu-tap',
+    title: '✨ Ưu Đãi Mùa Lễ Hội',
+    subtitle: 'Trang bị thể thao chất lượng - Giá tốt nhất năm',
+    cta: '🎉 Xem Thêm',
+    ctaLink: '/khuyen-mai',
     image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920&h=600&fit=crop',
-    bgColor: 'from-green-600 to-teal-600'
+    bgColor: 'from-secondary-600 to-secondary-800'
   }
 ]
 
@@ -74,6 +74,9 @@ export default function HeroBanner() {
               priority={index === 0}
             />
             <div className={`absolute inset-0 bg-gradient-to-r ${banner.bgColor} opacity-70`} />
+
+            {/* Festive overlay pattern */}
+            <div className="absolute inset-0 bg-snow-overlay opacity-10 pointer-events-none" />
           </div>
 
           {/* Content */}
@@ -87,7 +90,7 @@ export default function HeroBanner() {
               </p>
               <Link
                 href={banner.ctaLink}
-                className="inline-block bg-white text-gray-900 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-all hover:scale-105 shadow-lg animate-slide-up"
+                className="inline-block bg-gradient-to-r from-accent-500 to-accent-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:from-accent-600 hover:to-accent-700 transition-all hover:scale-105 shadow-glow-gold shadow-lg animate-slide-up"
                 style={{ animationDelay: '0.2s' }}
               >
                 {banner.cta}

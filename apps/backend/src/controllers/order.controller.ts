@@ -2,7 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import Order from '../models/Order';
 import Product from '../models/Product';
 import Voucher from '../models/Voucher';
-import { createNotificationForAdmins } from './notification.controller';
+import { createNotificationForAdmins, createNotificationForUser } from './notification.controller';
+import { addPointsForOrder, usePoints } from '../services/point.service';
 
 export const createOrder = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -25,9 +26,32 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
       }
     }
 
+    // Xử lý điểm tích lũy nếu user muốn sử dụng
+    let pointsUsed = 0;
+    let discountFromPoints = 0;
+
+    if (req.body.diemSuDung && req.body.diemSuDung > 0) {
+      const pointResult = await usePoints(
+        req.user?._id!,
+        req.body.diemSuDung
+      );
+
+      if (!pointResult.success) {
+        return res.status(400).json({
+          success: false,
+          message: pointResult.message || 'Không thể sử dụng điểm'
+        });
+      }
+
+      pointsUsed = req.body.diemSuDung;
+      discountFromPoints = pointResult.discountAmount;
+    }
+
     const orderData = {
       ...req.body,
       nguoiDung: req.user?._id,
+      diemSuDung: pointsUsed,
+      giamGiaTuDiem: discountFromPoints,
       lichSuTrangThai: [{
         trangThai: 'cho-xac-nhan',
         moTa: 'Đơn hàng đã được tạo',
@@ -38,11 +62,17 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
     const order = new Order(orderData);
     await order.save();
 
-    // Cập nhật số lượng tồn kho và số lượng đã bán
+    // Cập nhật giao dịch điểm với order ID
+    if (pointsUsed > 0) {
+      // The transaction was already created in usePoints, just need to update with order ID
+      // This is already handled in the usePoints service
+    }
+
+    // Cập nhật số lượng tồn kho (giảm tồn kho khi đặt hàng)
+    // Lưu ý: daBan chỉ được tăng khi đơn hàng giao thành công (trạng thái da-giao)
     for (const item of order.sanPham) {
       await Product.findByIdAndUpdate(item.sanPham, {
         $inc: {
-          daBan: item.soLuong,
           soLuongTonKho: -item.soLuong
         }
       });
@@ -174,9 +204,83 @@ export const updateOrderStatus = async (req: Request, res: Response, next: NextF
     if (trangThai === 'da-giao') {
       order.giaoThanhCongLuc = new Date();
       order.trangThaiThanhToan = 'da-thanh-toan';
+
+      // Cập nhật số lượng đã bán cho các sản phẩm
+      for (const item of order.sanPham) {
+        await Product.findByIdAndUpdate(item.sanPham, {
+          $inc: {
+            daBan: item.soLuong
+          }
+        });
+      }
+      console.log(`✅ Đã cập nhật số lượng đã bán cho đơn hàng ${order.maDonHang}`);
+
+      // Thêm điểm tích lũy cho khách hàng
+      const pointResult = await addPointsForOrder(
+        order.nguoiDung,
+        order._id,
+        order.tongThanhToan
+      );
+
+      if (pointResult.success && pointResult.points > 0) {
+        console.log(`Đã thêm ${pointResult.points} điểm cho người dùng ${order.nguoiDung}`);
+      }
+    }
+
+    // Xử lý trả hàng - giảm daBan và hoàn lại tồn kho
+    if (trangThai === 'tra-hang') {
+      for (const item of order.sanPham) {
+        await Product.findByIdAndUpdate(item.sanPham, {
+          $inc: {
+            daBan: -item.soLuong,
+            soLuongTonKho: item.soLuong
+          }
+        });
+      }
+      console.log(`✅ Đã xử lý trả hàng cho đơn hàng ${order.maDonHang}`);
     }
 
     await order.save();
+
+    // Gửi thông báo cho khách hàng khi trạng thái thay đổi
+    const statusNotifications: Record<string, { title: string; content: string; type: any }> = {
+      'da-xac-nhan': {
+        title: 'Đơn hàng đã được xác nhận',
+        content: `Đơn hàng #${order.maDonHang} của bạn đã được xác nhận và đang được chuẩn bị.`,
+        type: 'don-hang-xac-nhan' as const
+      },
+      'dang-chuan-bi': {
+        title: 'Đơn hàng đang được chuẩn bị',
+        content: `Đơn hàng #${order.maDonHang} của bạn đang được chuẩn bị để giao hàng.`,
+        type: 'don-hang-dang-chuan-bi' as const
+      },
+      'dang-giao': {
+        title: 'Đơn hàng đang được giao',
+        content: `Đơn hàng #${order.maDonHang} của bạn đang trên đường giao đến bạn.`,
+        type: 'don-hang-dang-giao' as const
+      },
+      'da-giao': {
+        title: 'Đơn hàng đã được giao thành công',
+        content: `Đơn hàng #${order.maDonHang} của bạn đã được giao thành công. Cảm ơn bạn đã mua hàng!`,
+        type: 'don-hang-giao-thanh-cong' as const
+      }
+    };
+
+    // Gửi thông báo nếu trạng thái có trong danh sách
+    if (statusNotifications[trangThai]) {
+      const notification = statusNotifications[trangThai];
+      console.log(`📧 Sending notification to user ${order.nguoiDung}: ${notification.title}`);
+
+      await createNotificationForUser({
+        tieuDe: notification.title,
+        noiDung: notification.content,
+        loai: notification.type,
+        nguoiNhan: order.nguoiDung.toString(),
+        donHang: order._id.toString()
+      });
+
+      console.log(`✅ Notification sent successfully for order ${order.maDonHang}`);
+    }
 
     res.json({
       success: true,
@@ -223,11 +327,11 @@ export const cancelOrder = async (req: Request, res: Response, next: NextFunctio
 
     await order.save();
 
-    // Hoàn lại số lượng tồn kho
+    // Hoàn lại số lượng tồn kho (vì đã giảm khi tạo đơn)
+    // Không cần giảm daBan vì chưa tăng (chỉ tăng khi giao thành công)
     for (const item of order.sanPham) {
       await Product.findByIdAndUpdate(item.sanPham, {
         $inc: {
-          daBan: -item.soLuong,
           soLuongTonKho: item.soLuong
         }
       });
@@ -254,15 +358,20 @@ export const deleteOrder = async (req: Request, res: Response, next: NextFunctio
       });
     }
 
-    // Chỉ cho phép xóa đơn đã hủy
+    // Hoàn lại số lượng trước khi xóa (nếu cần)
     if (order.trangThaiDonHang !== 'da-huy') {
-      // Nếu đơn chưa hủy, hoàn lại tồn kho trước khi xóa
       for (const item of order.sanPham) {
+        const updateData: any = {
+          soLuongTonKho: item.soLuong
+        };
+
+        // Chỉ giảm daBan nếu đơn đã giao thành công (vì chỉ tăng daBan khi da-giao)
+        if (order.trangThaiDonHang === 'da-giao') {
+          updateData.daBan = -item.soLuong;
+        }
+
         await Product.findByIdAndUpdate(item.sanPham, {
-          $inc: {
-            daBan: -item.soLuong,
-            soLuongTonKho: item.soLuong
-          }
+          $inc: updateData
         });
       }
     }

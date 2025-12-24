@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNotification } from '../../contexts/NotificationContext';
 import { COLORS, SIZES } from '../../constants/config';
 import { Ionicons } from '@expo/vector-icons';
 import api from '../../services/api';
@@ -18,6 +19,7 @@ import api from '../../services/api';
 const ProfileScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const { user, logout, isAuthenticated } = useAuth();
+  const { unreadCount } = useNotification();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -25,6 +27,17 @@ const ProfileScreen = ({ navigation }: any) => {
     if (isAuthenticated) {
       loadOrders();
     }
+  }, [isAuthenticated]);
+
+  // Poll orders every 10 seconds for real-time updates when admin changes order status
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const interval = setInterval(() => {
+      loadOrders();
+    }, 10000); // Poll every 10 seconds
+
+    return () => clearInterval(interval);
   }, [isAuthenticated]);
 
   const loadOrders = async () => {
@@ -169,6 +182,22 @@ const ProfileScreen = ({ navigation }: any) => {
 
         <TouchableOpacity
           style={styles.menuItem}
+          onPress={() => navigation.navigate('Notifications')}
+        >
+          <View style={styles.menuIconContainer}>
+            <Ionicons name="notifications-outline" size={24} color={COLORS.primary} />
+          </View>
+          <Text style={styles.menuText}>Thông báo</Text>
+          {unreadCount > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
+            </View>
+          )}
+          <Ionicons name="chevron-forward" size={20} color={COLORS.gray[400]} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
           onPress={() => navigation.navigate('MyReviews')}
         >
           <View style={styles.menuIconContainer}>
@@ -200,7 +229,21 @@ const ProfileScreen = ({ navigation }: any) => {
           <Ionicons name="chevron-forward" size={20} color={COLORS.gray[400]} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('Points')}
+        >
+          <View style={styles.menuIconContainer}>
+            <Ionicons name="gift-outline" size={24} color={COLORS.warning} />
+          </View>
+          <Text style={styles.menuText}>Điểm tích lũy</Text>
+          <Ionicons name="chevron-forward" size={20} color={COLORS.gray[400]} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('Settings')}
+        >
           <View style={styles.menuIconContainer}>
             <Ionicons name="settings-outline" size={24} color={COLORS.gray[600]} />
           </View>
@@ -246,12 +289,12 @@ const getStatusText = (status: string) => {
 const getStatusStyle = (status: string) => {
   const styleMap: { [key: string]: any } = {
     'cho-xac-nhan': { backgroundColor: COLORS.warning + '20', borderColor: COLORS.warning },
-    'da-xac-nhan': { backgroundColor: COLORS.primary + '20', borderColor: COLORS.primary },
-    'dang-chuan-bi': { backgroundColor: COLORS.info + '20', borderColor: COLORS.info },
-    'dang-giao': { backgroundColor: COLORS.info + '20', borderColor: COLORS.info },
-    'da-giao': { backgroundColor: COLORS.success + '20', borderColor: COLORS.success },
+    'da-xac-nhan': { backgroundColor: COLORS.accent + '20', borderColor: COLORS.accent },
+    'dang-chuan-bi': { backgroundColor: COLORS.accent + '20', borderColor: COLORS.accent },
+    'dang-giao': { backgroundColor: COLORS.primary + '20', borderColor: COLORS.primary },
+    'da-giao': { backgroundColor: COLORS.secondary + '20', borderColor: COLORS.secondary },
     'da-huy': { backgroundColor: COLORS.danger + '20', borderColor: COLORS.danger },
-    'tra-hang': { backgroundColor: '#FF6B35' + '20', borderColor: '#FF6B35' },
+    'tra-hang': { backgroundColor: COLORS.warning + '20', borderColor: COLORS.warning },
   };
   return styleMap[status] || {};
 };
@@ -427,6 +470,21 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: SIZES.body,
     color: COLORS.dark,
+  },
+  badge: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginRight: 8,
+    minWidth: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: {
+    color: COLORS.white,
+    fontSize: SIZES.tiny,
+    fontWeight: '600',
   },
   logoutButton: {
     marginTop: 8,

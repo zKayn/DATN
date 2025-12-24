@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface INotification extends Document {
   tieuDe: string;
   noiDung: string;
-  loai: 'don-hang-moi' | 'don-hang-huy' | 'danh-gia-moi' | 'khac';
+  loai: 'don-hang-moi' | 'don-hang-huy' | 'don-hang-xac-nhan' | 'don-hang-dang-chuan-bi' | 'don-hang-dang-giao' | 'don-hang-giao-thanh-cong' | 'danh-gia-moi' | 'khac';
   nguoiNhan: mongoose.Types.ObjectId;
   donHang?: mongoose.Types.ObjectId;
   danhGia?: mongoose.Types.ObjectId;
@@ -24,7 +24,7 @@ const NotificationSchema = new Schema<INotification>(
     },
     loai: {
       type: String,
-      enum: ['don-hang-moi', 'don-hang-huy', 'danh-gia-moi', 'khac'],
+      enum: ['don-hang-moi', 'don-hang-huy', 'don-hang-xac-nhan', 'don-hang-dang-chuan-bi', 'don-hang-dang-giao', 'don-hang-giao-thanh-cong', 'danh-gia-moi', 'khac'],
       default: 'khac'
     },
     nguoiNhan: {

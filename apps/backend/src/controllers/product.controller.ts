@@ -408,3 +408,67 @@ export const recalculateStock = async (
     next(error);
   }
 };
+
+// @desc    Tính lại số lượng đã bán dựa trên đơn hàng đã giao
+// @route   POST /api/admin/products/recalculate-sold
+// @access  Private/Admin
+export const recalculateSold = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const Order = require('../models/Order').default;
+
+    // Lấy tất cả sản phẩm
+    const products = await Product.find({});
+
+    console.log('🔄 Bắt đầu tính lại số lượng đã bán...');
+    const results = [];
+
+    for (const product of products) {
+      const oldSold = product.daBan || 0;
+
+      // Tính tổng số lượng đã bán từ các đơn hàng đã giao thành công
+      const orders = await Order.find({
+        'sanPham.sanPham': product._id,
+        trangThaiDonHang: 'da-giao'
+      });
+
+      let newSold = 0;
+      for (const order of orders) {
+        const item = order.sanPham.find((p: any) => p.sanPham.toString() === product._id.toString());
+        if (item) {
+          newSold += item.soLuong;
+        }
+      }
+
+      // Cập nhật số lượng đã bán
+      product.daBan = newSold;
+      await product.save();
+
+      results.push({
+        productId: product._id,
+        name: product.ten,
+        oldSold,
+        newSold,
+        difference: newSold - oldSold
+      });
+
+      console.log(`✅ ${product.ten}: ${oldSold} → ${newSold} (${newSold - oldSold >= 0 ? '+' : ''}${newSold - oldSold})`);
+    }
+
+    console.log('✨ Hoàn thành tính lại số lượng đã bán!');
+
+    res.json({
+      success: true,
+      message: `Đã tính lại số lượng đã bán cho ${products.length} sản phẩm`,
+      data: {
+        totalProducts: products.length,
+        details: results
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};

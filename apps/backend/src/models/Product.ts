@@ -173,8 +173,8 @@ ProductSchema.pre('save', function(next) {
 });
 
 // Indexes để tối ưu tìm kiếm
+// Note: slug field already has unique: true which creates an index automatically
 ProductSchema.index({ ten: 'text', moTa: 'text', tags: 'text' });
-ProductSchema.index({ slug: 1 });
 ProductSchema.index({ danhMuc: 1 });
 ProductSchema.index({ gia: 1 });
 ProductSchema.index({ noiBat: -1 });

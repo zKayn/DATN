@@ -102,10 +102,10 @@ async function searchProductsForAI(query: string, limit: number = 5) {
 function createSystemPrompt(context: ProductContext): string {
   const categoryList = context.categories.join(', ');
 
-  return `Bạn là trợ lý ảo thông minh của Sport Store - cửa hàng thể thao trực tuyến hàng đầu Việt Nam.
+  return `Bạn là trợ lý ảo thông minh của LP SHOP - cửa hàng thể thao trực tuyến hàng đầu Việt Nam.
 
 THÔNG TIN CỬA HÀNG:
-- Tên: Sport Store
+- Tên: LP SHOP
 - Chuyên: Đồ thể thao, giày thể thao, quần áo tập gym, dụng cụ thể thao chất lượng cao
 - Danh mục sản phẩm: ${categoryList}
 

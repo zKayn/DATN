@@ -9,7 +9,8 @@ import {
   getFeaturedProducts,
   getNewProducts,
   getProductBySlug,
-  recalculateStock
+  recalculateStock,
+  recalculateSold
 } from '../controllers/product.controller';
 import { protect, authorize } from '../middlewares/auth';
 
@@ -26,6 +27,7 @@ router.get('/:id', getProduct);
 // Protected routes - Admin & Nhân viên
 router.post('/', protect, authorize('quan-tri', 'nhan-vien'), createProduct);
 router.post('/recalculate-stock', protect, authorize('quan-tri'), recalculateStock);
+router.post('/recalculate-sold', protect, authorize('quan-tri'), recalculateSold);
 router.put('/:id', protect, authorize('quan-tri', 'nhan-vien'), updateProduct);
 router.delete('/:id', protect, authorize('quan-tri'), deleteProduct);
 

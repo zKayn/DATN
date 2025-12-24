@@ -5,6 +5,7 @@ import { AuthProvider } from './src/contexts/AuthContext';
 import { CartProvider } from './src/contexts/CartContext';
 import { WishlistProvider } from './src/contexts/WishlistContext';
 import { SettingsProvider } from './src/contexts/SettingsContext';
+import { NotificationProvider } from './src/contexts/NotificationContext';
 import RootNavigator from './src/navigation/RootNavigator';
 
 export default function App() {
@@ -12,12 +13,14 @@ export default function App() {
     <SafeAreaProvider>
       <SettingsProvider>
         <AuthProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <RootNavigator />
-              <StatusBar style="auto" />
-            </WishlistProvider>
-          </CartProvider>
+          <NotificationProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <RootNavigator />
+                <StatusBar style="auto" />
+              </WishlistProvider>
+            </CartProvider>
+          </NotificationProvider>
         </AuthProvider>
       </SettingsProvider>
     </SafeAreaProvider>

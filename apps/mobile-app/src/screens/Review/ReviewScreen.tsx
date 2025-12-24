@@ -90,7 +90,7 @@ const ReviewScreen = ({ route, navigation }: any) => {
             <Ionicons
               name={star <= rating ? 'star' : 'star-outline'}
               size={40}
-              color={star <= rating ? '#FFD700' : COLORS.gray[400]}
+              color={star <= rating ? COLORS.accent : COLORS.gray[400]}
             />
           </TouchableOpacity>
         ))}

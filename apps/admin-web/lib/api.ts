@@ -5,6 +5,56 @@ interface ApiResponse<T = any> {
   data?: T;
   message?: string;
   error?: string;
+  unreadCount?: number;
+}
+
+interface Settings {
+  storeName: string;
+  storeEmail: string;
+  storePhone: string;
+  storeAddress: string;
+  storeLogo: string;
+  storeDescription: string;
+  currency: string;
+  taxRate: number;
+  shippingFee: number;
+  freeShippingThreshold: number;
+  emailNotifications: boolean;
+  orderNotifications: boolean;
+  reviewNotifications: boolean;
+  lowStockAlert: boolean;
+  lowStockThreshold: number;
+  maintenanceMode: boolean;
+  paymentMethods: {
+    cod: boolean;
+    vnpay: boolean;
+    momo: boolean;
+    bankTransfer: boolean;
+  };
+  socialLinks: {
+    facebook: string;
+    instagram: string;
+    youtube: string;
+    tiktok: string;
+  };
+  seo: {
+    metaTitle: string;
+    metaDescription: string;
+    metaKeywords: string;
+  };
+}
+
+interface Notification {
+  _id: string;
+  tieuDe: string;
+  noiDung: string;
+  loai: string;
+  daDoc: boolean;
+  donHang?: {
+    _id: string;
+    maDonHang: string;
+  };
+  createdAt: string;
 }
 
 class ApiService {
@@ -25,6 +75,8 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     try {
+      console.log(`🌐 API Request: ${options.method || 'GET'} ${API_URL}${endpoint}`);
+
       const response = await fetch(`${API_URL}${endpoint}`, {
         ...options,
         headers: {
@@ -33,15 +85,33 @@ class ApiService {
         },
       });
 
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch (jsonError) {
+        console.error('❌ JSON parse error:', jsonError);
+        throw new Error('Server trả về dữ liệu không hợp lệ');
+      }
+
+      console.log(`📦 API Response (${response.status}):`, result);
 
       if (!response.ok) {
-        throw new Error(result.message || 'Đã có lỗi xảy ra');
+        // Check if unauthorized
+        if (response.status === 401) {
+          console.warn('🔐 Unauthorized - Token may be invalid or expired');
+          // Optionally redirect to login
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_user');
+          }
+        }
+        throw new Error(result.message || result.error || 'Đã có lỗi xảy ra');
       }
 
       // Return the API response directly (it already has success, data, message structure)
       return result;
     } catch (error: any) {
+      console.error(`❌ API Error for ${endpoint}:`, error);
       return {
         success: false,
         error: error.message || 'Đã có lỗi xảy ra',
@@ -307,7 +377,7 @@ class ApiService {
 
   // Settings APIs
   async getSettings() {
-    return this.request('/settings');
+    return this.request<Settings>('/settings');
   }
 
   async updateSettings(data: any) {
@@ -366,11 +436,11 @@ class ApiService {
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.daDoc !== undefined) queryParams.append('daDoc', params.daDoc.toString());
 
-    return this.request(`/notifications?${queryParams.toString()}`);
+    return this.request<Notification[]>(`/notifications?${queryParams.toString()}`);
   }
 
   async getUnreadCount() {
-    return this.request('/notifications/unread-count');
+    return this.request<{ count: number }>('/notifications/unread-count');
   }
 
   async markNotificationAsRead(id: string) {
@@ -388,6 +458,14 @@ class ApiService {
   async deleteNotification(id: string) {
     return this.request(`/notifications/${id}`, {
       method: 'DELETE',
+    });
+  }
+
+  // Newsletter APIs
+  async sendVoucherToSubscribers(voucherId: string) {
+    return this.request('/newsletter/send-voucher', {
+      method: 'POST',
+      body: JSON.stringify({ voucherId }),
     });
   }
 }

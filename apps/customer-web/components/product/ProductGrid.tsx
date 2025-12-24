@@ -24,6 +24,7 @@ interface Product {
   danhMuc: any;
   kichThuoc?: string[];
   mauSac?: Array<{ ten: string; ma: string }>;
+  soLuongTonKho: number;
 }
 
 export default function ProductGrid({ filters }: ProductGridProps) {
@@ -34,6 +35,7 @@ export default function ProductGrid({ filters }: ProductGridProps) {
 
   // Fetch products from API
   useEffect(() => {
+    setCurrentPage(1); // Reset to page 1 when filters change
     loadProducts();
   }, [filters]);
 
@@ -41,7 +43,9 @@ export default function ProductGrid({ filters }: ProductGridProps) {
     setLoading(true);
     try {
       // Build API params from filters
-      const params: any = {};
+      const params: any = {
+        limit: 1000 // Fetch all products for client-side pagination
+      };
 
       if (filters.category) {
         params.danhMuc = filters.category;
@@ -95,14 +99,14 @@ export default function ProductGrid({ filters }: ProductGridProps) {
         if (filters.sizes && filters.sizes.length > 0) {
           data = data.filter((p: Product) => {
             // Check if product has any of the selected sizes
-            return filters.sizes.some(size => p.kichThuoc?.includes(size));
+            return filters.sizes.some((size: string) => p.kichThuoc?.includes(size));
           });
         }
 
         if (filters.colors && filters.colors.length > 0) {
           data = data.filter((p: Product) => {
             // Check if product has any of the selected colors
-            return filters.colors.some(color =>
+            return filters.colors.some((color: string) =>
               p.mauSac?.some((mau: any) => mau.ten === color)
             );
           });
@@ -166,7 +170,7 @@ export default function ProductGrid({ filters }: ProductGridProps) {
       </div>
 
       {/* Product Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 items-stretch">
         {paginatedProducts.map((product) => (
           <ProductCard
             key={product._id}
@@ -181,6 +185,7 @@ export default function ProductGrid({ filters }: ProductGridProps) {
             isNew={product.sanPhamMoi}
             isFeatured={product.noiBat}
             soldCount={product.daBan}
+            stock={product.soLuongTonKho}
           />
         ))}
       </div>
@@ -191,29 +196,94 @@ export default function ProductGrid({ filters }: ProductGridProps) {
           <button
             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+            className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
           >
             Trước
           </button>
 
-          {[...Array(totalPages)].map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentPage(i + 1)}
-              className={`px-4 py-2 rounded-lg ${
-                currentPage === i + 1
-                  ? 'bg-blue-600 text-white'
-                  : 'border hover:bg-gray-50'
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
+          {/* Smart pagination - show first, last, and nearby pages */}
+          {(() => {
+            const pages = [];
+            const showEllipsisStart = currentPage > 3;
+            const showEllipsisEnd = currentPage < totalPages - 2;
+
+            // Always show first page
+            pages.push(
+              <button
+                key={1}
+                onClick={() => setCurrentPage(1)}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  currentPage === 1
+                    ? 'bg-primary-600 text-white'
+                    : 'border hover:bg-gray-50'
+                }`}
+              >
+                1
+              </button>
+            );
+
+            // Show ellipsis after first page if needed
+            if (showEllipsisStart) {
+              pages.push(
+                <span key="ellipsis-start" className="px-2 text-gray-400">
+                  ...
+                </span>
+              );
+            }
+
+            // Show pages around current page
+            const start = Math.max(2, currentPage - 1);
+            const end = Math.min(totalPages - 1, currentPage + 1);
+
+            for (let i = start; i <= end; i++) {
+              pages.push(
+                <button
+                  key={i}
+                  onClick={() => setCurrentPage(i)}
+                  className={`px-4 py-2 rounded-lg transition-colors ${
+                    currentPage === i
+                      ? 'bg-primary-600 text-white'
+                      : 'border hover:bg-gray-50'
+                  }`}
+                >
+                  {i}
+                </button>
+              );
+            }
+
+            // Show ellipsis before last page if needed
+            if (showEllipsisEnd) {
+              pages.push(
+                <span key="ellipsis-end" className="px-2 text-gray-400">
+                  ...
+                </span>
+              );
+            }
+
+            // Always show last page (if more than 1 page)
+            if (totalPages > 1) {
+              pages.push(
+                <button
+                  key={totalPages}
+                  onClick={() => setCurrentPage(totalPages)}
+                  className={`px-4 py-2 rounded-lg transition-colors ${
+                    currentPage === totalPages
+                      ? 'bg-primary-600 text-white'
+                      : 'border hover:bg-gray-50'
+                  }`}
+                >
+                  {totalPages}
+                </button>
+              );
+            }
+
+            return pages;
+          })()}
 
           <button
             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+            className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
           >
             Sau
           </button>

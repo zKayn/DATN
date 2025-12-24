@@ -6,6 +6,7 @@ import User from '../models/User';
 export const getNotifications = async (req: Request, res: Response) => {
   try {
     const { page = 1, limit = 20, daDoc } = req.query;
+    console.log('📡 GET /notifications - User:', req.user?._id, 'Query:', { page, limit, daDoc });
 
     const query: any = { nguoiNhan: req.user?._id };
     if (daDoc !== undefined) {
@@ -18,6 +19,15 @@ export const getNotifications = async (req: Request, res: Response) => {
       .skip((Number(page) - 1) * Number(limit))
       .populate('donHang', 'maDonHang tongTien trangThai')
       .lean();
+
+    console.log('📊 Found notifications:', notifications.length);
+    if (notifications.length > 0) {
+      console.log('📬 Latest notification:', {
+        id: notifications[0]._id,
+        title: notifications[0].tieuDe,
+        read: notifications[0].daDoc
+      });
+    }
 
     const total = await Notification.countDocuments(query);
     const unreadCount = await Notification.countDocuments({
@@ -37,7 +47,7 @@ export const getNotifications = async (req: Request, res: Response) => {
       unreadCount
     });
   } catch (error: any) {
-    console.error('Error getting notifications:', error);
+    console.error('❌ Error getting notifications:', error);
     res.status(500).json({
       success: false,
       message: error.message || 'Lỗi khi lấy danh sách thông báo'
@@ -153,7 +163,7 @@ export const deleteNotification = async (req: Request, res: Response) => {
 export const createNotificationForAdmins = async (data: {
   tieuDe: string;
   noiDung: string;
-  loai: 'don-hang-moi' | 'don-hang-huy' | 'danh-gia-moi' | 'khac';
+  loai: 'don-hang-moi' | 'don-hang-huy' | 'don-hang-xac-nhan' | 'don-hang-dang-chuan-bi' | 'don-hang-dang-giao' | 'don-hang-giao-thanh-cong' | 'danh-gia-moi' | 'khac';
   donHang?: string;
   danhGia?: string;
 }) => {
@@ -181,5 +191,41 @@ export const createNotificationForAdmins = async (data: {
     console.log(`Created ${notifications.length} notifications for admins`);
   } catch (error) {
     console.error('Error creating notifications for admins:', error);
+  }
+};
+
+// Helper function to create notification for a specific user
+export const createNotificationForUser = async (data: {
+  tieuDe: string;
+  noiDung: string;
+  loai: 'don-hang-moi' | 'don-hang-huy' | 'don-hang-xac-nhan' | 'don-hang-dang-chuan-bi' | 'don-hang-dang-giao' | 'don-hang-giao-thanh-cong' | 'danh-gia-moi' | 'khac';
+  nguoiNhan: string;
+  donHang?: string;
+  danhGia?: string;
+}) => {
+  try {
+    console.log('🔔 Creating notification for user:', data.nguoiNhan);
+    console.log('   - Title:', data.tieuDe);
+    console.log('   - Type:', data.loai);
+    console.log('   - Order:', data.donHang);
+
+    const notification = await Notification.create({
+      tieuDe: data.tieuDe,
+      noiDung: data.noiDung,
+      loai: data.loai,
+      nguoiNhan: data.nguoiNhan,
+      donHang: data.donHang,
+      danhGia: data.danhGia,
+      daDoc: false
+    });
+
+    console.log('✅ Notification created successfully!');
+    console.log('   - ID:', notification._id);
+    console.log('   - For user:', data.nguoiNhan);
+    console.log('   - Title:', notification.tieuDe);
+
+    return notification;
+  } catch (error) {
+    console.error('❌ Error creating notification for user:', error);
   }
 };

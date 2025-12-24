@@ -190,14 +190,14 @@ const WishlistScreen = ({ navigation }: any) => {
               <Ionicons name="image-outline" size={40} color={COLORS.gray[400]} />
             </View>
           )}
-          {discountPercent > 0 && (
+          {!isOutOfStock && discountPercent > 0 && (
             <View style={styles.discountBadge}>
               <Text style={styles.discountText}>-{discountPercent}%</Text>
             </View>
           )}
           {isOutOfStock && (
             <View style={styles.outOfStockOverlay}>
-              <Text style={styles.outOfStockText}>Hết hàng</Text>
+              <Text style={styles.outOfStockText}>HẾT HÀNG</Text>
             </View>
           )}
         </View>

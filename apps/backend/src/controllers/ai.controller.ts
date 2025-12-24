@@ -87,7 +87,13 @@ export const chatbot = async (
 
     if (genAI) {
       console.log('Calling Gemini API...');
-      const systemMessage = `Bạn là trợ lý ảo thông minh của cửa hàng đồ thể thao SportHub.
+      const systemMessage = `Bạn là trợ lý ảo thông minh của cửa hàng đồ thể thao LP Xin chào! 👋 Tôi là trợ lý AI của LP SHOP. Tôi có thể giúp bạn:
+
+• Tìm sản phẩm phù hợp
+• Tư vấn về giá cả, size, màu sắc
+• Giải đáp chính sách cửa hàng
+
+Bạn cần tôi hỗ trợ gì?SHOP.
 
 THÔNG TIN SẢN PHẨM HIỆN CÓ:
 ${JSON.stringify(productContext, null, 2)}

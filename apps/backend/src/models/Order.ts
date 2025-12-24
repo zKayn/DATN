@@ -21,6 +21,8 @@ export interface IOrder extends Document {
     ma: string;
     giaTriGiam: number;
   };
+  diemSuDung?: number;
+  giamGiaTuDiem?: number;
   tongThanhToan: number;
   diaChiGiaoHang: {
     hoTen: string;
@@ -107,6 +109,14 @@ const OrderSchema = new Schema<IOrder>(
       },
       ma: String,
       giaTriGiam: Number
+    },
+    diemSuDung: {
+      type: Number,
+      default: 0
+    },
+    giamGiaTuDiem: {
+      type: Number,
+      default: 0
     },
     tongThanhToan: {
       type: Number,

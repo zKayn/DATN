@@ -8,7 +8,7 @@ export default function ProductsPage() {
   const [filters, setFilters] = useState({
     category: '',
     productType: '',
-    priceRange: [0, 10000000],
+    priceRange: [0, 10000000] as [number, number],
     brands: [] as string[],
     sizes: [] as string[],
     colors: [] as string[],

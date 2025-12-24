@@ -56,26 +56,48 @@ export default function DashboardPage() {
         }));
       }
 
-      // Load products count and top selling products
-      const productsResponse = await api.getProducts({ limit: 100, sort: '-daBan' });
-      if (productsResponse.success) {
-        const productsData = productsResponse.data as any;
-        const products = Array.isArray(productsData) ? productsData : productsData.products || [];
+      // Calculate top selling products from completed orders
+      const productSales: Record<string, any> = {};
+      if (ordersResponse.success && ordersResponse.data) {
+        const orders = Array.isArray(ordersResponse.data) ? ordersResponse.data : (ordersResponse.data as any).orders || [];
 
-        // Set top 5 selling products
-        setTopProducts(products.slice(0, 5));
+        orders.forEach((order: any) => {
+          const status = order.trangThaiDonHang || order.trangThai;
+          if (status === 'da-giao' && order.sanPham) {
+            order.sanPham.forEach((item: any) => {
+              const productId = item.sanPham?._id || item.sanPham;
+              const productName = item.tenSanPham || item.sanPham?.ten || 'Unknown';
+              const productImage = item.hinhAnh || (item.sanPham?.hinhAnh ? item.sanPham.hinhAnh[0] : null);
 
-        if ((productsResponse as any).pagination) {
-          setStats(prev => ({
-            ...prev,
-            totalProducts: (productsResponse as any).pagination.total
-          }));
-        } else {
-          setStats(prev => ({
-            ...prev,
-            totalProducts: products.length
-          }));
-        }
+              if (!productSales[productId]) {
+                productSales[productId] = {
+                  _id: productId,
+                  ten: productName,
+                  hinhAnh: productImage ? [productImage] : [],
+                  daBan: 0,
+                  gia: item.gia || item.sanPham?.gia || 0,
+                  revenue: 0
+                };
+              }
+              productSales[productId].daBan += item.soLuong || 0;
+              productSales[productId].revenue += (item.gia || 0) * (item.soLuong || 0);
+            });
+          }
+        });
+      }
+
+      const topProductsArray = Object.values(productSales)
+        .sort((a: any, b: any) => b.daBan - a.daBan)
+        .slice(0, 5);
+      setTopProducts(topProductsArray);
+
+      // Load total products count
+      const productsResponse = await api.getProducts({ limit: 1 });
+      if (productsResponse.success && (productsResponse as any).pagination) {
+        setStats(prev => ({
+          ...prev,
+          totalProducts: (productsResponse as any).pagination.total
+        }));
       }
     } catch (error) {
       console.error('Lỗi khi tải dữ liệu dashboard:', error);

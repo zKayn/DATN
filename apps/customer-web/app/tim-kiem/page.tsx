@@ -17,6 +17,7 @@ interface Product {
   noiBat: boolean;
   sanPhamMoi: boolean;
   daBan: number;
+  soLuongTonKho: number;
 }
 
 export default function SearchPage() {
@@ -123,7 +124,7 @@ export default function SearchPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 items-stretch">
               {products.map((product) => (
                 <ProductCard
                   key={product._id}
@@ -138,6 +139,7 @@ export default function SearchPage() {
                   isNew={product.sanPhamMoi}
                   isFeatured={product.noiBat}
                   soldCount={product.daBan}
+                  stock={product.soLuongTonKho}
                 />
               ))}
             </div>

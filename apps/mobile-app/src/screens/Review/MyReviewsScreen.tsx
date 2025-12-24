@@ -119,7 +119,7 @@ const MyReviewsScreen = ({ navigation }: any) => {
             key={star}
             name={star <= rating ? 'star' : 'star-outline'}
             size={16}
-            color={star <= rating ? '#FFD700' : COLORS.gray[400]}
+            color={star <= rating ? COLORS.accent : COLORS.gray[400]}
           />
         ))}
       </View>

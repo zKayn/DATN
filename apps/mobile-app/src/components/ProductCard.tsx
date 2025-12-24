@@ -13,6 +13,7 @@ interface ProductCardProps {
   hinhAnh: string;
   danhGiaTrungBinh?: number;
   daBan?: number;
+  soLuongTonKho?: number;
   onPress: () => void;
 }
 
@@ -27,12 +28,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
   hinhAnh,
   danhGiaTrungBinh = 0,
   daBan = 0,
+  soLuongTonKho = 0,
   onPress,
 }) => {
   const { isAuthenticated } = useAuth();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const discount = giaKhuyenMai ? Math.round(((gia - giaKhuyenMai) / gia) * 100) : 0;
   const inWishlist = isInWishlist(id);
+  const isOutOfStock = soLuongTonKho === 0;
 
   const handleWishlistToggle = async (e: any) => {
     e.stopPropagation();
@@ -58,7 +61,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
           style={styles.image}
           resizeMode="cover"
         />
-        {discount > 0 && (
+        {isOutOfStock && (
+          <View style={styles.outOfStockOverlay}>
+            <View style={styles.outOfStockBadge}>
+              <Text style={styles.outOfStockText}>HẾT HÀNG</Text>
+            </View>
+          </View>
+        )}
+        {!isOutOfStock && discount > 0 && (
           <View style={styles.discountBadge}>
             <Text style={styles.discountText}>-{discount}%</Text>
           </View>
@@ -84,14 +94,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
           {ten}
         </Text>
 
-        {/* Rating */}
-        {danhGiaTrungBinh > 0 && (
-          <View style={styles.rating}>
-            <Ionicons name="star" size={14} color={COLORS.warning} />
-            <Text style={styles.ratingText}>{danhGiaTrungBinh.toFixed(1)}</Text>
-            <Text style={styles.soldText}>• Đã bán {daBan}</Text>
-          </View>
-        )}
+        {/* Rating and Sold Count */}
+        <View style={styles.rating}>
+          {danhGiaTrungBinh > 0 && (
+            <>
+              <Ionicons name="star" size={14} color={COLORS.warning} />
+              <Text style={styles.ratingText}>{danhGiaTrungBinh.toFixed(1)}</Text>
+              <Text style={styles.soldText}>• </Text>
+            </>
+          )}
+          <Text style={styles.soldText}>Đã bán: {daBan}</Text>
+        </View>
 
         {/* Price */}
         <View style={styles.priceContainer}>
@@ -130,6 +143,27 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+  },
+  outOfStockOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  outOfStockBadge: {
+    backgroundColor: COLORS.dark,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  outOfStockText: {
+    color: COLORS.white,
+    fontSize: SIZES.small,
+    fontWeight: 'bold',
   },
   discountBadge: {
     position: 'absolute',
@@ -170,6 +204,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
+    minHeight: 20,
   },
   ratingText: {
     fontSize: SIZES.tiny,

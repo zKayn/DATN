@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 interface Order {
   _id: string;
@@ -110,13 +111,18 @@ export default function OrdersManagementPage() {
   };
 
   const handleUpdateStatus = async (orderId: string, newStatus: string) => {
-    const response = await api.updateOrderStatus(orderId, newStatus);
+    try {
+      const response = await api.updateOrderStatus(orderId, newStatus);
 
-    if (response.success) {
-      alert('Cập nhật trạng thái đơn hàng thành công!');
-      loadOrders();
-    } else {
-      alert('Lỗi: ' + response.error);
+      if (response.success) {
+        toast.success('Cập nhật trạng thái đơn hàng thành công!');
+        loadOrders();
+      } else {
+        toast.error((response as any).error || 'Không thể cập nhật trạng thái');
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      toast.error('Có lỗi xảy ra khi cập nhật trạng thái đơn hàng');
     }
   };
 

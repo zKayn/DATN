@@ -1,11 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Heart, ShoppingCart, Star, Eye } from 'lucide-react'
-import { useState } from 'react'
 import { useWishlist } from '@/contexts/WishlistContext'
 import toast from 'react-hot-toast'
+import QuickViewModal from './QuickViewModal'
+import SeasonalBadge from '@/components/decorations/SeasonalBadge'
 
 interface ProductCardProps {
   id: string
@@ -34,11 +36,13 @@ export default function ProductCard({
   isNew,
   isFeatured,
   soldCount,
-  stock = 100
+  stock = 0
 }: ProductCardProps) {
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false)
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   const isWishlisted = isInWishlist(id)
   const discountPercent = salePrice ? Math.round(((price - salePrice) / price) * 100) : 0
+  const isOutOfStock = stock === 0 || stock === undefined
 
   const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -71,9 +75,9 @@ export default function ProductCard({
   }
 
   return (
-    <div className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-transparent hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+    <div className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-transparent hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 flex flex-col h-full">
       {/* Image Container */}
-      <Link href={`/san-pham/${slug}`} className="block relative aspect-square overflow-hidden bg-gray-50">
+      <Link href={`/san-pham/${slug}`} className="block relative aspect-square overflow-hidden bg-gray-50 flex-shrink-0">
         <Image
           src={image}
           alt={name}
@@ -83,31 +87,31 @@ export default function ProductCard({
 
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
-          {isNew && (
-            <span className="bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
-              Mới
-            </span>
+          {isOutOfStock && (
+            <SeasonalBadge type="out-of-stock" />
           )}
-          {discountPercent > 0 && (
-            <span className="bg-red-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
-              -{discountPercent}%
-            </span>
+          {!isOutOfStock && isNew && (
+            <SeasonalBadge type="new" />
           )}
-          {isFeatured && (
-            <span className="bg-yellow-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
-              ⭐ Nổi bật
-            </span>
+          {!isOutOfStock && discountPercent > 0 && discountPercent >= 30 && (
+            <SeasonalBadge type="noel-special" discount={discountPercent} />
+          )}
+          {!isOutOfStock && discountPercent > 0 && discountPercent < 30 && (
+            <SeasonalBadge type="tet-deal" discount={discountPercent} />
+          )}
+          {!isOutOfStock && isFeatured && (
+            <SeasonalBadge type="lucky-sale" />
           )}
         </div>
 
         {/* Quick Actions */}
-        <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
           <button
             onClick={handleWishlistToggle}
-            className={`p-2 rounded-full backdrop-blur-md transition-all ${
+            className={`p-2 rounded-full backdrop-blur-md transition-all shadow-lg ${
               isWishlisted
-                ? 'bg-red-500 text-white'
-                : 'bg-white/80 text-gray-700 hover:bg-red-500 hover:text-white'
+                ? 'bg-primary-500 text-white shadow-glow-red'
+                : 'bg-white/80 text-gray-700 hover:bg-primary-500 hover:text-white hover:shadow-glow-red'
             }`}
             aria-label="Add to wishlist"
           >
@@ -116,32 +120,43 @@ export default function ProductCard({
           <button
             onClick={(e) => {
               e.preventDefault()
-              // TODO: Quick view modal
+              setIsQuickViewOpen(true)
             }}
-            className="p-2 bg-white/80 backdrop-blur-md text-gray-700 rounded-full hover:bg-primary-500 hover:text-white transition-all"
+            className="p-2 bg-white/80 backdrop-blur-md text-gray-700 rounded-full hover:bg-accent-500 hover:text-white hover:shadow-glow-gold transition-all shadow-lg"
             aria-label="Quick view"
           >
             <Eye className="w-5 h-5" />
           </button>
         </div>
 
+        {/* Out of Stock Overlay */}
+        {isOutOfStock && (
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+            <span className="bg-gray-900 text-white px-6 py-3 rounded-lg font-bold text-lg">
+              HẾT HÀNG
+            </span>
+          </div>
+        )}
+
         {/* Add to Cart Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-          <Link
-            href={`/san-pham/${slug}`}
-            className="w-full bg-primary-600 hover:bg-primary-700 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-lg"
-          >
-            <ShoppingCart className="w-5 h-5" />
-            Thêm vào giỏ
-          </Link>
-        </div>
+        {!isOutOfStock && (
+          <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+            <Link
+              href={`/san-pham/${slug}`}
+              className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-lg shadow-glow-red"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              Thêm vào giỏ
+            </Link>
+          </div>
+        )}
       </Link>
 
       {/* Product Info */}
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-grow">
         {/* Product Name */}
         <Link href={`/san-pham/${slug}`} className="block">
-          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-primary-600 transition-colors">
+          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-accent-600 transition-colors min-h-[3rem]">
             {name}
           </h3>
         </Link>
@@ -169,7 +184,7 @@ export default function ProductCard({
         <div className="flex items-baseline gap-2 mb-2">
           {salePrice ? (
             <>
-              <span className="text-2xl font-bold text-red-600">
+              <span className="text-2xl font-bold text-primary-600">
                 {formatPrice(salePrice)}
               </span>
               <span className="text-sm text-gray-400 line-through">
@@ -184,12 +199,17 @@ export default function ProductCard({
         </div>
 
         {/* Sold Count */}
-        {soldCount && soldCount > 0 && (
-          <p className="text-sm text-gray-500">
-            Đã bán: {soldCount}
-          </p>
-        )}
+        <p className="text-sm text-gray-500">
+          Đã bán: {soldCount || 0}
+        </p>
       </div>
+
+      {/* Quick View Modal */}
+      <QuickViewModal
+        isOpen={isQuickViewOpen}
+        onClose={() => setIsQuickViewOpen(false)}
+        productId={id}
+      />
     </div>
   )
 }

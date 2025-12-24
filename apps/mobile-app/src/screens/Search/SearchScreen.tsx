@@ -113,6 +113,7 @@ const SearchScreen = ({ navigation }: any) => {
         hinhAnh={item.hinhAnh?.[0] || ''}
         danhGiaTrungBinh={item.danhGiaTrungBinh}
         daBan={item.daBan}
+        soLuongTonKho={item.soLuongTonKho}
         onPress={() => navigation.navigate('ProductDetail', { id: item._id })}
       />
     </View>

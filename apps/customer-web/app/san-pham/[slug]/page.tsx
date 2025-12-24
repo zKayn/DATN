@@ -172,15 +172,17 @@ export default function ProductDetailPage() {
       toast.success('Đã xóa khỏi danh sách yêu thích');
     } else {
       addToWishlist({
-        productId: product._id,
-        name: product.ten,
+        _id: product._id,
+        ten: product.ten,
         slug: product.slug || product._id,
-        image: product.hinhAnh[0] || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500',
-        price: product.gia,
-        salePrice: product.giaKhuyenMai || null,
-        rating: product.danhGiaTrungBinh,
-        reviewCount: product.soLuongDanhGia,
-        stock: product.soLuongTonKho
+        hinhAnh: product.hinhAnh,
+        gia: product.gia,
+        giaKhuyenMai: product.giaKhuyenMai,
+        danhGia: {
+          trungBinh: product.danhGiaTrungBinh,
+          soLuong: product.soLuongDanhGia
+        },
+        tonKho: product.soLuongTonKho
       });
       toast.success('Đã thêm vào danh sách yêu thích');
     }
@@ -265,7 +267,7 @@ export default function ProductDetailPage() {
                 <span className="ml-2 text-sm font-medium">{product.danhGiaTrungBinh}</span>
               </div>
               <span className="text-sm text-gray-600">({product.soLuongDanhGia} đánh giá)</span>
-              <span className="text-sm text-gray-600">Đã bán {product.daBan}</span>
+              <span className="text-sm text-gray-600">Đã bán: {product.daBan || 0}</span>
             </div>
 
             {/* Price */}
