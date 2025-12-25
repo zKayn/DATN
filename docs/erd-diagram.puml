@@ -1,0 +1,250 @@
+@startuml LP Shop - ERD Diagram
+
+' Layout direction - chạy ngang
+left to right direction
+
+!define Table(name,desc) class name as "desc" << (T,#FFAAAA) >>
+!define primary_key(x) <b><color:red>PK: x</color></b>
+!define foreign_key(x) <color:blue>FK: x</color>
+!define column(x) <color:black>x</color>
+
+skinparam linetype ortho
+skinparam nodesep 80
+skinparam ranksep 100
+
+' Entities
+entity "User" as user {
+  primary_key(_id: ObjectId)
+  --
+  column(hoTen: String)
+  column(email: String [unique])
+  column(matKhau: String)
+  column(soDienThoai: String)
+  column(avatar: String)
+  column(anhDaiDien: String)
+  column(diaChi: Array[Object])
+  column(vaiTro: String)
+  column(trangThai: String)
+  column(gioiTinh: String)
+  column(ngaySinh: Date)
+  column(danhSachYeuThich: Array[ObjectId])
+  column(lichSuTimKiem: Array[String])
+  column(diemTichLuy: Number)
+  column(createdAt: Date)
+  column(updatedAt: Date)
+}
+
+entity "Product" as product {
+  primary_key(_id: ObjectId)
+  --
+  column(ten: String)
+  column(slug: String [unique])
+  column(moTa: String)
+  column(moTaChiTiet: String)
+  column(gia: Number)
+  column(giaKhuyenMai: Number)
+  column(hinhAnh: Array[String])
+  foreign_key(danhMuc: ObjectId)
+  column(loaiSanPham: String)
+  column(thuongHieu: String)
+  column(kichThuoc: Array[String])
+  column(mauSac: Array[Object])
+  column(soLuongTonKho: Number)
+  column(daBan: Number)
+  column(luotXem: Number)
+  column(danhGiaTrungBinh: Number)
+  column(soLuongDanhGia: Number)
+  column(trangThai: String)
+  column(noiBat: Boolean)
+  column(sanPhamMoi: Boolean)
+  column(dacDiem: Array[String])
+  column(thongSoKyThuat: Map)
+  column(tags: Array[String])
+  column(seoKeywords: Array[String])
+  column(createdAt: Date)
+  column(updatedAt: Date)
+}
+
+entity "Category" as category {
+  primary_key(_id: ObjectId)
+  --
+  column(ten: String [unique])
+  column(slug: String [unique])
+  column(moTa: String)
+  column(hinhAnh: String)
+  foreign_key(danhMucCha: ObjectId)
+  column(loaiSanPham: Array[String])
+  column(thuTu: Number)
+  column(trangThai: String)
+  column(seoTitle: String)
+  column(seoDescription: String)
+  column(createdAt: Date)
+  column(updatedAt: Date)
+}
+
+entity "Order" as order {
+  primary_key(_id: ObjectId)
+  --
+  column(maDonHang: String [unique])
+  foreign_key(nguoiDung: ObjectId)
+  column(sanPham: Array[Object])
+  column(tongTien: Number)
+  column(phiVanChuyen: Number)
+  column(giamGia: Number)
+  column(maGiamGia: Object)
+  foreign_key(maGiamGia.voucher: ObjectId)
+  column(diemSuDung: Number)
+  column(giamGiaTuDiem: Number)
+  column(tongThanhToan: Number)
+  column(diaChiGiaoHang: Object)
+  column(phuongThucThanhToan: String)
+  column(trangThaiThanhToan: String)
+  column(trangThaiDonHang: String)
+  column(ghiChu: String)
+  column(lyDoHuy: String)
+  column(thanhToanLuc: Date)
+  column(giaoDuKienLuc: Date)
+  column(giaoThanhCongLuc: Date)
+  column(lichSuTrangThai: Array[Object])
+  column(createdAt: Date)
+  column(updatedAt: Date)
+}
+
+entity "Review" as review {
+  primary_key(_id: ObjectId)
+  --
+  foreign_key(sanPham: ObjectId)
+  foreign_key(nguoiDung: ObjectId)
+  foreign_key(donHang: ObjectId)
+  column(danhGia: Number)
+  column(tieuDe: String)
+  column(noiDung: String)
+  column(hinhAnh: Array[String])
+  column(phanHoi: Object)
+  foreign_key(phanHoi.nguoiPhanHoi: ObjectId)
+  column(huuIch: Number)
+  column(trangThai: String)
+  column(createdAt: Date)
+  column(updatedAt: Date)
+}
+
+entity "Notification" as notification {
+  primary_key(_id: ObjectId)
+  --
+  column(tieuDe: String)
+  column(noiDung: String)
+  column(loai: String)
+  foreign_key(nguoiNhan: ObjectId)
+  foreign_key(donHang: ObjectId)
+  foreign_key(danhGia: ObjectId)
+  column(daDoc: Boolean)
+  column(createdAt: Date)
+  column(updatedAt: Date)
+}
+
+entity "Voucher" as voucher {
+  primary_key(_id: ObjectId)
+  --
+  column(ma: String [unique])
+  column(loai: String)
+  column(giaTriGiam: Number)
+  column(giamToiDa: Number)
+  column(donToiThieu: Number)
+  column(soLuong: Number)
+  column(daSuDung: Number)
+  column(ngayBatDau: Date)
+  column(ngayKetThuc: Date)
+  column(moTa: String)
+  column(trangThai: String)
+  column(nguoiDungApDung: Array[ObjectId])
+  column(createdAt: Date)
+  column(updatedAt: Date)
+}
+
+entity "PointTransaction" as pointtransaction {
+  primary_key(_id: ObjectId)
+  --
+  foreign_key(nguoiDung: ObjectId)
+  column(loai: String)
+  column(soLuong: Number)
+  column(moTa: String)
+  foreign_key(donHang: ObjectId)
+  column(soDuSau: Number)
+  column(createdAt: Date)
+  column(updatedAt: Date)
+}
+
+entity "Newsletter" as newsletter {
+  primary_key(_id: ObjectId)
+  --
+  column(email: String [unique])
+  column(subscribedAt: Date)
+  column(isActive: Boolean)
+  column(createdAt: Date)
+  column(updatedAt: Date)
+}
+
+entity "Brand" as brand {
+  primary_key(_id: ObjectId)
+  --
+  column(ten: String [unique])
+  column(slug: String [unique])
+  column(moTa: String)
+  column(logo: String)
+  column(thuTu: Number)
+  column(trangThai: String)
+  column(createdAt: Date)
+  column(updatedAt: Date)
+}
+
+' Relationships
+
+' User - Product (Yêu thích)
+user }o--o{ product : "danhSachYeuThich"
+
+' Product - Category
+product }o--|| category : "danhMuc"
+
+' Category - Category (Self-reference)
+category }o--o| category : "danhMucCha"
+
+' Order - User
+order }o--|| user : "nguoiDung"
+
+' Order - Product (Embedded in sanPham array)
+order }o--o{ product : "contains"
+
+' Order - Voucher
+order }o--o| voucher : "maGiamGia"
+
+' Review - Product
+review }o--|| product : "sanPham"
+
+' Review - User
+review }o--|| user : "nguoiDung"
+
+' Review - Order
+review }o--|| order : "donHang"
+
+' Review - User (Phản hồi)
+review }o--o| user : "phanHoi.nguoiPhanHoi"
+
+' Notification - User
+notification }o--|| user : "nguoiNhan"
+
+' Notification - Order
+notification }o--o| order : "donHang"
+
+' Notification - Review
+notification }o--o| review : "danhGia"
+
+' Voucher - User (Nhiều người dùng đã áp dụng)
+voucher }o--o{ user : "nguoiDungApDung"
+
+' PointTransaction - User
+pointtransaction }o--|| user : "nguoiDung"
+
+' PointTransaction - Order
+pointtransaction }o--o| order : "donHang"
+
+@enduml

@@ -1,0 +1,183 @@
+## LP Shop - ERD for Draw.io Import
+
+# Định dạng: Entity,Attribute,Type,Constraints,Description
+
+## USER Collection
+USER,_id,ObjectId,PK,Primary Key
+USER,email,String,UK,Unique - required
+USER,hoTen,String,required,Full name
+USER,matKhau,String,required,Password (select: false)
+USER,soDienThoai,String,optional,Phone number
+USER,avatar,String,default,Default avatar URL
+USER,anhDaiDien,String,default,Profile picture URL
+USER,diaChi,Object[],embedded,Array of address objects
+USER,vaiTro,String,enum,khach-hang | nhan-vien | quan-tri
+USER,trangThai,String,enum,hoat-dong | khoa
+USER,gioiTinh,String,enum,nam | nu | khac
+USER,ngaySinh,Date,optional,Birth date
+USER,danhSachYeuThich,ObjectId[],ref Product,Favorite products array
+USER,lichSuTimKiem,String[],array,Search history
+USER,diemTichLuy,Number,default 0,Loyalty points (min: 0)
+USER,createdAt,Date,auto,Timestamp
+USER,updatedAt,Date,auto,Timestamp
+
+## PRODUCT Collection
+PRODUCT,_id,ObjectId,PK,Primary Key
+PRODUCT,ten,String,required,Product name
+PRODUCT,slug,String,UK,Unique slug (auto-generated)
+PRODUCT,moTa,String,required,Short description
+PRODUCT,moTaChiTiet,String,optional,Detailed description
+PRODUCT,gia,Number,required,Price (min: 0)
+PRODUCT,giaKhuyenMai,Number,optional,Sale price (min: 0)
+PRODUCT,hinhAnh,String[],array,Array of image URLs
+PRODUCT,danhMuc,ObjectId,FK,ref Category (required)
+PRODUCT,loaiSanPham,String,optional,Product sub-type
+PRODUCT,thuongHieu,String,required,Brand name (not FK)
+PRODUCT,kichThuoc,String[],array,Size options
+PRODUCT,mauSac,Object[],embedded,Color array [{ten ma}]
+PRODUCT,soLuongTonKho,Number,required,Stock quantity (default: 0)
+PRODUCT,daBan,Number,default 0,Sold count
+PRODUCT,luotXem,Number,default 0,View count
+PRODUCT,danhGiaTrungBinh,Number,default 0,Average rating (0-5)
+PRODUCT,soLuongDanhGia,Number,default 0,Review count
+PRODUCT,trangThai,String,enum,active | inactive
+PRODUCT,noiBat,Boolean,default false,Featured flag
+PRODUCT,sanPhamMoi,Boolean,default true,New product flag
+PRODUCT,dacDiem,String[],array,Features array
+PRODUCT,thongSoKyThuat,Map,Map<String>,Technical specs
+PRODUCT,tags,String[],array,Tags
+PRODUCT,seoKeywords,String[],array,SEO keywords
+PRODUCT,createdAt,Date,auto,Timestamp
+PRODUCT,updatedAt,Date,auto,Timestamp
+
+## CATEGORY Collection
+CATEGORY,_id,ObjectId,PK,Primary Key
+CATEGORY,ten,String,UK,Unique name (required)
+CATEGORY,slug,String,UK,Unique slug (auto-generated)
+CATEGORY,moTa,String,optional,Description
+CATEGORY,hinhAnh,String,optional,Image URL
+CATEGORY,danhMucCha,ObjectId,FK self,ref Category (parent)
+CATEGORY,loaiSanPham,String[],array,Sub-category types
+CATEGORY,thuTu,Number,default 0,Display order
+CATEGORY,trangThai,String,enum,active | inactive
+CATEGORY,seoTitle,String,optional,SEO title
+CATEGORY,seoDescription,String,optional,SEO description
+CATEGORY,createdAt,Date,auto,Timestamp
+CATEGORY,updatedAt,Date,auto,Timestamp
+
+## ORDER Collection
+ORDER,_id,ObjectId,PK,Primary Key
+ORDER,maDonHang,String,UK,Unique order code (auto-generated)
+ORDER,nguoiDung,ObjectId,FK,ref User (required)
+ORDER,sanPham,Object[],embedded,Denormalized product data array
+ORDER,tongTien,Number,required,Subtotal
+ORDER,phiVanChuyen,Number,default 0,Shipping fee
+ORDER,giamGia,Number,default 0,Discount amount
+ORDER,maGiamGia,Object,embedded,{voucher: FK ma giaTriGiam}
+ORDER,diemSuDung,Number,default 0,Points used
+ORDER,giamGiaTuDiem,Number,default 0,Discount from points
+ORDER,tongThanhToan,Number,required,Total payment
+ORDER,diaChiGiaoHang,Object,embedded,{hoTen soDienThoai tinh huyen xa diaChiChiTiet}
+ORDER,phuongThucThanhToan,String,enum,cod | vnpay | momo | the-atm
+ORDER,trangThaiThanhToan,String,enum,chua-thanh-toan | da-thanh-toan | hoan-tien
+ORDER,trangThaiDonHang,String,enum,cho-xac-nhan | da-xac-nhan | dang-chuan-bi | dang-giao | da-giao | da-huy | tra-hang
+ORDER,ghiChu,String,optional,Customer note
+ORDER,lyDoHuy,String,optional,Cancellation reason
+ORDER,thanhToanLuc,Date,optional,Payment time
+ORDER,giaoDuKienLuc,Date,optional,Estimated delivery
+ORDER,giaoThanhCongLuc,Date,optional,Delivered time
+ORDER,lichSuTrangThai,Object[],embedded,Status history [{trangThai moTa thoiGian}]
+ORDER,createdAt,Date,auto,Timestamp
+ORDER,updatedAt,Date,auto,Timestamp
+
+## REVIEW Collection
+REVIEW,_id,ObjectId,PK,Primary Key
+REVIEW,sanPham,ObjectId,FK,ref Product (required)
+REVIEW,nguoiDung,ObjectId,FK,ref User (required)
+REVIEW,donHang,ObjectId,FK,ref Order (required)
+REVIEW,danhGia,Number,required,Rating (1-5)
+REVIEW,tieuDe,String,required,Review title
+REVIEW,noiDung,String,required,Review content
+REVIEW,hinhAnh,String[],array,Image URLs
+REVIEW,phanHoi,Object,embedded,Reply {noiDung nguoiPhanHoi: FK thoiGian}
+REVIEW,huuIch,Number,default 0,Helpful count
+REVIEW,trangThai,String,enum,cho-duyet | da-duyet | tu-choi
+REVIEW,createdAt,Date,auto,Timestamp
+REVIEW,updatedAt,Date,auto,Timestamp
+
+## NOTIFICATION Collection
+NOTIFICATION,_id,ObjectId,PK,Primary Key
+NOTIFICATION,tieuDe,String,required,Notification title
+NOTIFICATION,noiDung,String,required,Notification content
+NOTIFICATION,loai,String,enum,don-hang-moi | don-hang-huy | don-hang-xac-nhan | ...
+NOTIFICATION,nguoiNhan,ObjectId,FK,ref User (required)
+NOTIFICATION,donHang,ObjectId,FK,ref Order (optional)
+NOTIFICATION,danhGia,ObjectId,FK,ref Review (optional)
+NOTIFICATION,daDoc,Boolean,default false,Read status
+NOTIFICATION,createdAt,Date,auto,Timestamp
+NOTIFICATION,updatedAt,Date,auto,Timestamp
+
+## VOUCHER Collection
+VOUCHER,_id,ObjectId,PK,Primary Key
+VOUCHER,ma,String,UK,Unique voucher code (uppercase)
+VOUCHER,loai,String,enum,phan-tram | so-tien
+VOUCHER,giaTriGiam,Number,required,Discount value (min: 0)
+VOUCHER,giamToiDa,Number,optional,Max discount (min: 0)
+VOUCHER,donToiThieu,Number,default 0,Min order amount
+VOUCHER,soLuong,Number,required,Total quantity (min: 0)
+VOUCHER,daSuDung,Number,default 0,Used count
+VOUCHER,ngayBatDau,Date,required,Start date
+VOUCHER,ngayKetThuc,Date,required,End date
+VOUCHER,moTa,String,optional,Description
+VOUCHER,trangThai,String,enum,hoat-dong | tam-dung | het-han
+VOUCHER,nguoiDungApDung,ObjectId[],ref User,Array of users who used
+VOUCHER,createdAt,Date,auto,Timestamp
+VOUCHER,updatedAt,Date,auto,Timestamp
+
+## POINT_TRANSACTION Collection
+POINT_TRANSACTION,_id,ObjectId,PK,Primary Key
+POINT_TRANSACTION,nguoiDung,ObjectId,FK indexed,ref User (required)
+POINT_TRANSACTION,loai,String,enum,cong | tru
+POINT_TRANSACTION,soLuong,Number,required,Points amount (min: 0)
+POINT_TRANSACTION,moTa,String,required,Transaction description
+POINT_TRANSACTION,donHang,ObjectId,FK,ref Order (optional)
+POINT_TRANSACTION,soDuSau,Number,required,Balance after (min: 0)
+POINT_TRANSACTION,createdAt,Date,auto,Timestamp
+POINT_TRANSACTION,updatedAt,Date,auto,Timestamp
+
+## NEWSLETTER Collection
+NEWSLETTER,_id,ObjectId,PK,Primary Key (Standalone)
+NEWSLETTER,email,String,UK,Unique email (required)
+NEWSLETTER,subscribedAt,Date,default now,Subscription time
+NEWSLETTER,isActive,Boolean,default true,Active status
+NEWSLETTER,createdAt,Date,auto,Timestamp
+NEWSLETTER,updatedAt,Date,auto,Timestamp
+
+## BRAND Collection
+BRAND,_id,ObjectId,PK,Primary Key (Standalone)
+BRAND,ten,String,UK,Unique name (required)
+BRAND,slug,String,UK,Unique slug (auto-generated)
+BRAND,moTa,String,optional,Description
+BRAND,logo,String,optional,Logo URL
+BRAND,thuTu,Number,default 0,Display order
+BRAND,trangThai,String,enum,active | inactive
+BRAND,createdAt,Date,auto,Timestamp
+BRAND,updatedAt,Date,auto,Timestamp
+
+## RELATIONSHIPS (Entity1,Entity2,Cardinality,Field)
+USER,ORDER,1:N,nguoiDung
+USER,REVIEW,1:N,nguoiDung
+USER,NOTIFICATION,1:N,nguoiNhan
+USER,POINT_TRANSACTION,1:N,nguoiDung
+USER,PRODUCT,N:N,danhSachYeuThich[]
+USER,VOUCHER,N:N,nguoiDungApDung[]
+PRODUCT,CATEGORY,N:1,danhMuc
+PRODUCT,REVIEW,1:N,sanPham
+PRODUCT,ORDER,N:N,sanPham[] (embedded)
+ORDER,VOUCHER,N:1,maGiamGia.voucher
+ORDER,NOTIFICATION,1:N,donHang
+ORDER,POINT_TRANSACTION,1:N,donHang
+REVIEW,ORDER,N:1,donHang
+REVIEW,USER,N:1,phanHoi.nguoiPhanHoi
+REVIEW,NOTIFICATION,1:N,danhGia
+CATEGORY,CATEGORY,1:N,danhMucCha (self-reference)
