@@ -119,7 +119,7 @@ export default function AnalyticsPage() {
         });
 
         const topProductsArray = Object.values(productSales)
-          .sort((a: any, b: any) => b.revenue - a.revenue)
+          .sort((a: any, b: any) => b.quantity - a.quantity)
           .slice(0, 5);
         setTopProducts(topProductsArray);
       }

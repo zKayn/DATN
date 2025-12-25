@@ -36,13 +36,13 @@ export default function ProductCard({
   isNew,
   isFeatured,
   soldCount,
-  stock = 0
+  stock
 }: ProductCardProps) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false)
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   const isWishlisted = isInWishlist(id)
   const discountPercent = salePrice ? Math.round(((price - salePrice) / price) * 100) : 0
-  const isOutOfStock = stock === 0 || stock === undefined
+  const isOutOfStock = (stock !== undefined && stock !== null) ? stock <= 0 : false
 
   const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault()

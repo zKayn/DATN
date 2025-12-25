@@ -1,0 +1,56 @@
+graph LR
+    %% Core Entities
+    USER[(USER<br/>---<br/>PK: _id<br/>email UK<br/>hoTen<br/>matKhau<br/>soDienThoai<br/>vaiTro<br/>diemTichLuy)]
+
+    PRODUCT[(PRODUCT<br/>---<br/>PK: _id<br/>slug UK<br/>ten<br/>gia<br/>giaKhuyenMai<br/>FK: danhMuc<br/>soLuongTonKho<br/>daBan)]
+
+    CATEGORY[(CATEGORY<br/>---<br/>PK: _id<br/>ten UK<br/>slug UK<br/>FK: danhMucCha<br/>trangThai)]
+
+    ORDER[(ORDER<br/>---<br/>PK: _id<br/>maDonHang UK<br/>FK: nguoiDung<br/>FK: voucher<br/>tongTien<br/>tongThanhToan<br/>trangThaiDonHang)]
+
+    REVIEW[(REVIEW<br/>---<br/>PK: _id<br/>FK: sanPham<br/>FK: nguoiDung<br/>FK: donHang<br/>danhGia<br/>noiDung)]
+
+    NOTIFICATION[(NOTIFICATION<br/>---<br/>PK: _id<br/>FK: nguoiNhan<br/>FK: donHang<br/>FK: danhGia<br/>daDoc)]
+
+    VOUCHER[(VOUCHER<br/>---<br/>PK: _id<br/>ma UK<br/>loai<br/>giaTriGiam<br/>soLuong<br/>daSuDung)]
+
+    POINT_TX[(POINT_TRANSACTION<br/>---<br/>PK: _id<br/>FK: nguoiDung<br/>FK: donHang<br/>loai<br/>soLuong)]
+
+    NEWSLETTER[(NEWSLETTER<br/>---<br/>PK: _id<br/>email UK<br/>isActive)]
+
+    BRAND[(BRAND<br/>---<br/>PK: _id<br/>ten UK<br/>slug UK<br/>logo)]
+
+    %% Relationships - Layer 1: User Center
+    USER -->|1:N places| ORDER
+    USER -->|1:N writes| REVIEW
+    USER -->|1:N receives| NOTIFICATION
+    USER -->|1:N has| POINT_TX
+    USER <-->|N:N favorites| PRODUCT
+    USER <-->|N:N uses| VOUCHER
+
+    %% Relationships - Layer 2: Product Center
+    PRODUCT -->|N:1 belongs to| CATEGORY
+    PRODUCT -->|1:N has| REVIEW
+    PRODUCT <-->|N:N in| ORDER
+
+    %% Relationships - Layer 3: Order Center
+    ORDER -->|1:N triggers| NOTIFICATION
+    ORDER -->|1:N generates| POINT_TX
+    ORDER -->|N:1 applies| VOUCHER
+
+    %% Relationships - Layer 4: Other
+    REVIEW -->|1:N triggers| NOTIFICATION
+    REVIEW -->|N:1 replied by| USER
+    CATEGORY -->|1:N parent of| CATEGORY
+
+    %% Styling
+    style USER fill:#16A34A,stroke:#15803D,stroke-width:3px,color:#fff
+    style ORDER fill:#DC2626,stroke:#B91C1C,stroke-width:3px,color:#fff
+    style PRODUCT fill:#3B82F6,stroke:#2563EB,stroke-width:3px,color:#fff
+    style CATEGORY fill:#8B5CF6,stroke:#7C3AED,stroke-width:3px,color:#fff
+    style REVIEW fill:#F59E0B,stroke:#D97706,stroke-width:3px,color:#fff
+    style NOTIFICATION fill:#EC4899,stroke:#DB2777,stroke-width:3px,color:#fff
+    style VOUCHER fill:#14B8A6,stroke:#0D9488,stroke-width:3px,color:#fff
+    style POINT_TX fill:#6366F1,stroke:#4F46E5,stroke-width:3px,color:#fff
+    style NEWSLETTER fill:#64748B,stroke:#475569,stroke-width:2px,color:#fff
+    style BRAND fill:#64748B,stroke:#475569,stroke-width:2px,color:#fff

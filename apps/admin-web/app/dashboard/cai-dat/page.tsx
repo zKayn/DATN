@@ -20,7 +20,6 @@ interface Settings {
   reviewNotifications: boolean;
   lowStockAlert: boolean;
   lowStockThreshold: number;
-  maintenanceMode: boolean;
   paymentMethods: {
     cod: boolean;
     vnpay: boolean;
@@ -32,11 +31,6 @@ interface Settings {
     instagram: string;
     youtube: string;
     tiktok: string;
-  };
-  seo: {
-    metaTitle: string;
-    metaDescription: string;
-    metaKeywords: string;
   };
 }
 
@@ -61,7 +55,6 @@ export default function SettingsPage() {
     reviewNotifications: true,
     lowStockAlert: true,
     lowStockThreshold: 10,
-    maintenanceMode: false,
     paymentMethods: {
       cod: true,
       vnpay: true,
@@ -73,11 +66,6 @@ export default function SettingsPage() {
       instagram: '',
       youtube: '',
       tiktok: ''
-    },
-    seo: {
-      metaTitle: '',
-      metaDescription: '',
-      metaKeywords: ''
     }
   });
 
@@ -260,8 +248,7 @@ export default function SettingsPage() {
               { id: 'store', label: 'Thông tin cửa hàng', icon: '🏪' },
               { id: 'payment', label: 'Thanh toán & Vận chuyển', icon: '💳' },
               { id: 'notifications', label: 'Thông báo', icon: '🔔' },
-              { id: 'security', label: 'Bảo mật', icon: '🔒' },
-              { id: 'seo', label: 'SEO', icon: '🔍' }
+              { id: 'security', label: 'Bảo mật', icon: '🔒' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -287,23 +274,6 @@ export default function SettingsPage() {
             <div className="border-b pb-4">
               <h2 className="text-xl font-semibold text-gray-900">Cài Đặt Chung</h2>
               <p className="text-sm text-gray-500 mt-1">Cấu hình cơ bản cho hệ thống</p>
-            </div>
-
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.maintenanceMode}
-                  onChange={(e) => setSettings({ ...settings, maintenanceMode: e.target.checked })}
-                  className="mt-1 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <div>
-                  <div className="font-medium text-gray-900">⚠️ Chế độ bảo trì</div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    Khi bật, website sẽ tạm thời đóng cửa và hiển thị thông báo bảo trì cho khách hàng
-                  </div>
-                </div>
-              </label>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -835,85 +805,6 @@ export default function SettingsPage() {
               <div className="bg-gray-50 rounded-lg p-4">
                 <p className="text-sm text-gray-500">Chức năng đang phát triển</p>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* SEO */}
-        {activeTab === 'seo' && (
-          <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
-            <div className="border-b pb-4">
-              <h2 className="text-xl font-semibold text-gray-900">Tối Ưu SEO</h2>
-              <p className="text-sm text-gray-500 mt-1">Cài đặt meta tags và SEO cho website</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Meta Title
-              </label>
-              <input
-                type="text"
-                value={settings.seo.metaTitle}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  seo: { ...settings.seo, metaTitle: e.target.value }
-                })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Cửa hàng thể thao hàng đầu Việt Nam"
-                maxLength={60}
-              />
-              <p className="text-sm text-gray-500 mt-1">
-                {settings.seo.metaTitle.length}/60 ký tự
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Meta Description
-              </label>
-              <textarea
-                value={settings.seo.metaDescription}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  seo: { ...settings.seo, metaDescription: e.target.value }
-                })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows={4}
-                placeholder="Mô tả ngắn gọn về website của bạn..."
-                maxLength={160}
-              />
-              <p className="text-sm text-gray-500 mt-1">
-                {settings.seo.metaDescription.length}/160 ký tự
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Meta Keywords
-              </label>
-              <input
-                type="text"
-                value={settings.seo.metaKeywords}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  seo: { ...settings.seo, metaKeywords: e.target.value }
-                })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="giày thể thao, quần áo thể thao, phụ kiện..."
-              />
-              <p className="text-sm text-gray-500 mt-1">
-                Phân cách các từ khóa bằng dấu phẩy
-              </p>
-            </div>
-
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-medium text-blue-900 mb-2">💡 Mẹo SEO</h4>
-              <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
-                <li>Title nên từ 50-60 ký tự</li>
-                <li>Description nên từ 150-160 ký tự</li>
-                <li>Sử dụng từ khóa liên quan đến sản phẩm</li>
-                <li>Tránh nhồi nhét từ khóa</li>
-              </ul>
             </div>
           </div>
         )}

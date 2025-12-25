@@ -1,0 +1,76 @@
+graph LR
+    %% Left Side - Core Entities
+    subgraph Core[" 🗂️ CORE ENTITIES "]
+        USER["👤 USER<br/>━━━━━━━━━<br/>🔑 _id PK<br/>📧 email UK<br/>👤 hoTen<br/>🔒 matKhau<br/>📱 soDienThoai<br/>🎭 vaiTro<br/>⭐ diemTichLuy"]
+
+        PRODUCT["📦 PRODUCT<br/>━━━━━━━━━<br/>🔑 _id PK<br/>🔗 slug UK<br/>📝 ten<br/>💰 gia<br/>🏷️ giaKhuyenMai<br/>🔖 danhMuc FK<br/>📊 soLuongTonKho<br/>📈 daBan"]
+
+        ORDER["🛒 ORDER<br/>━━━━━━━━━<br/>🔑 _id PK<br/>📋 maDonHang UK<br/>👤 nguoiDung FK<br/>📦 sanPham Array<br/>💵 tongTien<br/>💳 tongThanhToan<br/>📍 trangThaiDonHang"]
+
+        CATEGORY["📂 CATEGORY<br/>━━━━━━━━━<br/>🔑 _id PK<br/>📝 ten UK<br/>🔗 slug UK<br/>⬆️ danhMucCha FK<br/>✅ trangThai"]
+    end
+
+    %% Middle - Transaction Entities
+    subgraph Trans[" ⚡ TRANSACTIONS "]
+        REVIEW["⭐ REVIEW<br/>━━━━━━━━━<br/>🔑 _id PK<br/>📦 sanPham FK<br/>👤 nguoiDung FK<br/>🛒 donHang FK<br/>⭐ danhGia<br/>💬 noiDung"]
+
+        POINT["💎 POINT_TX<br/>━━━━━━━━━<br/>🔑 _id PK<br/>👤 nguoiDung FK<br/>🛒 donHang FK<br/>➕➖ loai<br/>🔢 soLuong"]
+
+        NOTIF["🔔 NOTIFICATION<br/>━━━━━━━━━<br/>🔑 _id PK<br/>👤 nguoiNhan FK<br/>🛒 donHang FK<br/>✅ daDoc<br/>📌 loai"]
+    end
+
+    %% Right Side - Support Entities
+    subgraph Supp[" 🎁 SUPPORT "]
+        VOUCHER["🎟️ VOUCHER<br/>━━━━━━━━━<br/>🔑 _id PK<br/>🏷️ ma UK<br/>💯 loai<br/>💰 giaTriGiam<br/>📊 soLuong"]
+
+        NEWS["📰 NEWSLETTER<br/>━━━━━━━━━<br/>🔑 _id PK<br/>📧 email UK<br/>✅ isActive"]
+
+        BRAND["🏢 BRAND<br/>━━━━━━━━━<br/>🔑 _id PK<br/>📝 ten UK<br/>🔗 slug UK<br/>🖼️ logo"]
+    end
+
+    %% Relationships
+    USER ==>|1:N places| ORDER
+    USER ==>|1:N writes| REVIEW
+    USER ==>|1:N receives| NOTIF
+    USER ==>|1:N earns| POINT
+    USER <-.->|N:N favorites| PRODUCT
+    USER <-.->|N:N uses| VOUCHER
+
+    PRODUCT ==>|N:1 in| CATEGORY
+    PRODUCT ==>|1:N has| REVIEW
+    PRODUCT <-.->|N:N contains| ORDER
+
+    ORDER ==>|1:N triggers| NOTIF
+    ORDER ==>|1:N generates| POINT
+    ORDER -.->|N:1 applies| VOUCHER
+    ORDER ==>|1:N reviewed| REVIEW
+
+    CATEGORY -.->|self ref| CATEGORY
+
+    REVIEW ==>|1:N notify| NOTIF
+    REVIEW -.->|reply by| USER
+
+    %% Styling
+    classDef userClass fill:#16A34A,stroke:#15803D,stroke-width:3px,color:#fff,font-weight:bold
+    classDef productClass fill:#3B82F6,stroke:#2563EB,stroke-width:3px,color:#fff,font-weight:bold
+    classDef orderClass fill:#DC2626,stroke:#B91C1C,stroke-width:3px,color:#fff,font-weight:bold
+    classDef categoryClass fill:#8B5CF6,stroke:#7C3AED,stroke-width:3px,color:#fff,font-weight:bold
+    classDef reviewClass fill:#F59E0B,stroke:#D97706,stroke-width:3px,color:#000,font-weight:bold
+    classDef notifClass fill:#EC4899,stroke:#DB2777,stroke-width:3px,color:#fff,font-weight:bold
+    classDef voucherClass fill:#14B8A6,stroke:#0D9488,stroke-width:3px,color:#fff,font-weight:bold
+    classDef pointClass fill:#6366F1,stroke:#4F46E5,stroke-width:3px,color:#fff,font-weight:bold
+    classDef supportClass fill:#64748B,stroke:#475569,stroke-width:3px,color:#fff,font-weight:bold
+
+    class USER userClass
+    class PRODUCT productClass
+    class ORDER orderClass
+    class CATEGORY categoryClass
+    class REVIEW reviewClass
+    class NOTIF notifClass
+    class VOUCHER voucherClass
+    class POINT pointClass
+    class NEWS,BRAND supportClass
+
+    style Core fill:#f0fdf4,stroke:#16a34a,stroke-width:3px,stroke-dasharray: 5 5
+    style Trans fill:#fef3c7,stroke:#f59e0b,stroke-width:3px,stroke-dasharray: 5 5
+    style Supp fill:#f3f4f6,stroke:#6b7280,stroke-width:3px,stroke-dasharray: 5 5

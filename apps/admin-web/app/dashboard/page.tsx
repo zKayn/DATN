@@ -4,6 +4,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 
+interface SalesData {
+  date: string;
+  revenue: number;
+  orders: number;
+}
+
 export default function DashboardPage() {
   const [stats, setStats] = useState({
     totalOrders: 0,
@@ -13,6 +19,7 @@ export default function DashboardPage() {
   });
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [topProducts, setTopProducts] = useState<any[]>([]);
+  const [salesData, setSalesData] = useState<SalesData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,6 +51,31 @@ export default function DashboardPage() {
 
         // Set recent orders (last 5)
         setRecentOrders(orders.slice(0, 5));
+
+        // Generate sales data for last 7 days
+        const last7Days = Array.from({ length: 7 }, (_, i) => {
+          const date = new Date();
+          date.setDate(date.getDate() - (6 - i));
+          return date.toISOString().split('T')[0];
+        });
+
+        const salesByDate = last7Days.map(date => {
+          const dayOrders = orders.filter((o: any) => {
+            const status = o.trangThaiDonHang || o.trangThai;
+            const createdAt = o.createdAt || o.ngayTao || '';
+            return createdAt.startsWith(date) && status === 'da-giao';
+          });
+          return {
+            date,
+            revenue: dayOrders.reduce((sum: number, o: any) => {
+              const amount = o.tongThanhToan || o.tongTien || 0;
+              return sum + amount;
+            }, 0),
+            orders: dayOrders.length
+          };
+        });
+
+        setSalesData(salesByDate);
       }
 
       // Load users count
@@ -126,6 +158,17 @@ export default function DashboardPage() {
     'da-huy': 'Đã hủy',
     'tra-hang': 'Trả hàng'
   };
+
+  const formatCurrency = (amount: number) => {
+    return amount.toLocaleString('vi-VN') + '₫';
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return `${date.getDate()}/${date.getMonth() + 1}`;
+  };
+
+  const maxRevenue = Math.max(...salesData.map(d => d.revenue), 1);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -268,15 +311,35 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Revenue Chart Placeholder */}
+          {/* Revenue Chart */}
           <div className="bg-white rounded-lg shadow-sm">
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-lg font-semibold text-gray-900">Doanh Thu 7 Ngày Qua</h2>
             </div>
             <div className="p-6">
-              <div className="h-64 flex items-center justify-center text-gray-400">
-                <p>Biểu đồ doanh thu sẽ được hiển thị ở đây</p>
-              </div>
+              {loading ? (
+                <div className="h-64 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+              ) : (
+                <div className="h-64">
+                  <div className="flex items-end justify-between h-full gap-2">
+                    {salesData.map((data, index) => (
+                      <div key={index} className="flex-1 flex flex-col items-center justify-end h-full">
+                        <div className="w-full bg-blue-100 rounded-t-lg hover:bg-blue-200 transition-colors relative group"
+                             style={{ height: `${(data.revenue / maxRevenue) * 100}%`, minHeight: data.revenue > 0 ? '8px' : '2px' }}>
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10">
+                            {formatCurrency(data.revenue)}
+                            <br />
+                            {data.orders} đơn
+                          </div>
+                        </div>
+                        <div className="text-xs text-gray-600 mt-2">{formatDate(data.date)}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

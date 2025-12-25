@@ -1,0 +1,205 @@
+erDiagram
+    %% Main Relationships
+    USER ||--o{ ORDER : "places (nguoiDung)"
+    USER ||--o{ REVIEW : "writes (nguoiDung)"
+    USER ||--o{ NOTIFICATION : "receives (nguoiNhan)"
+    USER ||--o{ POINT_TRANSACTION : "has (nguoiDung)"
+    USER }o--o{ PRODUCT : "favorites (danhSachYeuThich[])"
+
+    PRODUCT }o--|| CATEGORY : "belongs to (danhMuc)"
+    PRODUCT ||--o{ REVIEW : "has reviews (sanPham)"
+
+    ORDER }o--o| VOUCHER : "applies (maGiamGia.voucher)"
+    ORDER ||--o{ NOTIFICATION : "triggers (donHang)"
+    ORDER ||--o{ POINT_TRANSACTION : "generates (donHang)"
+    ORDER }o--o{ PRODUCT : "contains (sanPham[] embedded)"
+
+    REVIEW }o--|| ORDER : "from order (donHang)"
+    REVIEW }o--o| USER : "replied by (phanHoi.nguoiPhanHoi)"
+    REVIEW ||--o{ NOTIFICATION : "triggers (danhGia)"
+
+    VOUCHER }o--o{ USER : "used by (nguoiDungApDung[])"
+
+    CATEGORY }o--o| CATEGORY : "parent (danhMucCha)"
+
+    %% USER Collection
+    USER {
+        ObjectId _id PK "Primary Key"
+        String email UK "Unique - required"
+        String hoTen "required"
+        String matKhau "required, select false"
+        String soDienThoai "optional"
+        String avatar "default avatar"
+        String anhDaiDien "default avatar"
+        Object[] diaChi "EMBEDDED array"
+        String vaiTro "enum - khach-hang, nhan-vien, quan-tri"
+        String trangThai "enum - hoat-dong, khoa"
+        String gioiTinh "enum - nam, nu, khac"
+        Date ngaySinh "optional"
+        ObjectId[] danhSachYeuThich "ref Product[]"
+        String[] lichSuTimKiem "array of strings"
+        Number diemTichLuy "default 0, min 0"
+        Date createdAt "auto timestamp"
+        Date updatedAt "auto timestamp"
+    }
+
+    %% PRODUCT Collection
+    PRODUCT {
+        ObjectId _id PK "Primary Key"
+        String ten "required"
+        String slug UK "unique, auto-generated"
+        String moTa "required"
+        String moTaChiTiet "optional"
+        Number gia "required, min 0"
+        Number giaKhuyenMai "optional, min 0"
+        String[] hinhAnh "array of image URLs"
+        ObjectId danhMuc FK "ref Category, required"
+        String loaiSanPham "optional"
+        String thuongHieu "required, String not FK"
+        String[] kichThuoc "array of sizes"
+        Object[] mauSac "EMBEDDED [{ten, ma}]"
+        Number soLuongTonKho "required, default 0"
+        Number daBan "default 0"
+        Number luotXem "default 0"
+        Number danhGiaTrungBinh "0-5, default 0"
+        Number soLuongDanhGia "default 0"
+        String trangThai "enum - active, inactive"
+        Boolean noiBat "default false"
+        Boolean sanPhamMoi "default true"
+        String[] dacDiem "array of features"
+        Map thongSoKyThuat "Map of String"
+        String[] tags "array of tags"
+        String[] seoKeywords "array of keywords"
+        Date createdAt "auto timestamp"
+        Date updatedAt "auto timestamp"
+    }
+
+    %% CATEGORY Collection
+    CATEGORY {
+        ObjectId _id PK "Primary Key"
+        String ten UK "unique, required"
+        String slug UK "unique, auto-generated"
+        String moTa "optional"
+        String hinhAnh "optional"
+        ObjectId danhMucCha FK "ref Category, self-reference"
+        String[] loaiSanPham "array of subcategories"
+        Number thuTu "default 0"
+        String trangThai "enum - active, inactive"
+        String seoTitle "optional"
+        String seoDescription "optional"
+        Date createdAt "auto timestamp"
+        Date updatedAt "auto timestamp"
+    }
+
+    %% ORDER Collection
+    ORDER {
+        ObjectId _id PK "Primary Key"
+        String maDonHang UK "unique, auto-generated"
+        ObjectId nguoiDung FK "ref User, required"
+        Object[] sanPham "EMBEDDED array - denormalized product data"
+        Number tongTien "required"
+        Number phiVanChuyen "default 0"
+        Number giamGia "default 0"
+        Object maGiamGia "EMBEDDED {voucher FK, ma, giaTriGiam}"
+        Number diemSuDung "default 0"
+        Number giamGiaTuDiem "default 0"
+        Number tongThanhToan "required"
+        Object diaChiGiaoHang "EMBEDDED {hoTen, soDienThoai, tinh, huyen, xa, diaChiChiTiet}"
+        String phuongThucThanhToan "enum - cod, vnpay, momo, the-atm"
+        String trangThaiThanhToan "enum - chua-thanh-toan, da-thanh-toan, hoan-tien"
+        String trangThaiDonHang "enum - cho-xac-nhan, da-xac-nhan, dang-chuan-bi, dang-giao, da-giao, da-huy, tra-hang"
+        String ghiChu "optional"
+        String lyDoHuy "optional"
+        Date thanhToanLuc "optional"
+        Date giaoDuKienLuc "optional"
+        Date giaoThanhCongLuc "optional"
+        Object[] lichSuTrangThai "EMBEDDED [{trangThai, moTa, thoiGian}]"
+        Date createdAt "auto timestamp"
+        Date updatedAt "auto timestamp"
+    }
+
+    %% REVIEW Collection
+    REVIEW {
+        ObjectId _id PK "Primary Key"
+        ObjectId sanPham FK "ref Product, required"
+        ObjectId nguoiDung FK "ref User, required"
+        ObjectId donHang FK "ref Order, required"
+        Number danhGia "required, 1-5"
+        String tieuDe "required"
+        String noiDung "required"
+        String[] hinhAnh "array of image URLs"
+        Object phanHoi "EMBEDDED {noiDung, nguoiPhanHoi FK, thoiGian}"
+        Number huuIch "default 0"
+        String trangThai "enum - cho-duyet, da-duyet, tu-choi"
+        Date createdAt "auto timestamp"
+        Date updatedAt "auto timestamp"
+    }
+
+    %% NOTIFICATION Collection
+    NOTIFICATION {
+        ObjectId _id PK "Primary Key"
+        String tieuDe "required"
+        String noiDung "required"
+        String loai "enum - don-hang-moi, don-hang-huy, don-hang-xac-nhan, etc"
+        ObjectId nguoiNhan FK "ref User, required"
+        ObjectId donHang FK "ref Order, optional"
+        ObjectId danhGia FK "ref Review, optional"
+        Boolean daDoc "default false"
+        Date createdAt "auto timestamp"
+        Date updatedAt "auto timestamp"
+    }
+
+    %% VOUCHER Collection
+    VOUCHER {
+        ObjectId _id PK "Primary Key"
+        String ma UK "unique, uppercase, required"
+        String loai "enum - phan-tram, so-tien"
+        Number giaTriGiam "required, min 0"
+        Number giamToiDa "optional, min 0"
+        Number donToiThieu "default 0"
+        Number soLuong "required, min 0"
+        Number daSuDung "default 0"
+        Date ngayBatDau "required"
+        Date ngayKetThuc "required"
+        String moTa "optional"
+        String trangThai "enum - hoat-dong, tam-dung, het-han"
+        ObjectId[] nguoiDungApDung "ref User[]"
+        Date createdAt "auto timestamp"
+        Date updatedAt "auto timestamp"
+    }
+
+    %% POINT_TRANSACTION Collection
+    POINT_TRANSACTION {
+        ObjectId _id PK "Primary Key"
+        ObjectId nguoiDung FK "ref User, required, indexed"
+        String loai "enum - cong, tru"
+        Number soLuong "required, min 0"
+        String moTa "required"
+        ObjectId donHang FK "ref Order, optional"
+        Number soDuSau "required, min 0"
+        Date createdAt "auto timestamp"
+        Date updatedAt "auto timestamp"
+    }
+
+    %% NEWSLETTER Collection - Standalone
+    NEWSLETTER {
+        ObjectId _id PK "Primary Key"
+        String email UK "unique, required"
+        Date subscribedAt "default now"
+        Boolean isActive "default true"
+        Date createdAt "auto timestamp"
+        Date updatedAt "auto timestamp"
+    }
+
+    %% BRAND Collection - Standalone
+    BRAND {
+        ObjectId _id PK "Primary Key"
+        String ten UK "unique, required"
+        String slug UK "unique, auto-generated"
+        String moTa "optional"
+        String logo "optional"
+        Number thuTu "default 0"
+        String trangThai "enum - active, inactive"
+        Date createdAt "auto timestamp"
+        Date updatedAt "auto timestamp"
+    }

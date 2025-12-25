@@ -524,6 +524,7 @@ export default function ProductDetailPage() {
                   isNew={relatedProduct.sanPhamMoi}
                   isFeatured={relatedProduct.noiBat}
                   soldCount={relatedProduct.daBan}
+                  stock={relatedProduct.soLuongTonKho}
                 />
               ))}
             </div>

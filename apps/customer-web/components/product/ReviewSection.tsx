@@ -28,88 +28,7 @@ interface Review {
   trangThai?: string;
 }
 
-// Mock reviews data (fallback if API fails)
-const MOCK_REVIEWS = [
-  {
-    id: '1',
-    user: {
-      name: 'Nguyễn Văn An',
-      avatar: 'https://i.pravatar.cc/150?img=1'
-    },
-    rating: 5,
-    title: 'Sản phẩm tuyệt vời!',
-    content: 'Giày rất đẹp và chất lượng, đi rất êm chân. Giao hàng nhanh, đóng gói cẩn thận. Sẽ ủng hộ shop lâu dài!',
-    images: [
-      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300',
-      'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=300'
-    ],
-    date: '2025-11-25',
-    helpful: 15,
-    verified: true
-  },
-  {
-    id: '2',
-    user: {
-      name: 'Trần Thị Bình',
-      avatar: 'https://i.pravatar.cc/150?img=5'
-    },
-    rating: 4,
-    title: 'Đáng giá tiền',
-    content: 'Giày đẹp, form chuẩn. Chỉ có điều màu hơi đậm hơn ảnh một chút. Nhìn chung vẫn ok.',
-    images: [],
-    date: '2025-11-23',
-    helpful: 8,
-    verified: true
-  },
-  {
-    id: '3',
-    user: {
-      name: 'Lê Hoàng Minh',
-      avatar: 'https://i.pravatar.cc/150?img=12'
-    },
-    rating: 5,
-    title: 'Chất lượng cao cấp',
-    content: 'Mình đã mua nhiều đôi giày Nike nhưng đôi này là ưng ý nhất. Thiết kế đẹp, chất liệu tốt, đi rất êm. Highly recommended!',
-    images: [
-      'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=300'
-    ],
-    date: '2025-11-20',
-    helpful: 22,
-    verified: true
-  },
-  {
-    id: '4',
-    user: {
-      name: 'Phạm Thị Duyên',
-      avatar: 'https://i.pravatar.cc/150?img=9'
-    },
-    rating: 3,
-    title: 'Tạm được',
-    content: 'Giày đẹp nhưng hơi chật. Mình order size 39 như thường lệ nhưng lần này hơi nhỏ. Nên order lên 1 size.',
-    images: [],
-    date: '2025-11-18',
-    helpful: 5,
-    verified: false
-  },
-  {
-    id: '5',
-    user: {
-      name: 'Hoàng Văn Tùng',
-      avatar: 'https://i.pravatar.cc/150?img=7'
-    },
-    rating: 5,
-    title: 'Rất hài lòng',
-    content: 'Sản phẩm chính hãng, chất lượng tốt. Đế êm, thoáng khí. Mua để chạy bộ thấy rất ok.',
-    images: [
-      'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=300',
-      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300',
-      'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=300'
-    ],
-    date: '2025-11-15',
-    helpful: 18,
-    verified: true
-  }
-];
+// Removed mock data - now only using real database reviews
 
 export default function ReviewSection({
   productId,
@@ -155,13 +74,13 @@ export default function ReviewSection({
           helpful: review.huuIch || 0,
           verified: review.trangThai === 'da-duyet'
         }));
-        setReviews(formattedReviews.length > 0 ? formattedReviews : MOCK_REVIEWS);
+        setReviews(formattedReviews);
       } else {
-        setReviews(MOCK_REVIEWS);
+        setReviews([]);
       }
     } catch (error) {
       console.error('Lỗi khi tải đánh giá:', error);
-      setReviews(MOCK_REVIEWS);
+      setReviews([]);
     }
     setLoading(false);
   };

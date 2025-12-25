@@ -173,11 +173,13 @@ export default function OrderHistoryPage() {
                   className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 >
                   <option value="all">Tất cả đơn hàng</option>
-                  <option value="pending">Chờ xác nhận</option>
-                  <option value="confirmed">Đã xác nhận</option>
-                  <option value="shipping">Đang giao</option>
-                  <option value="delivered">Đã giao</option>
-                  <option value="cancelled">Đã hủy</option>
+                  <option value="cho-xac-nhan">Chờ xác nhận</option>
+                  <option value="da-xac-nhan">Đã xác nhận</option>
+                  <option value="dang-chuan-bi">Đang chuẩn bị</option>
+                  <option value="dang-giao">Đang giao</option>
+                  <option value="da-giao">Đã giao</option>
+                  <option value="da-huy">Đã hủy</option>
+                  <option value="tra-hang">Trả hàng</option>
                 </select>
               </div>
             </div>

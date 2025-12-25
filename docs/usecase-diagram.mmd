@@ -1,0 +1,138 @@
+graph LR
+    %% Actors
+    Guest[👤 Khách vãng lai]
+    Customer[👤 Khách hàng]
+    Admin[👤 Quản trị viên]
+
+    subgraph LPShop[LP Shop E-Commerce System]
+        %% Public Features
+        UC1[Xem danh sách sản phẩm]
+        UC2[Xem chi tiết sản phẩm]
+        UC3[Tìm kiếm sản phẩm]
+        UC4[Lọc sản phẩm theo danh mục]
+        UC5[Xem Flash Sale]
+        UC6[Đăng ký tài khoản]
+        UC7[Đăng nhập]
+
+        %% Customer Features
+        UC8[Thêm vào giỏ hàng]
+        UC9[Quản lý giỏ hàng]
+        UC10[Đặt hàng]
+        UC11[Thanh toán]
+        UC12[Xem lịch sử đơn hàng ⚡]
+        UC13[Xem chi tiết đơn hàng]
+        UC14[Hủy đơn hàng]
+        UC15[Đánh giá sản phẩm]
+        UC16[Quản lý yêu thích]
+        UC17[Quản lý địa chỉ giao hàng]
+        UC18[Cập nhật thông tin cá nhân]
+        UC19[Xem thông báo ⚡]
+        UC20[Xem điểm tích lũy]
+        UC21[Đăng xuất]
+
+        %% Admin Features
+        UC22[Quản lý sản phẩm]
+        UC23[Quản lý danh mục]
+        UC24[Quản lý đơn hàng]
+        UC25[Cập nhật trạng thái đơn hàng ⚡]
+        UC26[Quản lý người dùng]
+        UC27[Quản lý đánh giá]
+        UC28[Xem thống kê]
+        UC29[Quản lý banner/khuyến mãi]
+        UC30[Gửi thông báo]
+        UC31[Quản lý newsletter]
+    end
+
+    %% Guest relationships (Public Features)
+    Guest --> UC1
+    Guest --> UC2
+    Guest --> UC3
+    Guest --> UC4
+    Guest --> UC5
+    Guest --> UC6
+    Guest --> UC7
+
+    %% Customer inherits Guest + Customer-specific features
+    Customer -.inherits.-> Guest
+    Customer --> UC8
+    Customer --> UC9
+    Customer --> UC10
+    Customer --> UC11
+    Customer --> UC12
+    Customer --> UC13
+    Customer --> UC14
+    Customer --> UC15
+    Customer --> UC16
+    Customer --> UC17
+    Customer --> UC18
+    Customer --> UC19
+    Customer --> UC20
+    Customer --> UC21
+
+    %% Admin relationships
+    Admin --> UC7
+    Admin --> UC22
+    Admin --> UC23
+    Admin --> UC24
+    Admin --> UC25
+    Admin --> UC26
+    Admin --> UC27
+    Admin --> UC28
+    Admin --> UC29
+    Admin --> UC30
+    Admin --> UC31
+
+    %% Include relationships (bắt buộc)
+    UC10 -.include.-> UC11
+    UC10 -.include.-> UC17
+    UC24 -.include.-> UC25
+
+    %% Extend relationships (tùy chọn)
+    UC2 -.extend.-> UC15
+    UC2 -.extend.-> UC16
+    UC22 -.extend.-> UC23
+
+    %% Styling
+    style LPShop fill:#f9f9f9,stroke:#333,stroke-width:3px
+    style Guest fill:#6B7280,color:#fff,stroke:#333,stroke-width:2px
+    style Customer fill:#16A34A,color:#fff,stroke:#333,stroke-width:2px
+    style Admin fill:#F59E0B,color:#000,stroke:#333,stroke-width:2px
+
+    %% Real-time features (Đỏ)
+    style UC12 fill:#DC2626,color:#fff,stroke:#B91C1C,stroke-width:2px
+    style UC19 fill:#DC2626,color:#fff,stroke:#B91C1C,stroke-width:2px
+    style UC25 fill:#DC2626,color:#fff,stroke:#B91C1C,stroke-width:2px
+
+    %% Public features (Xanh dương nhạt)
+    style UC1 fill:#E0E7FF,stroke:#4F46E5,stroke-width:1px
+    style UC2 fill:#E0E7FF,stroke:#4F46E5,stroke-width:1px
+    style UC3 fill:#E0E7FF,stroke:#4F46E5,stroke-width:1px
+    style UC4 fill:#E0E7FF,stroke:#4F46E5,stroke-width:1px
+    style UC5 fill:#E0E7FF,stroke:#4F46E5,stroke-width:1px
+    style UC6 fill:#E0E7FF,stroke:#4F46E5,stroke-width:1px
+    style UC7 fill:#E0E7FF,stroke:#4F46E5,stroke-width:1px
+
+    %% Customer features (Xanh lá nhạt)
+    style UC8 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style UC9 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style UC10 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style UC11 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style UC13 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style UC14 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style UC15 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style UC16 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style UC17 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style UC18 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style UC20 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style UC21 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+
+    %% Admin features (Vàng nhạt)
+    style UC22 fill:#FEF3C7,stroke:#D97706,stroke-width:1px
+    style UC23 fill:#FEF3C7,stroke:#D97706,stroke-width:1px
+    style UC24 fill:#FEF3C7,stroke:#D97706,stroke-width:1px
+    style UC26 fill:#FEF3C7,stroke:#D97706,stroke-width:1px
+    style UC27 fill:#FEF3C7,stroke:#D97706,stroke-width:1px
+    style UC28 fill:#FEF3C7,stroke:#D97706,stroke-width:1px
+    style UC29 fill:#FEF3C7,stroke:#D97706,stroke-width:1px
+    style UC30 fill:#FEF3C7,stroke:#D97706,stroke-width:1px
+    style UC31 fill:#FEF3C7,stroke:#D97706,stroke-width:1px
