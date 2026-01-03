@@ -4,6 +4,7 @@ import { Star, Quote } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import api from '@/lib/api'
+import { useStaggeredScrollAnimation } from '@/hooks/useScrollAnimation'
 
 interface Review {
   _id: string
@@ -24,6 +25,9 @@ interface Review {
 export default function Testimonials() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Scroll animations for testimonials (max 6 reviews)
+  const { containerRef, itemsVisible } = useStaggeredScrollAnimation(6, { threshold: 0.1 })
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -90,21 +94,22 @@ export default function Testimonials() {
     )
   }
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {reviews.map((review) => (
+    <div ref={containerRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {reviews.map((review, index) => (
         <div
           key={review._id}
-          className="group bg-white/95 backdrop-blur-lg rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-300 relative overflow-hidden border border-white/30 hover:transform hover:-translate-y-2"
+          className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-700 ease-smooth relative overflow-hidden border border-gray-200 hover:transform hover:-translate-y-1 opacity-100 translate-y-0 scale-100"
+          style={{ transitionDelay: `${index * 100}ms` }}
         >
-          {/* Festive Shine Effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-accent-200/20 via-transparent to-primary-200/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          {/* Subtle hover effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary-50/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
           {/* Quote Icon */}
-          <Quote className="absolute top-6 right-6 w-12 h-12 text-accent-200/40 group-hover:text-accent-300/60 transition-colors" />
+          <Quote className="absolute top-6 right-6 w-12 h-12 text-gray-200 group-hover:text-primary-200 transition-colors" />
 
           {/* User Info */}
           <div className="flex items-center gap-4 mb-6 relative z-10">
-            <div className="relative w-16 h-16 rounded-full overflow-hidden ring-4 ring-accent-200 group-hover:ring-accent-400 transition-all bg-gradient-to-br from-primary-400 via-accent-400 to-secondary-400 shadow-lg">
+            <div className="relative w-16 h-16 rounded-full overflow-hidden ring-2 ring-gray-200 group-hover:ring-primary-700 transition-all bg-gradient-to-br from-primary-500 to-primary-800 shadow-md">
               {review.nguoiDung?.avatar ? (
                 <Image
                   src={review.nguoiDung.avatar}
@@ -131,7 +136,7 @@ export default function Testimonials() {
                 key={i}
                 className={`w-5 h-5 ${
                   i < review.danhGia
-                    ? 'text-accent-500 fill-accent-500'
+                    ? 'text-yellow-400 fill-yellow-400'
                     : 'text-gray-300'
                 }`}
               />
@@ -139,7 +144,7 @@ export default function Testimonials() {
           </div>
 
           {/* Comment */}
-          <p className="text-gray-800 mb-6 leading-relaxed text-base italic relative z-10">
+          <p className="text-gray-700 mb-6 leading-relaxed text-base relative z-10">
             "{review.noiDung}"
           </p>
 
@@ -147,7 +152,7 @@ export default function Testimonials() {
           <div className="pt-4 border-t border-gray-200 relative z-10">
             <p className="text-sm text-gray-600 flex items-center gap-2">
               <span className="font-medium">Sản phẩm:</span>
-              <span className="text-primary-600 font-semibold">{review.sanPham?.ten || 'N/A'}</span>
+              <span className="text-primary-500 font-semibold truncate">{review.sanPham?.ten || 'N/A'}</span>
             </p>
           </div>
         </div>

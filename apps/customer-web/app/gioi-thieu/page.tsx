@@ -44,7 +44,7 @@ export default function GioiThieuPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="text-center">
             <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Trophy className="w-8 h-8 text-primary-600" />
+              <Trophy className="w-8 h-8 text-primary-400" />
             </div>
             <h3 className="text-xl font-semibold mb-2">Chất Lượng</h3>
             <p className="text-gray-600">
@@ -54,7 +54,7 @@ export default function GioiThieuPage() {
 
           <div className="text-center">
             <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Target className="w-8 h-8 text-primary-600" />
+              <Target className="w-8 h-8 text-primary-400" />
             </div>
             <h3 className="text-xl font-semibold mb-2">Uy Tín</h3>
             <p className="text-gray-600">
@@ -64,7 +64,7 @@ export default function GioiThieuPage() {
 
           <div className="text-center">
             <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Heart className="w-8 h-8 text-primary-600" />
+              <Heart className="w-8 h-8 text-primary-400" />
             </div>
             <h3 className="text-xl font-semibold mb-2">Tận Tâm</h3>
             <p className="text-gray-600">
@@ -74,7 +74,7 @@ export default function GioiThieuPage() {
 
           <div className="text-center">
             <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Award className="w-8 h-8 text-primary-600" />
+              <Award className="w-8 h-8 text-primary-400" />
             </div>
             <h3 className="text-xl font-semibold mb-2">Đổi Mới</h3>
             <p className="text-gray-600">
@@ -85,7 +85,7 @@ export default function GioiThieuPage() {
       </div>
 
       {/* Statistics Section */}
-      <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl p-12 text-white">
+      <div className="bg-gradient-to-r from-primary-400 to-primary-700 rounded-2xl p-12 text-white">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           <div>
             <div className="text-5xl font-bold mb-2">10+</div>
@@ -112,7 +112,7 @@ export default function GioiThieuPage() {
         </p>
         <a
           href="/lien-he"
-          className="inline-block bg-primary-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
+          className="inline-block bg-primary-400 text-white px-8 py-4 rounded-lg font-semibold hover:bg-primary-500 transition-colors"
         >
           Liên Hệ Ngay
         </a>

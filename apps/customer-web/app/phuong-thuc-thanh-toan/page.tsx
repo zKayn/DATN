@@ -56,8 +56,8 @@ export default function PhuongThucThanhToanPage() {
           {/* VNPay */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-start gap-4">
-              <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <CreditCard className="w-8 h-8 text-blue-600" />
+              <div className="w-16 h-16 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <CreditCard className="w-8 h-8 text-primary-500" />
               </div>
               <div className="flex-1">
                 <h2 className="text-2xl font-bold text-gray-900 mb-3">
@@ -183,7 +183,7 @@ export default function PhuongThucThanhToanPage() {
           <p className="text-gray-600 mb-4">Sẵn sàng mua sắm?</p>
           <a
             href="/san-pham"
-            className="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
+            className="inline-block bg-primary-400 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-500 transition-colors"
           >
             Khám Phá Sản Phẩm
           </a>

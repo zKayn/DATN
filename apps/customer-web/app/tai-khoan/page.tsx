@@ -337,7 +337,7 @@ export default function AccountPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
       </div>
     );
   }
@@ -380,7 +380,50 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="container mx-auto px-4">
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">Tài Khoản Của Tôi</h1>
+
+        {/* Tab Navigation */}
+        <div className="bg-white rounded-t-lg border-b border-gray-200 overflow-x-auto mb-0">
+          <nav className="flex gap-1 min-w-max">
+            {menuItems.map(item => {
+              const isActive = activeTab === item.id;
+              const className = `flex items-center gap-2 px-6 py-4 border-b-2 transition-colors whitespace-nowrap ${
+                isActive
+                  ? 'border-primary-500 text-primary-500 font-medium'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+              }`;
+
+              return item.href ? (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className={className}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {renderIcon(item.icon)}
+                  </svg>
+                  <span>{item.label}</span>
+                </Link>
+              ) : (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={className}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {renderIcon(item.icon)}
+                  </svg>
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Tab Content */}
+        <div className="space-y-6">
             {/* Profile Tab */}
             {activeTab === 'profile' && (
               <div className="bg-white rounded-lg shadow-sm p-6">
@@ -428,7 +471,7 @@ export default function AccountPage() {
                         type="text"
                         value={userInfo.name}
                         onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                       />
                     </div>
 
@@ -438,7 +481,7 @@ export default function AccountPage() {
                         type="email"
                         value={userInfo.email}
                         onChange={(e) => setUserInfo({ ...userInfo, email: e.target.value })}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                       />
                     </div>
 
@@ -448,7 +491,7 @@ export default function AccountPage() {
                         type="tel"
                         value={userInfo.phone}
                         onChange={(e) => setUserInfo({ ...userInfo, phone: e.target.value })}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                       />
                     </div>
 
@@ -457,7 +500,7 @@ export default function AccountPage() {
                       <select
                         value={userInfo.gender}
                         onChange={(e) => setUserInfo({ ...userInfo, gender: e.target.value })}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                       >
                         <option value="nam">Nam</option>
                         <option value="nu">Nữ</option>
@@ -471,7 +514,7 @@ export default function AccountPage() {
                         type="date"
                         value={userInfo.birthday}
                         onChange={(e) => setUserInfo({ ...userInfo, birthday: e.target.value })}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                       />
                     </div>
                   </div>
@@ -479,7 +522,7 @@ export default function AccountPage() {
                   <div className="mt-6">
                     <button
                       type="submit"
-                      className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                      className="bg-primary-500 text-white px-8 py-3 rounded-lg hover:bg-primary-800 transition-colors font-semibold"
                     >
                       Cập Nhật Thông Tin
                     </button>
@@ -495,7 +538,7 @@ export default function AccountPage() {
                   <h2 className="text-2xl font-bold text-gray-900">Địa Chỉ Nhận Hàng</h2>
                   <button
                     onClick={handleAddAddress}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    className="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-800 transition-colors font-medium"
                   >
                     + Thêm Địa Chỉ
                   </button>
@@ -509,7 +552,7 @@ export default function AccountPage() {
                     <p className="text-gray-600 mb-4">Bạn chưa có địa chỉ nào</p>
                     <button
                       onClick={handleAddAddress}
-                      className="text-blue-600 hover:text-blue-700 font-medium"
+                      className="text-primary-500 hover:text-primary-800 font-medium"
                     >
                       Thêm địa chỉ đầu tiên
                     </button>
@@ -521,20 +564,20 @@ export default function AccountPage() {
                         key={address._id}
                         className={`rounded-lg p-4 ${
                           address.macDinh
-                            ? 'border-2 border-blue-600 bg-blue-50'
+                            ? 'border-2 border-primary-500 bg-primary-50'
                             : 'border border-gray-300'
                         }`}
                       >
                         <div className="flex items-start justify-between mb-2">
                           <div>
                             {address.macDinh ? (
-                              <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded">
+                              <span className="bg-primary-500 text-white text-xs px-2 py-1 rounded">
                                 Mặc định
                               </span>
                             ) : (
                               <button
                                 onClick={() => handleSetDefaultAddress(address._id)}
-                                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                                className="text-primary-500 hover:text-primary-800 text-sm font-medium"
                               >
                                 Đặt làm mặc định
                               </button>
@@ -543,7 +586,7 @@ export default function AccountPage() {
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleEditAddress(address)}
-                              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                              className="text-primary-500 hover:text-primary-800 text-sm font-medium"
                             >
                               Sửa
                             </button>
@@ -580,7 +623,7 @@ export default function AccountPage() {
                         type="password"
                         value={passwordData.currentPassword}
                         onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                         required
                       />
                     </div>
@@ -591,7 +634,7 @@ export default function AccountPage() {
                         type="password"
                         value={passwordData.newPassword}
                         onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                         required
                       />
                     </div>
@@ -602,7 +645,7 @@ export default function AccountPage() {
                         type="password"
                         value={passwordData.confirmPassword}
                         onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                         required
                       />
                     </div>
@@ -611,7 +654,7 @@ export default function AccountPage() {
                   <div className="mt-6">
                     <button
                       type="submit"
-                      className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                      className="bg-primary-500 text-white px-8 py-3 rounded-lg hover:bg-primary-800 transition-colors font-semibold"
                     >
                       Đổi Mật Khẩu
                     </button>
@@ -625,7 +668,7 @@ export default function AccountPage() {
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Điểm Tích Lũy</h2>
 
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white mb-6">
+                <div className="bg-gradient-to-r from-primary-500 to-primary-800 rounded-lg p-6 text-white mb-6">
                   <p className="text-sm opacity-90 mb-2">Tổng điểm hiện có</p>
                   <p className="text-4xl font-bold mb-1">{userPoints.toLocaleString()} điểm</p>
                   <p className="text-sm opacity-90">≈ ₫{(userPoints * 1000).toLocaleString('vi-VN')}</p>
@@ -662,15 +705,17 @@ export default function AccountPage() {
                 </div>
               </div>
             )}
+        </div>
 
-      {/* Address Modal */}
-      <AddressModal
-        isOpen={isAddressModalOpen}
-        onClose={() => setIsAddressModalOpen(false)}
-        onSave={handleSaveAddress}
-        address={editingAddress}
-        mode={modalMode}
-      />
+        {/* Address Modal */}
+        <AddressModal
+          isOpen={isAddressModalOpen}
+          onClose={() => setIsAddressModalOpen(false)}
+          onSave={handleSaveAddress}
+          address={editingAddress}
+          mode={modalMode}
+        />
+      </div>
     </div>
   );
 }

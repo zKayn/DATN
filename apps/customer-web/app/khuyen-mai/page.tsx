@@ -83,7 +83,7 @@ export default function PromotionsPage() {
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <a href="/" className="hover:text-blue-600">Trang chủ</a>
+            <a href="/" className="hover:text-primary-500">Trang chủ</a>
             <span>/</span>
             <span className="text-gray-900">Khuyến mãi</span>
           </div>
@@ -107,10 +107,10 @@ export default function PromotionsPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg p-6 border-2 border-blue-200">
+          <div className="bg-white rounded-lg p-6 border-2 border-primary-200">
             <div className="flex items-center gap-4">
-              <div className="bg-blue-100 p-3 rounded-full">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-primary-100 p-3 rounded-full">
+                <svg className="w-6 h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                 </svg>
               </div>
@@ -199,7 +199,7 @@ export default function PromotionsPage() {
             <p className="text-gray-600 mb-4">Vui lòng quay lại sau để không bỏ lỡ các ưu đãi hấp dẫn</p>
             <a
               href="/san-pham"
-              className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-block bg-primary-500 text-white px-6 py-2 rounded-lg hover:bg-primary-800 transition-colors"
             >
               Xem tất cả sản phẩm
             </a>

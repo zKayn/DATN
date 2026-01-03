@@ -268,11 +268,11 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
 
           {/* Price */}
           <View style={styles.priceContainer}>
-            <Text style={styles.price}>
-              ₫{(product.giaKhuyenMai || product.gia).toLocaleString('vi-VN')}
-            </Text>
-            {product.giaKhuyenMai && (
+            {product.giaKhuyenMai ? (
               <>
+                <Text style={styles.price}>
+                  ₫{product.giaKhuyenMai.toLocaleString('vi-VN')}
+                </Text>
                 <Text style={styles.originalPrice}>
                   ₫{product.gia.toLocaleString('vi-VN')}
                 </Text>
@@ -280,6 +280,10 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
                   <Text style={styles.discountText}>-{discountPercent}%</Text>
                 </View>
               </>
+            ) : (
+              <Text style={styles.regularPrice}>
+                ₫{product.gia.toLocaleString('vi-VN')}
+              </Text>
             )}
           </View>
 
@@ -656,7 +660,12 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: COLORS.danger,
+    color: COLORS.warning, // Orange for sale price
+  },
+  regularPrice: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.gray[700], // Dark gray for regular price
   },
   originalPrice: {
     fontSize: SIZES.body,
@@ -665,7 +674,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   discountBadge: {
-    backgroundColor: COLORS.danger,
+    backgroundColor: COLORS.warning, // Orange background
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,

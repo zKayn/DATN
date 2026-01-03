@@ -12,6 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import DropdownSelect from '../../components/DropdownSelect';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import { COLORS, SIZES } from '../../constants/config';
@@ -32,6 +33,25 @@ const AddressFormScreen = ({ navigation, route }: any) => {
     tinhThanh: '',
     macDinh: false,
   });
+
+  // Location data
+  const [provinces, setProvinces] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<any[]>([]);
+  const [wards, setWards] = useState<any[]>([]);
+
+  // Load provinces on mount
+  useEffect(() => {
+    const loadProvinces = async () => {
+      try {
+        const response = await fetch('https://provinces.open-api.vn/api/p/');
+        const data = await response.json();
+        setProvinces(data);
+      } catch (error) {
+        console.error('Lỗi khi tải danh sách tỉnh/thành phố:', error);
+      }
+    };
+    loadProvinces();
+  }, []);
 
   useEffect(() => {
     if (isEditMode) {
@@ -64,6 +84,49 @@ const AddressFormScreen = ({ navigation, route }: any) => {
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Handle province/city selection
+  const handleProvinceChange = async (provinceCode: string) => {
+    const selectedProvince = provinces.find((p) => p.code.toString() === provinceCode);
+    if (selectedProvince) {
+      setFormData((prev) => ({ ...prev, tinhThanh: selectedProvince.name, quanHuyen: '', phuongXa: '' }));
+      setWards([]);
+
+      // Load districts
+      try {
+        const response = await fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`);
+        const data = await response.json();
+        setDistricts(data.districts || []);
+      } catch (error) {
+        console.error('Lỗi khi tải danh sách quận/huyện:', error);
+      }
+    }
+  };
+
+  // Handle district selection
+  const handleDistrictChange = async (districtCode: string) => {
+    const selectedDistrict = districts.find((d) => d.code.toString() === districtCode);
+    if (selectedDistrict) {
+      setFormData((prev) => ({ ...prev, quanHuyen: selectedDistrict.name, phuongXa: '' }));
+
+      // Load wards
+      try {
+        const response = await fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`);
+        const data = await response.json();
+        setWards(data.wards || []);
+      } catch (error) {
+        console.error('Lỗi khi tải danh sách phường/xã:', error);
+      }
+    }
+  };
+
+  // Handle ward selection
+  const handleWardChange = (wardCode: string) => {
+    const selectedWard = wards.find((w) => w.code.toString() === wardCode);
+    if (selectedWard) {
+      setFormData((prev) => ({ ...prev, phuongXa: selectedWard.name }));
+    }
   };
 
   const validateForm = () => {
@@ -213,21 +276,17 @@ const AddressFormScreen = ({ navigation, route }: any) => {
             </View>
           </View>
 
-          {/* Phường/Xã */}
+          {/* Tỉnh/Thành phố */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>
-              Phường/Xã <Text style={styles.required}>*</Text>
+              Tỉnh/Thành phố <Text style={styles.required}>*</Text>
             </Text>
-            <View style={styles.inputContainer}>
-              <Ionicons name="location-outline" size={20} color={COLORS.gray[400]} />
-              <TextInput
-                style={styles.input}
-                value={formData.phuongXa}
-                onChangeText={(value) => handleInputChange('phuongXa', value)}
-                placeholder="Nhập phường/xã"
-                placeholderTextColor={COLORS.gray[400]}
-              />
-            </View>
+            <DropdownSelect
+              value={provinces.find((p) => p.name === formData.tinhThanh)?.code.toString() || ''}
+              onValueChange={handleProvinceChange}
+              options={provinces.map((p) => ({ value: p.code.toString(), label: p.name }))}
+              placeholder="Chọn Tỉnh/Thành phố"
+            />
           </View>
 
           {/* Quận/Huyện */}
@@ -235,33 +294,27 @@ const AddressFormScreen = ({ navigation, route }: any) => {
             <Text style={styles.label}>
               Quận/Huyện <Text style={styles.required}>*</Text>
             </Text>
-            <View style={styles.inputContainer}>
-              <Ionicons name="location-outline" size={20} color={COLORS.gray[400]} />
-              <TextInput
-                style={styles.input}
-                value={formData.quanHuyen}
-                onChangeText={(value) => handleInputChange('quanHuyen', value)}
-                placeholder="Nhập quận/huyện"
-                placeholderTextColor={COLORS.gray[400]}
-              />
-            </View>
+            <DropdownSelect
+              value={districts.find((d) => d.name === formData.quanHuyen)?.code.toString() || ''}
+              onValueChange={handleDistrictChange}
+              options={districts.map((d) => ({ value: d.code.toString(), label: d.name }))}
+              placeholder="Chọn Quận/Huyện"
+              enabled={!!formData.tinhThanh}
+            />
           </View>
 
-          {/* Tỉnh/Thành phố */}
+          {/* Phường/Xã */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>
-              Tỉnh/Thành phố <Text style={styles.required}>*</Text>
+              Phường/Xã <Text style={styles.required}>*</Text>
             </Text>
-            <View style={styles.inputContainer}>
-              <Ionicons name="location-outline" size={20} color={COLORS.gray[400]} />
-              <TextInput
-                style={styles.input}
-                value={formData.tinhThanh}
-                onChangeText={(value) => handleInputChange('tinhThanh', value)}
-                placeholder="Nhập tỉnh/thành phố"
-                placeholderTextColor={COLORS.gray[400]}
-              />
-            </View>
+            <DropdownSelect
+              value={wards.find((w) => w.name === formData.phuongXa)?.code.toString() || ''}
+              onValueChange={handleWardChange}
+              options={wards.map((w) => ({ value: w.code.toString(), label: w.name }))}
+              placeholder="Chọn Phường/Xã"
+              enabled={!!formData.quanHuyen}
+            />
           </View>
 
           {/* Đặt làm mặc định */}
@@ -376,6 +429,17 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: SIZES.body,
     color: COLORS.dark,
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
+    borderRadius: SIZES.borderRadius,
+    backgroundColor: COLORS.gray[100],
+    overflow: 'hidden',
+  },
+  picker: {
+    height: 50,
+    width: '100%',
   },
   checkboxContainer: {
     flexDirection: 'row',

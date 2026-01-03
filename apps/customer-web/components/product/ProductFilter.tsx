@@ -118,7 +118,7 @@ export default function ProductFilter({ filters, onChange }: FilterProps) {
               <select
                 value={filters.sort}
                 onChange={(e) => onChange({ ...filters, sort: e.target.value })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-400"
               >
                 <option value="newest">Mới nhất</option>
                 <option value="price-low">Giá thấp → cao</option>
@@ -137,7 +137,7 @@ export default function ProductFilter({ filters, onChange }: FilterProps) {
                 <select
                   value={filters.category}
                   onChange={(e) => onChange({ ...filters, category: e.target.value, productType: '' })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-400"
                 >
                   <option value="">Tất cả</option>
                   {categories.map((cat) => (
@@ -153,7 +153,7 @@ export default function ProductFilter({ filters, onChange }: FilterProps) {
               <select
                 value={filters.productType}
                 onChange={(e) => onChange({ ...filters, productType: e.target.value })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-400 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 disabled={!filters.category || availableProductTypes.length === 0}
               >
                 <option value="">Tất cả</option>
@@ -172,7 +172,7 @@ export default function ProductFilter({ filters, onChange }: FilterProps) {
                 <select
                   value={filters.brands.length > 0 ? filters.brands[0] : ''}
                   onChange={(e) => onChange({ ...filters, brands: e.target.value ? [e.target.value] : [] })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-400"
                 >
                   <option value="">Tất cả</option>
                   {brands.sort().map((brand) => (
@@ -188,7 +188,7 @@ export default function ProductFilter({ filters, onChange }: FilterProps) {
               <select
                 value={filters.sizes.length > 0 ? filters.sizes[0] : ''}
                 onChange={(e) => onChange({ ...filters, sizes: e.target.value ? [e.target.value] : [] })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-400"
               >
                 <option value="">Tất cả</option>
                 {['38', '39', '40', '41', '42', '43', '44', '45'].map((size) => (
@@ -203,7 +203,7 @@ export default function ProductFilter({ filters, onChange }: FilterProps) {
               <select
                 value={filters.sizes.length > 0 && !['38', '39', '40', '41', '42', '43', '44', '45'].includes(filters.sizes[0]) ? filters.sizes[0] : ''}
                 onChange={(e) => onChange({ ...filters, sizes: e.target.value ? [e.target.value] : [] })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-400"
               >
                 <option value="">Tất cả</option>
                 {['S', 'M', 'L', 'XL', '2XL', '3XL'].map((size) => (
@@ -231,7 +231,7 @@ export default function ProductFilter({ filters, onChange }: FilterProps) {
                 rating: 0,
                 sort: 'newest'
               })}
-              className="text-xs text-blue-600 hover:text-blue-700 font-medium hover:underline"
+              className="text-xs text-primary-500 hover:text-primary-800 font-medium hover:underline"
             >
               Xóa bộ lọc
             </button>
@@ -247,7 +247,7 @@ export default function ProductFilter({ filters, onChange }: FilterProps) {
                   placeholder="0"
                   value={filters.priceRange[0]}
                   onChange={(e) => onChange({ ...filters, priceRange: [+e.target.value, filters.priceRange[1]] })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-400"
                 />
                 <span className="text-gray-400">-</span>
                 <input
@@ -255,7 +255,7 @@ export default function ProductFilter({ filters, onChange }: FilterProps) {
                   placeholder="10000000"
                   value={filters.priceRange[1]}
                   onChange={(e) => onChange({ ...filters, priceRange: [filters.priceRange[0], +e.target.value] })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-400"
                 />
               </div>
             </div>
@@ -270,12 +270,12 @@ export default function ProductFilter({ filters, onChange }: FilterProps) {
                     onClick={() => toggleArrayFilter('colors', color.name)}
                     className={`w-9 h-9 rounded-full border-2 transition-all ${
                       filters.colors.includes(color.name)
-                        ? 'border-blue-600 scale-110'
+                        ? 'border-primary-500 scale-110'
                         : 'border-gray-300 hover:scale-105'
                     }`}
                     style={{
                       backgroundColor: color.code,
-                      boxShadow: filters.colors.includes(color.name) ? '0 0 0 2px white, 0 0 0 4px #3B82F6' : 'none'
+                      boxShadow: filters.colors.includes(color.name) ? '0 0 0 2px white, 0 0 0 4px #334155' : 'none'
                     }}
                     title={color.name}
                   />

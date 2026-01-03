@@ -37,7 +37,7 @@ interface Order {
 
 const statusLabels: Record<string, { label: string; color: string; bgColor: string }> = {
   'cho-xac-nhan': { label: 'Chờ xác nhận', color: 'text-yellow-700', bgColor: 'bg-yellow-100' },
-  'da-xac-nhan': { label: 'Đã xác nhận', color: 'text-blue-700', bgColor: 'bg-blue-100' },
+  'da-xac-nhan': { label: 'Đã xác nhận', color: 'text-primary-500', bgColor: 'bg-primary-100' },
   'dang-chuan-bi': { label: 'Đang chuẩn bị', color: 'text-indigo-700', bgColor: 'bg-indigo-100' },
   'dang-giao': { label: 'Đang giao', color: 'text-purple-700', bgColor: 'bg-purple-100' },
   'da-giao': { label: 'Đã giao', color: 'text-green-700', bgColor: 'bg-green-100' },
@@ -162,7 +162,7 @@ export default function OrderHistoryPage() {
                     placeholder="Tìm kiếm đơn hàng..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                   />
                 </div>
 
@@ -170,7 +170,7 @@ export default function OrderHistoryPage() {
                 <select
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                 >
                   <option value="all">Tất cả đơn hàng</option>
                   <option value="cho-xac-nhan">Chờ xác nhận</option>
@@ -200,7 +200,7 @@ export default function OrderHistoryPage() {
                 </p>
                 <Link
                   href="/san-pham"
-                  className="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors"
+                  className="inline-block bg-primary-400 text-white px-8 py-3 rounded-lg font-medium hover:bg-primary-500 transition-colors"
                 >
                   Khám phá sản phẩm
                 </Link>
@@ -274,7 +274,7 @@ export default function OrderHistoryPage() {
                         <div className="border-t pt-4 flex flex-wrap items-center justify-between gap-4">
                           <div>
                             <p className="text-sm text-gray-600">Tổng tiền:</p>
-                            <p className="text-2xl font-bold text-primary-600">{formatPrice(order.tongThanhToan)}</p>
+                            <p className="text-2xl font-bold text-primary-400">{formatPrice(order.tongThanhToan)}</p>
                           </div>
                           <div className="flex gap-3">
                             <Link
@@ -292,7 +292,7 @@ export default function OrderHistoryPage() {
                               </button>
                             )}
                             {order.trangThaiDonHang === 'da-giao' && (
-                              <button className="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors">
+                              <button className="px-6 py-2 bg-primary-400 text-white rounded-lg font-medium hover:bg-primary-500 transition-colors">
                                 Mua lại
                               </button>
                             )}

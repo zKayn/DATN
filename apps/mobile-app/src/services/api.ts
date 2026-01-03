@@ -188,6 +188,52 @@ class ApiService {
     return response.data;
   }
 
+  // Cart APIs
+  async getCart() {
+    const response = await this.api.get('/users/cart');
+    return response.data;
+  }
+
+  async addToCart(cartItem: {
+    sanPham: string;
+    ten: string;
+    slug: string;
+    hinhAnh: string;
+    gia: number;
+    giaKhuyenMai?: number;
+    kichThuoc: string;
+    mauSac: string;
+    soLuong: number;
+    tonKho: number;
+  }) {
+    const response = await this.api.post('/users/cart', cartItem);
+    return response.data;
+  }
+
+  async updateCartItem(update: {
+    sanPham: string;
+    kichThuoc: string;
+    mauSac: string;
+    soLuong: number;
+  }) {
+    const response = await this.api.put('/users/cart', update);
+    return response.data;
+  }
+
+  async removeFromCart(item: {
+    sanPham: string;
+    kichThuoc: string;
+    mauSac: string;
+  }) {
+    const response = await this.api.delete('/users/cart/item', { data: item });
+    return response.data;
+  }
+
+  async clearCart() {
+    const response = await this.api.delete('/users/cart');
+    return response.data;
+  }
+
   // Review APIs
   async getProductReviews(productId: string, params?: { page?: number; limit?: number }) {
     const response = await this.api.get(`/reviews/product/${productId}`, { params });

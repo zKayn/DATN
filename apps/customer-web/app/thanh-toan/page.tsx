@@ -26,7 +26,7 @@ export default function CheckoutPage() {
     ward: '',
     note: ''
   });
-  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'vnpay' | 'momo' | 'bankTransfer'>('cod');
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'stripe' | 'bankTransfer'>('cod');
   const [userPoints, setUserPoints] = useState(0);
   const [pointsToUse, setPointsToUse] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -121,10 +121,18 @@ export default function CheckoutPage() {
   const freeShippingThreshold = settings?.freeShippingThreshold || 500000;
   const shippingFeeAmount = settings?.shippingFee || 30000;
   const shippingFee = subtotal >= freeShippingThreshold ? 0 : shippingFeeAmount;
+
   // Tỷ lệ quy đổi: 1 điểm = 1,000 VND
-  const pointsDiscount = pointsToUse * 1000;
   const voucherDiscount = appliedVoucher?.giaTriGiamThucTe || 0;
-  const total = subtotal + shippingFee - pointsDiscount - voucherDiscount;
+
+  // Cap points discount at remaining subtotal (after voucher, can't discount shipping)
+  const maxPointsDiscount = Math.max(0, subtotal - voucherDiscount);
+  const pointsDiscountValue = pointsToUse * 1000;
+  const actualPointsDiscount = Math.min(pointsDiscountValue, maxPointsDiscount);
+  const actualPointsUsed = Math.floor(actualPointsDiscount / 1000);
+
+  // Total: (subtotal - discounts) + shipping (always charged)
+  const total = subtotal - voucherDiscount - actualPointsDiscount + shippingFee;
 
   // Handle province/city selection
   const handleCityChange = async (provinceCode: string) => {
@@ -272,7 +280,7 @@ export default function CheckoutPage() {
         }),
         tongTien: subtotal,
         phiVanChuyen: shippingFee,
-        giamGia: pointsDiscount + voucherDiscount,
+        giamGia: actualPointsDiscount + voucherDiscount,
         tongThanhToan: total,
         phuongThucThanhToan: paymentMethod,
         diaChiGiaoHang: {
@@ -296,23 +304,44 @@ export default function CheckoutPage() {
       }
 
       // Add points usage if any
-      if (pointsToUse > 0) {
-        orderData.diemSuDung = pointsToUse;
+      if (actualPointsUsed > 0) {
+        orderData.diemSuDung = actualPointsUsed;
       }
 
       const response = await api.createOrder(token, orderData);
 
       if (response.success) {
-        toast.success('Đặt hàng thành công!');
-        clearCart();
+        const order = response.data;
 
-        // Redirect based on payment method
-        if (paymentMethod === 'cod') {
-          router.push(`/tai-khoan/don-hang`);
+        // Handle payment method
+        if (paymentMethod === 'stripe') {
+          // Create Stripe payment intent
+          toast('Đang khởi tạo thanh toán...');
+
+          const paymentResponse = await api.createStripePaymentIntent(
+            token,
+            order._id,
+            total
+          );
+
+          if (paymentResponse.success) {
+            // Redirect to Stripe payment page
+            router.push(
+              `/payment/stripe?orderId=${order._id}&clientSecret=${paymentResponse.data.clientSecret}`
+            );
+          } else {
+            toast.error(paymentResponse.message || 'Không thể khởi tạo thanh toán');
+          }
+        } else if (paymentMethod === 'cod') {
+          // COD - clear cart and redirect
+          toast.success('Đặt hàng thành công!');
+          clearCart();
+          router.push('/tai-khoan/don-hang');
         } else {
-          // For online payment, redirect to payment gateway
-          // This would be implemented based on payment provider
-          toast('Chuyển đến trang thanh toán...');
+          // Other payment methods
+          toast.success('Đặt hàng thành công!');
+          clearCart();
+          router.push('/tai-khoan/don-hang');
         }
       } else {
         toast.error(response.message || 'Đặt hàng thất bại');
@@ -331,7 +360,7 @@ export default function CheckoutPage() {
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-            <Link href="/gio-hang" className="hover:text-blue-600">Giỏ hàng</Link>
+            <Link href="/gio-hang" className="hover:text-primary-500">Giỏ hàng</Link>
             <span>/</span>
             <span className="text-gray-900">Thanh toán</span>
           </div>
@@ -350,10 +379,10 @@ export default function CheckoutPage() {
 
                 {/* Saved Addresses Selector */}
                 {showAddressSelector && savedAddresses.length > 0 && (
-                  <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="mb-6 p-4 bg-primary-50 rounded-lg border border-primary-200">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="font-semibold text-gray-900">Chọn địa chỉ đã lưu</h3>
-                      <Link href="/tai-khoan" className="text-sm text-blue-600 hover:text-blue-700">
+                      <Link href="/tai-khoan" className="text-sm text-primary-500 hover:text-primary-800">
                         Quản lý địa chỉ
                       </Link>
                     </div>
@@ -363,8 +392,8 @@ export default function CheckoutPage() {
                           key={address._id}
                           className={`flex items-start p-3 rounded-lg border-2 cursor-pointer transition-all ${
                             selectedAddressId === address._id
-                              ? 'border-blue-600 bg-white'
-                              : 'border-gray-200 bg-white hover:border-blue-300'
+                              ? 'border-primary-500 bg-white'
+                              : 'border-gray-200 bg-white hover:border-primary-300'
                           }`}
                         >
                           <input
@@ -381,7 +410,7 @@ export default function CheckoutPage() {
                                 {address.hoTen} | {address.soDienThoai}
                               </span>
                               {address.macDinh && (
-                                <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded">
+                                <span className="text-xs bg-primary-500 text-white px-2 py-0.5 rounded">
                                   Mặc định
                                 </span>
                               )}
@@ -393,7 +422,7 @@ export default function CheckoutPage() {
                         </label>
                       ))}
                     </div>
-                    <div className="mt-3 pt-3 border-t border-blue-200">
+                    <div className="mt-3 pt-3 border-t border-primary-200">
                       <button
                         type="button"
                         onClick={() => {
@@ -406,7 +435,7 @@ export default function CheckoutPage() {
                             ward: ''
                           }));
                         }}
-                        className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                        className="text-sm text-primary-500 hover:text-primary-800 font-medium"
                       >
                         + Nhập địa chỉ mới
                       </button>
@@ -423,7 +452,7 @@ export default function CheckoutPage() {
                       type="text"
                       value={shippingInfo.fullName}
                       onChange={(e) => setShippingInfo({ ...shippingInfo, fullName: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                       placeholder="Nguyễn Văn A"
                       required
                       readOnly={!!selectedAddressId}
@@ -438,7 +467,7 @@ export default function CheckoutPage() {
                       type="tel"
                       value={shippingInfo.phone}
                       onChange={(e) => setShippingInfo({ ...shippingInfo, phone: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                       placeholder="0123456789"
                       required
                       readOnly={!!selectedAddressId}
@@ -453,7 +482,7 @@ export default function CheckoutPage() {
                       type="email"
                       value={shippingInfo.email}
                       onChange={(e) => setShippingInfo({ ...shippingInfo, email: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                       placeholder="email@example.com"
                     />
                   </div>
@@ -466,7 +495,7 @@ export default function CheckoutPage() {
                       type="text"
                       value={shippingInfo.address}
                       onChange={(e) => setShippingInfo({ ...shippingInfo, address: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                       placeholder="Số nhà, tên đường"
                       required
                       readOnly={!!selectedAddressId}
@@ -488,7 +517,7 @@ export default function CheckoutPage() {
                       <select
                         value={provinces.find(p => p.name === shippingInfo.city)?.code || ''}
                         onChange={(e) => handleCityChange(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                         required
                       >
                         <option value="">Chọn Tỉnh/Thành phố</option>
@@ -516,7 +545,7 @@ export default function CheckoutPage() {
                       <select
                         value={districts.find(d => d.name === shippingInfo.district)?.code || ''}
                         onChange={(e) => handleDistrictChange(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                         disabled={!shippingInfo.city}
                       >
                         <option value="">Chọn Quận/Huyện</option>
@@ -544,7 +573,7 @@ export default function CheckoutPage() {
                       <select
                         value={wards.find(w => w.name === shippingInfo.ward)?.code || ''}
                         onChange={(e) => handleWardChange(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                         disabled={!shippingInfo.district}
                       >
                         <option value="">Chọn Phường/Xã</option>
@@ -564,7 +593,7 @@ export default function CheckoutPage() {
                     <textarea
                       value={shippingInfo.note}
                       onChange={(e) => setShippingInfo({ ...shippingInfo, note: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-3 h-24 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 h-24 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                       placeholder="Ghi chú về đơn hàng, ví dụ: thời gian hay chỉ dẫn địa điểm giao hàng chi tiết hơn"
                     />
                   </div>
@@ -577,14 +606,14 @@ export default function CheckoutPage() {
 
                 <div className="space-y-3">
                   {settings?.paymentMethods?.cod && (
-                    <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${paymentMethod === 'cod' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}`}>
+                    <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${paymentMethod === 'cod' ? 'border-primary-500 bg-primary-50' : 'border-gray-300'}`}>
                       <input
                         type="radio"
                         name="payment"
                         value="cod"
                         checked={paymentMethod === 'cod'}
                         onChange={(e) => setPaymentMethod(e.target.value as 'cod')}
-                        className="w-5 h-5 text-blue-600"
+                        className="w-5 h-5 text-primary-500"
                       />
                       <div className="ml-4 flex-1">
                         <div className="flex items-center gap-2">
@@ -598,59 +627,42 @@ export default function CheckoutPage() {
                     </label>
                   )}
 
-                  {settings?.paymentMethods?.vnpay && (
-                    <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${paymentMethod === 'vnpay' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}`}>
+                  {settings?.paymentMethods?.stripe && (
+                    <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${paymentMethod === 'stripe' ? 'border-primary-500 bg-primary-50' : 'border-gray-300'}`}>
                       <input
                         type="radio"
                         name="payment"
-                        value="vnpay"
-                        checked={paymentMethod === 'vnpay'}
-                        onChange={(e) => setPaymentMethod(e.target.value as 'vnpay')}
-                        className="w-5 h-5 text-blue-600"
+                        value="stripe"
+                        checked={paymentMethod === 'stripe'}
+                        onChange={(e) => setPaymentMethod(e.target.value as 'stripe')}
+                        className="w-5 h-5 text-primary-500"
                       />
                       <div className="ml-4 flex-1">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
-                            <span className="text-white text-xs font-bold">VP</span>
-                          </div>
-                          <span className="font-semibold text-gray-900">VNPay</span>
+                        <div className="flex items-center gap-2 mb-1">
+                          <svg className="w-16 h-6" viewBox="0 0 60 25" fill="none">
+                            <path fill="#635BFF" d="M13.3 11.5c0-.9-.5-1.3-1.5-1.3H9.6v2.8h2.1c1 0 1.6-.4 1.6-1.5zm-1-4.4c0-.8-.5-1.2-1.3-1.2H9.6v2.5H11c.9 0 1.3-.4 1.3-1.3zM15.6 11.6c0 1.8-1.2 3.1-3.2 3.1H7.3V3.6h4.8c1.9 0 3 1.1 3 2.7 0 1-.5 1.8-1.3 2.2 1 .3 1.8 1.3 1.8 3.1zM22.4 7.1c-1 0-1.7.4-2.2 1V7.2h-2.3v10.5h2.3v-3.6c.5.6 1.2.9 2.2.9 2.2 0 3.6-1.7 3.6-4.5s-1.4-4.4-3.6-4.4zm-.6 6.8c-1.2 0-2-.9-2-2.4s.8-2.4 2-2.4 2 .9 2 2.4-.8 2.4-2 2.4zM29.3 7.2h-2.3v7.5h2.3V7.2zm-1.2-1c.8 0 1.4-.6 1.4-1.4s-.6-1.4-1.4-1.4-1.4.6-1.4 1.4.6 1.4 1.4 1.4zM35 7.1c-1 0-1.8.5-2.2 1.2V7.2h-2.3v7.5h2.3v-4.2c0-1.2.7-1.8 1.6-1.8.9 0 1.4.6 1.4 1.6v4.4h2.3v-5c0-2-1.1-3.2-3.1-3.2zM44.4 12.5h-4.2c.2 1 .9 1.5 1.9 1.5.6 0 1.2-.2 1.6-.7l1.3 1.3c-.7.8-1.8 1.3-3.1 1.3-2.4 0-4.1-1.7-4.1-4.5s1.7-4.4 4-4.4c2.2 0 3.9 1.7 3.9 4.4 0 .4 0 .8-.1 1.1zm-4.2-1.5h2.3c-.1-.9-.7-1.5-1.5-1.5s-1.4.6-1.5 1.5zM49.7 7.1c-1 0-1.8.5-2.2 1.2V7.2h-2.3v10.5h2.3v-3.6c.4.7 1.2 1.1 2.2 1.1 2.2 0 3.6-1.7 3.6-4.5s-1.4-4.6-3.6-4.6zm-.6 6.8c-1.2 0-2-.9-2-2.4s.8-2.4 2-2.4 2 .9 2 2.4-.8 2.4-2 2.4z"/>
+                          </svg>
+                          <span className="font-semibold text-gray-900">Thẻ quốc tế</span>
                         </div>
-                        <p className="text-sm text-gray-600 mt-1">Thanh toán qua cổng VNPay</p>
-                      </div>
-                    </label>
-                  )}
-
-                  {settings?.paymentMethods?.momo && (
-                    <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${paymentMethod === 'momo' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}`}>
-                      <input
-                        type="radio"
-                        name="payment"
-                        value="momo"
-                        checked={paymentMethod === 'momo'}
-                        onChange={(e) => setPaymentMethod(e.target.value as 'momo')}
-                        className="w-5 h-5 text-blue-600"
-                      />
-                      <div className="ml-4 flex-1">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-pink-600 rounded flex items-center justify-center">
-                            <span className="text-white text-xs font-bold">M</span>
-                          </div>
-                          <span className="font-semibold text-gray-900">MoMo</span>
+                        <p className="text-sm text-gray-600 mt-1">Thanh toán an toàn qua Stripe (Visa, Mastercard, JCB)</p>
+                        <div className="flex gap-2 mt-2">
+                          <div className="w-8 h-6 bg-gray-100 rounded flex items-center justify-center text-xs font-bold text-gray-700">VISA</div>
+                          <div className="w-8 h-6 bg-gray-100 rounded flex items-center justify-center text-xs font-bold text-gray-700">MC</div>
+                          <div className="w-8 h-6 bg-gray-100 rounded flex items-center justify-center text-xs font-bold text-gray-700">JCB</div>
                         </div>
-                        <p className="text-sm text-gray-600 mt-1">Thanh toán qua ví điện tử MoMo</p>
                       </div>
                     </label>
                   )}
 
                   {settings?.paymentMethods?.bankTransfer && (
-                    <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${paymentMethod === 'bankTransfer' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}`}>
+                    <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${paymentMethod === 'bankTransfer' ? 'border-primary-500 bg-primary-50' : 'border-gray-300'}`}>
                       <input
                         type="radio"
                         name="payment"
                         value="bankTransfer"
                         checked={paymentMethod === 'bankTransfer'}
                         onChange={(e) => setPaymentMethod(e.target.value as any)}
-                        className="w-5 h-5 text-blue-600"
+                        className="w-5 h-5 text-primary-500"
                       />
                       <div className="ml-4 flex-1">
                         <div className="flex items-center gap-2">
@@ -670,10 +682,10 @@ export default function CheckoutPage() {
               {userPoints > 0 && (
                 <div className="bg-white rounded-lg shadow-sm p-6">
                   <h3 className="font-semibold text-gray-900 mb-3">Sử dụng điểm tích lũy</h3>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div className="bg-primary-50 border border-primary-200 rounded-lg p-4 mb-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-gray-600">Số điểm hiện có:</span>
-                      <span className="font-bold text-blue-600 text-lg">{userPoints.toLocaleString()} điểm</span>
+                      <span className="font-bold text-primary-500 text-lg">{userPoints.toLocaleString()} điểm</span>
                     </div>
                     <p className="text-xs text-gray-600">
                       Tỷ lệ: 1 điểm = ₫1,000 • Tối đa: ₫{(userPoints * 1000).toLocaleString('vi-VN')}
@@ -696,20 +708,25 @@ export default function CheckoutPage() {
                             setPointsToUse(value);
                           }
                         }}
-                        className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                         placeholder="0"
                       />
                       <button
                         type="button"
                         onClick={() => setPointsToUse(userPoints)}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm whitespace-nowrap"
+                        className="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-800 transition-colors font-medium text-sm whitespace-nowrap"
                       >
                         Dùng hết
                       </button>
                     </div>
                     {pointsToUse > 0 && (
                       <p className="text-sm text-green-600 mt-2">
-                        Giảm giá: ₫{pointsDiscount.toLocaleString('vi-VN')}
+                        Giảm giá: ₫{actualPointsDiscount.toLocaleString('vi-VN')}
+                        {actualPointsUsed < pointsToUse && (
+                          <span className="text-xs text-gray-600 ml-1">
+                            (sử dụng {actualPointsUsed.toLocaleString()} điểm)
+                          </span>
+                        )}
                       </p>
                     )}
                   </div>
@@ -736,7 +753,7 @@ export default function CheckoutPage() {
                               fill
                               className="object-cover"
                             />
-                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
                               {item.quantity}
                             </div>
                           </div>
@@ -765,14 +782,14 @@ export default function CheckoutPage() {
                         value={voucherCode}
                         onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
                         placeholder="Nhập mã giảm giá"
-                        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-700 focus:border-transparent text-sm"
                         disabled={checkingVoucher}
                       />
                       <button
                         type="button"
                         onClick={handleCheckVoucher}
                         disabled={checkingVoucher || !voucherCode.trim()}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        className="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-800 transition-colors font-medium text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
                       >
                         {checkingVoucher ? 'Kiểm tra...' : 'Áp dụng'}
                       </button>
@@ -819,10 +836,10 @@ export default function CheckoutPage() {
                       )}
                     </span>
                   </div>
-                  {pointsToUse > 0 && (
+                  {pointsToUse > 0 && actualPointsDiscount > 0 && (
                     <div className="flex justify-between text-green-600">
-                      <span>Điểm tích lũy</span>
-                      <span className="font-semibold">-₫{pointsDiscount.toLocaleString('vi-VN')}</span>
+                      <span>Điểm tích lũy ({actualPointsUsed.toLocaleString()} điểm)</span>
+                      <span className="font-semibold">-₫{actualPointsDiscount.toLocaleString('vi-VN')}</span>
                     </div>
                   )}
                   {voucherDiscount > 0 && (
@@ -841,7 +858,7 @@ export default function CheckoutPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="w-full bg-primary-500 text-white py-4 rounded-lg hover:bg-primary-800 transition-colors font-semibold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   {submitting ? 'Đang xử lý...' : 'Đặt Hàng'}
                 </button>
@@ -849,7 +866,7 @@ export default function CheckoutPage() {
                 <div className="mt-4 text-center">
                   <Link
                     href="/gio-hang"
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    className="text-primary-500 hover:text-primary-800 text-sm font-medium"
                   >
                     ← Quay lại giỏ hàng
                   </Link>
@@ -857,7 +874,7 @@ export default function CheckoutPage() {
 
                 <div className="mt-6 p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-start gap-2 text-sm text-gray-600">
-                    <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                     <span>Thanh toán an toàn và bảo mật. Thông tin của bạn được mã hóa.</span>

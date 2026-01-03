@@ -106,7 +106,7 @@ export default function ChatWidget() {
       {/* Chat Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 transition-all duration-300 hover:scale-110"
+        className="fixed bottom-6 right-6 z-50 bg-primary-500 text-white rounded-full p-4 shadow-lg hover:bg-primary-800 transition-all duration-300 hover:scale-110"
       >
         {isOpen ? (
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,22 +123,22 @@ export default function ChatWidget() {
       {isOpen && (
         <div className="fixed bottom-24 right-6 z-50 w-96 h-[600px] bg-white rounded-lg shadow-2xl flex flex-col">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-t-lg">
+          <div className="bg-gradient-to-r from-primary-500 to-primary-800 text-white p-4 rounded-t-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
                 <div>
                   <h3 className="font-semibold">Trợ lý AI</h3>
-                  <p className="text-xs text-blue-100">Tư vấn sản phẩm thể thao</p>
+                  <p className="text-xs text-primary-100">Tư vấn sản phẩm thể thao</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-white hover:bg-blue-500 rounded p-1"
+                className="text-white hover:bg-primary-400 rounded p-1"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -157,7 +157,7 @@ export default function ChatWidget() {
                 <div
                   className={`max-w-[80%] rounded-lg p-3 ${
                     message.type === 'user'
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-primary-500 text-white'
                       : 'bg-white text-gray-800 shadow-sm'
                   }`}
                 >
@@ -183,10 +183,10 @@ export default function ChatWidget() {
                               <p className="text-sm font-medium text-gray-900 truncate">
                                 {product.ten}
                               </p>
-                              <p className="text-sm font-semibold text-blue-600">
+                              <p className="text-sm font-semibold text-primary-500">
                                 {formatPrice(product.gia)}
                               </p>
-                              <p className="text-xs text-blue-600 hover:underline">
+                              <p className="text-xs text-primary-500 hover:underline">
                                 Xem chi tiết →
                               </p>
                             </div>
@@ -253,13 +253,13 @@ export default function ChatWidget() {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Nhập câu hỏi của bạn..."
-                className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-700"
                 disabled={isLoading}
               />
               <button
                 type="submit"
                 disabled={!inputValue.trim() || isLoading}
-                className="bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-primary-500 text-white rounded-lg px-4 py-2 hover:bg-primary-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />

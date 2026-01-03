@@ -98,7 +98,7 @@ export default function RegisterPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-400"></div>
       </div>
     );
   }
@@ -109,12 +109,12 @@ export default function RegisterPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white p-3 rounded-xl">
+            <div className="bg-gradient-to-br from-primary-400 to-accent-400 text-white p-3 rounded-xl">
               <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z" />
               </svg>
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+            <span className="text-2xl font-bold bg-gradient-to-r from-primary-400 to-accent-400 bg-clip-text text-transparent">
               Cửa Hàng Thể Thao
             </span>
           </Link>
@@ -141,7 +141,7 @@ export default function RegisterPage() {
                   required
                   value={formData.hoTen}
                   onChange={(e) => setFormData({ ...formData, hoTen: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                   placeholder="Nguyễn Văn A"
                 />
               </div>
@@ -162,7 +162,7 @@ export default function RegisterPage() {
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                   placeholder="ten@email.com"
                 />
               </div>
@@ -181,7 +181,7 @@ export default function RegisterPage() {
                   type="tel"
                   value={formData.soDienThoai}
                   onChange={(e) => setFormData({ ...formData, soDienThoai: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                   placeholder="0123456789"
                 />
               </div>
@@ -202,7 +202,7 @@ export default function RegisterPage() {
                   required
                   value={formData.matKhau}
                   onChange={(e) => setFormData({ ...formData, matKhau: e.target.value })}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                   placeholder="Ít nhất 6 ký tự"
                 />
                 <button
@@ -230,7 +230,7 @@ export default function RegisterPage() {
                   required
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                   placeholder="Nhập lại mật khẩu"
                 />
                 <button
@@ -251,15 +251,15 @@ export default function RegisterPage() {
                 type="checkbox"
                 checked={agreedToTerms}
                 onChange={(e) => setAgreedToTerms(e.target.checked)}
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded mt-1"
+                className="h-4 w-4 text-primary-400 focus:ring-primary-400 border-gray-300 rounded mt-1"
               />
               <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
                 Tôi đồng ý với{' '}
-                <Link href="/dieu-khoan" className="text-primary-600 hover:text-primary-700 font-medium">
+                <Link href="/dieu-khoan" className="text-primary-400 hover:text-primary-500 font-medium">
                   Điều khoản sử dụng
                 </Link>{' '}
                 và{' '}
-                <Link href="/chinh-sach-bao-mat" className="text-primary-600 hover:text-primary-700 font-medium">
+                <Link href="/chinh-sach-bao-mat" className="text-primary-400 hover:text-primary-500 font-medium">
                   Chính sách bảo mật
                 </Link>
               </label>
@@ -269,7 +269,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-primary-600 to-secondary-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-primary-700 hover:to-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-primary-400 to-accent-400 text-white py-3 px-4 rounded-lg font-semibold hover:from-primary-500 hover:to-accent-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -301,7 +301,7 @@ export default function RegisterPage() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Đã có tài khoản?{' '}
-              <Link href="/dang-nhap" className="font-medium text-primary-600 hover:text-primary-700">
+              <Link href="/dang-nhap" className="font-medium text-primary-400 hover:text-primary-500">
                 Đăng nhập ngay
               </Link>
             </p>

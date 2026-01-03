@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import DropdownSelect from '../../components/DropdownSelect';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
 import { useSettings } from '../../contexts/SettingsContext';
@@ -47,6 +48,25 @@ const CheckoutScreen = ({ route, navigation }: any) => {
   const [userPoints, setUserPoints] = useState(0);
   const [pointsToUse, setPointsToUse] = useState(0);
 
+  // Location data
+  const [provinces, setProvinces] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<any[]>([]);
+  const [wards, setWards] = useState<any[]>([]);
+
+  // Load provinces on mount
+  useEffect(() => {
+    const loadProvinces = async () => {
+      try {
+        const response = await fetch('https://provinces.open-api.vn/api/p/');
+        const data = await response.json();
+        setProvinces(data);
+      } catch (error) {
+        console.error('Lỗi khi tải danh sách tỉnh/thành phố:', error);
+      }
+    };
+    loadProvinces();
+  }, []);
+
   useEffect(() => {
     if (!isAuthenticated) {
       Alert.alert('Thông báo', 'Vui lòng đăng nhập để tiếp tục', [
@@ -68,11 +88,20 @@ const CheckoutScreen = ({ route, navigation }: any) => {
 
   const loadUserPoints = async () => {
     try {
-      if (user && user.diemTichLuy !== undefined) {
+      // Fetch fresh user data from API to get latest points
+      const response = await api.getProfile();
+      if (response.success && response.data) {
+        setUserPoints(response.data.diemTichLuy || 0);
+      } else if (user && user.diemTichLuy !== undefined) {
+        // Fallback to user context if API fails
         setUserPoints(user.diemTichLuy || 0);
       }
     } catch (error) {
       console.error('Error loading user points:', error);
+      // Fallback to user context on error
+      if (user && user.diemTichLuy !== undefined) {
+        setUserPoints(user.diemTichLuy || 0);
+      }
     }
   };
 
@@ -157,6 +186,52 @@ const CheckoutScreen = ({ route, navigation }: any) => {
     });
   };
 
+  // Handle province/city selection
+  const handleProvinceChange = async (provinceCode: string) => {
+    const selectedProvince = provinces.find((p) => p.code.toString() === provinceCode);
+    if (selectedProvince) {
+      setTinhThanh(selectedProvince.name);
+      setQuanHuyen('');
+      setPhuongXa('');
+      setWards([]);
+
+      // Load districts
+      try {
+        const response = await fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`);
+        const data = await response.json();
+        setDistricts(data.districts || []);
+      } catch (error) {
+        console.error('Lỗi khi tải danh sách quận/huyện:', error);
+      }
+    }
+  };
+
+  // Handle district selection
+  const handleDistrictChange = async (districtCode: string) => {
+    const selectedDistrict = districts.find((d) => d.code.toString() === districtCode);
+    if (selectedDistrict) {
+      setQuanHuyen(selectedDistrict.name);
+      setPhuongXa('');
+
+      // Load wards
+      try {
+        const response = await fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`);
+        const data = await response.json();
+        setWards(data.wards || []);
+      } catch (error) {
+        console.error('Lỗi khi tải danh sách phường/xã:', error);
+      }
+    }
+  };
+
+  // Handle ward selection
+  const handleWardChange = (wardCode: string) => {
+    const selectedWard = wards.find((w) => w.code.toString() === wardCode);
+    if (selectedWard) {
+      setPhuongXa(selectedWard.name);
+    }
+  };
+
   const validateForm = () => {
     if (!hoTen.trim()) {
       Alert.alert('Lỗi', 'Vui lòng nhập họ tên');
@@ -186,8 +261,15 @@ const CheckoutScreen = ({ route, navigation }: any) => {
   };
 
   const voucherDiscount = appliedVoucher?.giaTriGiamThucTe || 0;
-  const pointsDiscount = pointsToUse * 1000; // 1 điểm = 1,000 VND
-  const finalTotal = subtotal + shipping - voucherDiscount - pointsDiscount;
+
+  // Cap points discount at remaining subtotal (after voucher, can't discount shipping)
+  const maxPointsDiscount = Math.max(0, subtotal - voucherDiscount);
+  const pointsDiscountValue = pointsToUse * 1000;
+  const actualPointsDiscount = Math.min(pointsDiscountValue, maxPointsDiscount);
+  const actualPointsUsed = Math.floor(actualPointsDiscount / 1000);
+
+  // Total: (subtotal - discounts) + shipping (always charged)
+  const finalTotal = subtotal - voucherDiscount - actualPointsDiscount + shipping;
 
   const handlePlaceOrder = async () => {
     if (!validateForm()) return;
@@ -208,7 +290,7 @@ const CheckoutScreen = ({ route, navigation }: any) => {
         })),
         tongTien: subtotal,
         phiVanChuyen: shipping,
-        giamGia: voucherDiscount,
+        giamGia: actualPointsDiscount + voucherDiscount,
         tongThanhToan: finalTotal,
         diaChiGiaoHang: {
           hoTen,
@@ -232,8 +314,8 @@ const CheckoutScreen = ({ route, navigation }: any) => {
       }
 
       // Add points usage if any
-      if (pointsToUse > 0) {
-        orderData.diemSuDung = pointsToUse;
+      if (actualPointsUsed > 0) {
+        orderData.diemSuDung = actualPointsUsed;
       }
 
       const response = await api.createOrder(orderData);
@@ -352,37 +434,64 @@ const CheckoutScreen = ({ route, navigation }: any) => {
               placeholder="Số nhà, tên đường"
               value={diaChi}
               onChangeText={setDiaChi}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Phường/Xã *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Nhập phường/xã"
-              value={phuongXa}
-              onChangeText={setPhuongXa}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Quận/Huyện *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Nhập quận/huyện"
-              value={quanHuyen}
-              onChangeText={setQuanHuyen}
+              editable={!selectedAddress}
             />
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Tỉnh/Thành phố *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Nhập tỉnh/thành phố"
-              value={tinhThanh}
-              onChangeText={setTinhThanh}
-            />
+            {selectedAddress && tinhThanh ? (
+              <TextInput
+                style={[styles.input, styles.disabledInput]}
+                value={tinhThanh}
+                editable={false}
+              />
+            ) : (
+              <DropdownSelect
+                value={provinces.find((p) => p.name === tinhThanh)?.code.toString() || ''}
+                onValueChange={handleProvinceChange}
+                options={provinces.map((p) => ({ value: p.code.toString(), label: p.name }))}
+                placeholder="Chọn Tỉnh/Thành phố"
+              />
+            )}
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Quận/Huyện *</Text>
+            {selectedAddress && quanHuyen ? (
+              <TextInput
+                style={[styles.input, styles.disabledInput]}
+                value={quanHuyen}
+                editable={false}
+              />
+            ) : (
+              <DropdownSelect
+                value={districts.find((d) => d.name === quanHuyen)?.code.toString() || ''}
+                onValueChange={handleDistrictChange}
+                options={districts.map((d) => ({ value: d.code.toString(), label: d.name }))}
+                placeholder="Chọn Quận/Huyện"
+                enabled={!!tinhThanh}
+              />
+            )}
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Phường/Xã *</Text>
+            {selectedAddress && phuongXa ? (
+              <TextInput
+                style={[styles.input, styles.disabledInput]}
+                value={phuongXa}
+                editable={false}
+              />
+            ) : (
+              <DropdownSelect
+                value={wards.find((w) => w.name === phuongXa)?.code.toString() || ''}
+                onValueChange={handleWardChange}
+                options={wards.map((w) => ({ value: w.code.toString(), label: w.name }))}
+                placeholder="Chọn Phường/Xã"
+                enabled={!!quanHuyen}
+              />
+            )}
           </View>
 
           <View style={styles.inputGroup}>
@@ -599,7 +708,10 @@ const CheckoutScreen = ({ route, navigation }: any) => {
               <View style={styles.pointsDiscountInfo}>
                 <Ionicons name="checkmark-circle" size={16} color={COLORS.success} />
                 <Text style={styles.pointsDiscountText}>
-                  Giảm giá: ₫{pointsDiscount.toLocaleString('vi-VN')}
+                  Giảm giá: ₫{actualPointsDiscount.toLocaleString('vi-VN')}
+                  {actualPointsUsed < pointsToUse && (
+                    ` (sử dụng ${actualPointsUsed.toLocaleString()} điểm)`
+                  )}
                 </Text>
               </View>
             )}
@@ -635,11 +747,13 @@ const CheckoutScreen = ({ route, navigation }: any) => {
             </View>
           )}
 
-          {pointsDiscount > 0 && (
+          {pointsToUse > 0 && actualPointsDiscount > 0 && (
             <View style={styles.priceRow}>
-              <Text style={styles.priceLabel}>Điểm tích lũy</Text>
+              <Text style={styles.priceLabel}>
+                Điểm tích lũy ({actualPointsUsed.toLocaleString()} điểm)
+              </Text>
               <Text style={[styles.priceValue, { color: COLORS.success }]}>
-                -₫{pointsDiscount.toLocaleString('vi-VN')}
+                -₫{actualPointsDiscount.toLocaleString('vi-VN')}
               </Text>
             </View>
           )}
@@ -736,6 +850,21 @@ const styles = StyleSheet.create({
   textArea: {
     height: 80,
     textAlignVertical: 'top',
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: COLORS.gray[300],
+    borderRadius: SIZES.borderRadius,
+    backgroundColor: COLORS.white,
+    overflow: 'hidden',
+  },
+  picker: {
+    height: 50,
+    width: '100%',
+  },
+  disabledInput: {
+    backgroundColor: COLORS.gray[50],
+    color: COLORS.gray[600],
   },
   paymentMethod: {
     flexDirection: 'row',

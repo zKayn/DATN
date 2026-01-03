@@ -22,11 +22,26 @@ export interface IUser extends Document {
   gioiTinh?: 'nam' | 'nu' | 'khac';
   ngaySinh?: Date;
   danhSachYeuThich: mongoose.Types.ObjectId[];
+  gioHang: {
+    sanPham: mongoose.Types.ObjectId;
+    ten: string;
+    slug: string;
+    hinhAnh: string;
+    gia: number;
+    giaKhuyenMai?: number;
+    kichThuoc: string;
+    mauSac: string;
+    soLuong: number;
+    tonKho: number;
+  }[];
   lichSuTimKiem: string[];
   diemTichLuy: number;
+  resetPasswordToken?: string;
+  resetPasswordExpire?: Date;
   createdAt: Date;
   updatedAt: Date;
   soSanhMatKhau(matKhauNhap: string): Promise<boolean>;
+  taoResetPasswordToken(): string;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -91,12 +106,34 @@ const UserSchema = new Schema<IUser>(
       type: Schema.Types.ObjectId,
       ref: 'Product'
     }],
+    gioHang: [{
+      sanPham: {
+        type: Schema.Types.ObjectId,
+        ref: 'Product',
+        required: true
+      },
+      ten: { type: String, required: true },
+      slug: { type: String, required: true },
+      hinhAnh: { type: String, required: true },
+      gia: { type: Number, required: true },
+      giaKhuyenMai: { type: Number },
+      kichThuoc: { type: String, required: true },
+      mauSac: { type: String, required: true },
+      soLuong: {
+        type: Number,
+        required: true,
+        min: [1, 'Số lượng phải lớn hơn 0']
+      },
+      tonKho: { type: Number, required: true }
+    }],
     lichSuTimKiem: [String],
     diemTichLuy: {
       type: Number,
       default: 0,
       min: [0, 'Điểm tích lũy không được âm']
-    }
+    },
+    resetPasswordToken: String,
+    resetPasswordExpire: Date
   },
   {
     timestamps: true
@@ -116,6 +153,20 @@ UserSchema.pre('save', async function(next) {
 // So sánh mật khẩu
 UserSchema.methods.soSanhMatKhau = async function(matKhauNhap: string): Promise<boolean> {
   return await bcrypt.compare(matKhauNhap, this.matKhau);
+};
+
+// Tạo reset password token
+UserSchema.methods.taoResetPasswordToken = function(): string {
+  // Tạo token ngẫu nhiên
+  const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+  // Hash token và lưu vào database
+  this.resetPasswordToken = bcrypt.hashSync(resetToken, 10);
+
+  // Set thời gian hết hạn (30 phút)
+  this.resetPasswordExpire = new Date(Date.now() + 30 * 60 * 1000);
+
+  return resetToken;
 };
 
 export default mongoose.model<IUser>('User', UserSchema);

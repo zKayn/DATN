@@ -19,8 +19,7 @@ export interface ISettings extends Document {
   maintenanceMode: boolean;
   paymentMethods: {
     cod: boolean;
-    vnpay: boolean;
-    momo: boolean;
+    stripe: boolean;
     bankTransfer: boolean;
   };
   socialLinks: {
@@ -58,8 +57,7 @@ const settingsSchema = new Schema<ISettings>(
     maintenanceMode: { type: Boolean, default: false },
     paymentMethods: {
       cod: { type: Boolean, default: true },
-      vnpay: { type: Boolean, default: true },
-      momo: { type: Boolean, default: false },
+      stripe: { type: Boolean, default: true },
       bankTransfer: { type: Boolean, default: false }
     },
     socialLinks: {

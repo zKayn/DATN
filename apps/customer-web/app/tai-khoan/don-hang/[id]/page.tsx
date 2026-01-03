@@ -51,7 +51,7 @@ interface Order {
 
 const statusLabels: Record<string, { label: string; color: string; bgColor: string }> = {
   'cho-xac-nhan': { label: 'Chờ xác nhận', color: 'text-yellow-700', bgColor: 'bg-yellow-100' },
-  'da-xac-nhan': { label: 'Đã xác nhận', color: 'text-blue-700', bgColor: 'bg-blue-100' },
+  'da-xac-nhan': { label: 'Đã xác nhận', color: 'text-primary-500', bgColor: 'bg-primary-100' },
   'dang-chuan-bi': { label: 'Đang chuẩn bị', color: 'text-indigo-700', bgColor: 'bg-indigo-100' },
   'dang-giao': { label: 'Đang giao', color: 'text-purple-700', bgColor: 'bg-purple-100' },
   'da-giao': { label: 'Đã giao', color: 'text-green-700', bgColor: 'bg-green-100' },
@@ -185,7 +185,7 @@ function ReviewModal({ isOpen, onClose, productId, productName, productImage, on
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Tóm tắt đánh giá của bạn"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent"
               maxLength={100}
             />
           </div>
@@ -200,7 +200,7 @@ function ReviewModal({ isOpen, onClose, productId, productName, productImage, on
               onChange={(e) => setContent(e.target.value)}
               placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."
               rows={6}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent resize-none"
               maxLength={1000}
             />
             <p className="text-sm text-gray-500 mt-1">{content.length}/1000 ký tự</p>
@@ -218,7 +218,7 @@ function ReviewModal({ isOpen, onClose, productId, productName, productImage, on
             <button
               type="submit"
               disabled={submitting}
-              className="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-primary-400 text-white rounded-lg font-medium hover:bg-primary-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {submitting ? 'Đang gửi...' : 'Gửi đánh giá'}
             </button>
@@ -362,7 +362,7 @@ export default function OrderDetailPage() {
           <p className="text-gray-600 mb-6">Đơn hàng không tồn tại hoặc đã bị xóa</p>
           <Link
             href="/tai-khoan/don-hang"
-            className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors"
+            className="inline-block bg-primary-400 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-500 transition-colors"
           >
             Quay lại danh sách đơn hàng
           </Link>
@@ -379,11 +379,11 @@ export default function OrderDetailPage() {
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Link href="/" className="hover:text-primary-600">Trang chủ</Link>
+            <Link href="/" className="hover:text-primary-400">Trang chủ</Link>
             <ChevronRight className="w-4 h-4" />
-            <Link href="/tai-khoan" className="hover:text-primary-600">Tài khoản</Link>
+            <Link href="/tai-khoan" className="hover:text-primary-400">Tài khoản</Link>
             <ChevronRight className="w-4 h-4" />
-            <Link href="/tai-khoan/don-hang" className="hover:text-primary-600">Đơn hàng</Link>
+            <Link href="/tai-khoan/don-hang" className="hover:text-primary-400">Đơn hàng</Link>
             <ChevronRight className="w-4 h-4" />
             <span className="text-gray-900">{order.maDonHang}</span>
           </div>
@@ -507,7 +507,7 @@ export default function OrderDetailPage() {
                     {order.trangThaiDonHang === 'da-giao' && (
                       <button
                         onClick={() => handleReviewProduct(item)}
-                        className="mt-2 text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1"
+                        className="mt-2 text-sm text-primary-400 hover:text-primary-500 font-medium flex items-center gap-1"
                       >
                         <Star className="w-4 h-4" />
                         Đánh giá sản phẩm
@@ -543,7 +543,7 @@ export default function OrderDetailPage() {
               )}
               <div className="border-t pt-3 flex justify-between items-center">
                 <span className="text-lg font-semibold text-gray-900">Tổng cộng:</span>
-                <span className="text-2xl font-bold text-primary-600">{formatPrice(order.tongThanhToan)}</span>
+                <span className="text-2xl font-bold text-primary-400">{formatPrice(order.tongThanhToan)}</span>
               </div>
               <div className="pt-3 border-t">
                 <p className="text-sm text-gray-600">

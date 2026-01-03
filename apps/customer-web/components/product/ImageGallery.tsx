@@ -83,7 +83,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
               onClick={() => setSelectedImage(index)}
               className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                 selectedImage === index
-                  ? 'border-blue-600 ring-2 ring-blue-600 ring-offset-2'
+                  ? 'border-primary-500 ring-2 ring-primary-700 ring-offset-2'
                   : 'border-gray-200 hover:border-gray-400'
               }`}
             >

@@ -7,7 +7,7 @@ import { Heart, ShoppingCart, Star, Eye } from 'lucide-react'
 import { useWishlist } from '@/contexts/WishlistContext'
 import toast from 'react-hot-toast'
 import QuickViewModal from './QuickViewModal'
-import SeasonalBadge from '@/components/decorations/SeasonalBadge'
+import SimpleBadge from './SimpleBadge'
 
 interface ProductCardProps {
   id: string
@@ -75,55 +75,101 @@ export default function ProductCard({
   }
 
   return (
-    <div className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-transparent hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 flex flex-col h-full">
+    <div className="group relative bg-white rounded-2xl overflow-hidden
+                    transition-all duration-500 ease-smooth
+                    hover:shadow-[0_20px_60px_rgba(26,117,255,0.3)]
+                    hover:-translate-y-2
+                    flex flex-col h-full
+                    before:absolute before:inset-0 before:-z-10 before:rounded-2xl
+                    before:bg-gradient-to-br before:from-primary-500 before:to-accent-500
+                    before:opacity-0 hover:before:opacity-100 before:blur-xl before:transition-all
+                    border-2 border-gray-200 hover:border-transparent">
+
       {/* Image Container */}
-      <Link href={`/san-pham/${slug}`} className="block relative aspect-square overflow-hidden bg-gray-50 flex-shrink-0">
+      <Link
+        href={`/san-pham/${slug}`}
+        className="block relative aspect-square overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200
+                   flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-primary-700 focus:ring-inset"
+        aria-label={`Xem sản phẩm ${name}`}
+      >
         <Image
           src={image}
           alt={name}
           fill
-          className="object-cover group-hover:scale-110 transition-transform duration-500"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          className="object-cover group-hover:scale-125 group-hover:rotate-2
+                     transition-all duration-700 ease-smooth"
+          loading="lazy"
         />
 
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
-          {isOutOfStock && (
-            <SeasonalBadge type="out-of-stock" />
-          )}
-          {!isOutOfStock && isNew && (
-            <SeasonalBadge type="new" />
-          )}
-          {!isOutOfStock && discountPercent > 0 && discountPercent >= 30 && (
-            <SeasonalBadge type="noel-special" discount={discountPercent} />
-          )}
-          {!isOutOfStock && discountPercent > 0 && discountPercent < 30 && (
-            <SeasonalBadge type="tet-deal" discount={discountPercent} />
-          )}
-          {!isOutOfStock && isFeatured && (
-            <SeasonalBadge type="lucky-sale" />
-          )}
-        </div>
+        {/* Sale Badge - Bold & Rotating */}
+        {!isOutOfStock && discountPercent > 0 && (
+          <div className="absolute top-4 left-4 z-20">
+            <div className="relative">
+              {/* Pulsing Glow Background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-orange-500
+                            rounded-2xl animate-pulse blur-sm" />
 
-        {/* Quick Actions */}
-        <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+              {/* Badge Content */}
+              <div className="relative bg-gradient-to-br from-red-500 to-orange-500
+                            text-white px-4 py-2 rounded-2xl font-accent font-bold
+                            shadow-lg transform rotate-[-5deg]
+                            hover:rotate-0 transition-transform">
+                <span className="text-2xl">-{discountPercent}%</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* New Badge - Glowing */}
+        {!isOutOfStock && !salePrice && isNew && (
+          <div className="absolute top-4 left-4 z-20">
+            <div className="relative px-4 py-2 bg-gradient-to-r from-success-400 to-primary-400
+                          text-white font-accent font-bold rounded-full
+                          shadow-[0_0_20px_rgba(26,255,141,0.6)]
+                          animate-pulse-glow">
+              MỚI
+            </div>
+          </div>
+        )}
+
+        {/* Floating Quick Actions - Slide from Right */}
+        <div className="absolute top-4 right-4 flex flex-col gap-3 z-20
+                      opacity-0 group-hover:opacity-100 transition-all duration-300
+                      transform translate-x-8 group-hover:translate-x-0">
+          {/* Wishlist Button */}
           <button
             onClick={handleWishlistToggle}
-            className={`p-2 rounded-full backdrop-blur-md transition-all shadow-lg ${
-              isWishlisted
-                ? 'bg-primary-500 text-white shadow-glow-red'
-                : 'bg-white/80 text-gray-700 hover:bg-primary-500 hover:text-white hover:shadow-glow-red'
-            }`}
-            aria-label="Add to wishlist"
+            className={`w-12 h-12 rounded-full shadow-lg
+                       transition-all duration-300 ease-smooth
+                       hover:scale-125 hover:rotate-12 active:scale-95
+                       flex items-center justify-center
+                       focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2
+                       ${isWishlisted
+                         ? 'bg-gradient-to-br from-secondary-500 to-secondary-600 text-white shadow-[0_8px_30px_rgba(62,227,165,0.4)]'
+                         : 'bg-white text-gray-700 hover:bg-gradient-to-br hover:from-secondary-500 hover:to-secondary-600 hover:text-white hover:shadow-[0_8px_30px_rgba(62,227,165,0.4)]'
+                       }`}
+            aria-label={isWishlisted ? 'Xóa khỏi yêu thích' : 'Thêm vào yêu thích'}
+            title={isWishlisted ? 'Xóa khỏi yêu thích' : 'Thêm vào yêu thích'}
           >
-            <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
+            <Heart className={`w-5 h-5 transition-all ${isWishlisted ? 'fill-current animate-bounce-subtle' : ''}`} />
           </button>
+
+          {/* Quick View Button */}
           <button
             onClick={(e) => {
               e.preventDefault()
               setIsQuickViewOpen(true)
             }}
-            className="p-2 bg-white/80 backdrop-blur-md text-gray-700 rounded-full hover:bg-accent-500 hover:text-white hover:shadow-glow-gold transition-all shadow-lg"
-            aria-label="Quick view"
+            className="w-12 h-12 bg-white text-gray-700 rounded-full shadow-lg
+                     hover:bg-gradient-to-br hover:from-primary-500 hover:to-primary-600 hover:text-white
+                     transition-all duration-300 ease-smooth
+                     hover:scale-125 hover:rotate-[-12deg] active:scale-95
+                     hover:shadow-[0_8px_30px_rgba(67,233,123,0.4)]
+                     flex items-center justify-center
+                     focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
+            aria-label="Xem nhanh sản phẩm"
+            title="Xem nhanh"
           >
             <Eye className="w-5 h-5" />
           </button>
@@ -131,22 +177,41 @@ export default function ProductCard({
 
         {/* Out of Stock Overlay */}
         {isOutOfStock && (
-          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-            <span className="bg-gray-900 text-white px-6 py-3 rounded-lg font-bold text-lg">
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-sm">
+            <span className="bg-gray-900 text-white px-6 py-3 rounded-lg font-bold text-lg
+                           shadow-2xl animate-bounce-in">
               HẾT HÀNG
             </span>
           </div>
         )}
 
-        {/* Add to Cart Overlay */}
+        {/* Gradient Add to Cart Button - Slide from Bottom */}
         {!isOutOfStock && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+          <div className="absolute bottom-0 left-0 right-0 p-4
+                        translate-y-full group-hover:translate-y-0
+                        transition-all duration-300 ease-smooth">
             <Link
               href={`/san-pham/${slug}`}
-              className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-lg shadow-glow-red"
+              className="group/btn w-full relative overflow-hidden
+                       bg-gradient-to-r from-primary-500 to-accent-500
+                       text-white py-3.5 rounded-xl font-accent font-bold
+                       flex items-center justify-center gap-2
+                       transform transition-all duration-300
+                       hover:shadow-[0_10px_40px_rgba(67,233,123,0.5)]
+                       hover:scale-105 active:scale-95
+                       focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
+              aria-label={`Xem chi tiết ${name}`}
             >
-              <ShoppingCart className="w-5 h-5" />
-              Thêm vào giỏ
+              {/* Button Content */}
+              <span className="relative z-10 flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5" />
+                THÊM VÀO GIỎ
+              </span>
+
+              {/* Shine Effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent
+                            transform -translate-x-full group-hover/btn:translate-x-full
+                            transition-transform duration-1000" />
             </Link>
           </div>
         )}
@@ -156,7 +221,8 @@ export default function ProductCard({
       <div className="p-4 flex flex-col flex-grow">
         {/* Product Name */}
         <Link href={`/san-pham/${slug}`} className="block">
-          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-accent-600 transition-colors min-h-[3rem]">
+          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2
+                       hover:text-primary-500 transition-colors min-h-[3rem]">
             {name}
           </h3>
         </Link>
@@ -167,7 +233,7 @@ export default function ProductCard({
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
-                className={`w-4 h-4 ${
+                className={`w-4 h-4 transition-colors ${
                   i < Math.floor(rating)
                     ? 'text-yellow-400 fill-yellow-400'
                     : 'text-gray-300'
@@ -175,7 +241,7 @@ export default function ProductCard({
               />
             ))}
           </div>
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-gray-600">
             ({reviewCount})
           </span>
         </div>
@@ -184,7 +250,7 @@ export default function ProductCard({
         <div className="flex items-baseline gap-2 mb-2">
           {salePrice ? (
             <>
-              <span className="text-2xl font-bold text-primary-600">
+              <span className="text-xl font-bold text-red-600">
                 {formatPrice(salePrice)}
               </span>
               <span className="text-sm text-gray-400 line-through">
@@ -192,16 +258,18 @@ export default function ProductCard({
               </span>
             </>
           ) : (
-            <span className="text-2xl font-bold text-gray-900">
+            <span className="text-xl font-bold text-gray-900">
               {formatPrice(price)}
             </span>
           )}
         </div>
 
         {/* Sold Count */}
-        <p className="text-sm text-gray-500">
-          Đã bán: {soldCount || 0}
-        </p>
+        {soldCount && soldCount > 0 && (
+          <p className="text-sm text-gray-500">
+            Đã bán: <span className="font-semibold text-gray-700">{soldCount.toLocaleString()}</span>
+          </p>
+        )}
       </div>
 
       {/* Quick View Modal */}

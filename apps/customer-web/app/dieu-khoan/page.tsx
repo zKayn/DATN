@@ -69,7 +69,7 @@ export default function DieuKhoanPage() {
 
           <h2 className="text-2xl font-bold text-gray-900 mb-4">6. Bảo Hành & Đổi Trả</h2>
           <p className="text-gray-600 mb-6">
-            Vui lòng tham khảo <a href="/chinh-sach-doi-tra" className="text-primary-600 hover:text-primary-700">Chính sách đổi trả</a> để biết chi tiết.
+            Vui lòng tham khảo <a href="/chinh-sach-doi-tra" className="text-primary-400 hover:text-primary-500">Chính sách đổi trả</a> để biết chi tiết.
           </p>
 
           <h2 className="text-2xl font-bold text-gray-900 mb-4">7. Quyền Sở Hữu Trí Tuệ</h2>

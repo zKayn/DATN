@@ -37,7 +37,8 @@
       "Bash(npm run android:check:*)",
       "Bash(ls:*)",
       "Bash(chmod:*)",
-      "Bash(./cleanup-nul.sh:*)"
+      "Bash(./cleanup-nul.sh:*)",
+      "Bash(tasklist:*)"
     ],
     "deny": [],
     "ask": []

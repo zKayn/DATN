@@ -68,22 +68,26 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
       // This is already handled in the usePoints service
     }
 
-    // Cập nhật số lượng tồn kho (giảm tồn kho khi đặt hàng)
-    // Lưu ý: daBan chỉ được tăng khi đơn hàng giao thành công (trạng thái da-giao)
-    for (const item of order.sanPham) {
-      await Product.findByIdAndUpdate(item.sanPham, {
-        $inc: {
-          soLuongTonKho: -item.soLuong
-        }
-      });
-    }
+    // Chỉ deduct stock và update voucher cho COD và các payment method khác
+    // Stripe sẽ xử lý trong webhook sau khi thanh toán thành công
+    if (req.body.phuongThucThanhToan !== 'stripe') {
+      // Cập nhật số lượng tồn kho (giảm tồn kho khi đặt hàng)
+      // Lưu ý: daBan chỉ được tăng khi đơn hàng giao thành công (trạng thái da-giao)
+      for (const item of order.sanPham) {
+        await Product.findByIdAndUpdate(item.sanPham, {
+          $inc: {
+            soLuongTonKho: -item.soLuong
+          }
+        });
+      }
 
-    // Nếu có voucher, cập nhật số lượng đã sử dụng
-    if (order.maGiamGia && order.maGiamGia.voucher) {
-      await Voucher.findByIdAndUpdate(order.maGiamGia.voucher, {
-        $inc: { daSuDung: 1 },
-        $push: { nguoiDungApDung: req.user?._id }
-      });
+      // Nếu có voucher, cập nhật số lượng đã sử dụng
+      if (order.maGiamGia && order.maGiamGia.voucher) {
+        await Voucher.findByIdAndUpdate(order.maGiamGia.voucher, {
+          $inc: { daSuDung: 1 },
+          $push: { nguoiDungApDung: req.user?._id }
+        });
+      }
     }
 
     // Tạo thông báo cho admin
@@ -96,7 +100,9 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
 
     res.status(201).json({
       success: true,
-      message: 'Đặt hàng thành công',
+      message: req.body.phuongThucThanhToan === 'stripe'
+        ? 'Đơn hàng đã tạo, vui lòng thanh toán'
+        : 'Đặt hàng thành công',
       data: order
     });
   } catch (error) {

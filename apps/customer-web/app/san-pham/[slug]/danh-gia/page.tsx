@@ -154,7 +154,7 @@ export default function ProductReviewsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4" />
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-400 mx-auto mb-4" />
           <p className="text-gray-600">Đang tải...</p>
         </div>
       </div>
@@ -168,11 +168,11 @@ export default function ProductReviewsPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-600 mb-6">
-          <Link href="/" className="hover:text-primary-600">Trang chủ</Link>
+          <Link href="/" className="hover:text-primary-400">Trang chủ</Link>
           <span>/</span>
-          <Link href="/san-pham" className="hover:text-primary-600">Sản phẩm</Link>
+          <Link href="/san-pham" className="hover:text-primary-400">Sản phẩm</Link>
           <span>/</span>
-          <Link href={`/san-pham/${slug}`} className="hover:text-primary-600">
+          <Link href={`/san-pham/${slug}`} className="hover:text-primary-400">
             {product.ten}
           </Link>
           <span>/</span>
@@ -182,7 +182,7 @@ export default function ProductReviewsPage() {
         {/* Back Button */}
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-primary-600 hover:text-primary-700 mb-6"
+          className="flex items-center gap-2 text-primary-400 hover:text-primary-500 mb-6"
         >
           <ArrowLeft className="w-5 h-5" />
           <span className="font-medium">Quay lại sản phẩm</span>
@@ -218,16 +218,16 @@ export default function ProductReviewsPage() {
 
         {/* Filter Info */}
         {selectedFilter !== null && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-center justify-between">
+          <div className="bg-primary-50 border border-primary-200 rounded-lg p-4 mb-6 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Filter className="w-5 h-5 text-blue-600" />
-              <span className="text-blue-900">
+              <Filter className="w-5 h-5 text-primary-500" />
+              <span className="text-primary-900">
                 Đang hiển thị đánh giá {selectedFilter} sao
               </span>
             </div>
             <button
               onClick={() => setSelectedFilter(null)}
-              className="text-blue-600 hover:text-blue-700 font-medium"
+              className="text-primary-500 hover:text-primary-800 font-medium"
             >
               Xóa bộ lọc
             </button>
@@ -238,7 +238,7 @@ export default function ProductReviewsPage() {
         <div className="space-y-4">
           {loading ? (
             <div className="bg-white rounded-lg p-12 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4" />
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-400 mx-auto mb-4" />
               <p className="text-gray-600">Đang tải đánh giá...</p>
             </div>
           ) : displayedReviews.length > 0 ? (
@@ -248,7 +248,7 @@ export default function ProductReviewsPage() {
                   {/* Review Header */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center text-white font-semibold">
+                      <div className="w-10 h-10 rounded-full bg-primary-400 flex items-center justify-center text-white font-semibold">
                         {review.nguoiDung?.hoTen?.charAt(0).toUpperCase() || 'U'}
                       </div>
                       <div>
@@ -273,10 +273,10 @@ export default function ProductReviewsPage() {
 
                   {/* Shop Reply */}
                   {review.phanHoi && (
-                    <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-primary-600">
+                    <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-primary-400">
                       <div className="flex items-center gap-2 mb-2">
-                        <MessageSquare className="w-4 h-4 text-primary-600" />
-                        <span className="text-sm font-semibold text-primary-600">
+                        <MessageSquare className="w-4 h-4 text-primary-400" />
+                        <span className="text-sm font-semibold text-primary-400">
                           Phản hồi từ người bán
                         </span>
                       </div>
@@ -307,7 +307,7 @@ export default function ProductReviewsPage() {
                       onClick={() => setPage(i + 1)}
                       className={`px-4 py-2 border rounded-lg ${
                         page === i + 1
-                          ? 'bg-primary-600 text-white border-primary-600'
+                          ? 'bg-primary-400 text-white border-primary-400'
                           : 'hover:bg-gray-50'
                       }`}
                     >
@@ -337,7 +337,7 @@ export default function ProductReviewsPage() {
               </p>
               <Link
                 href={`/san-pham/${slug}`}
-                className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
+                className="inline-block bg-primary-400 text-white px-6 py-3 rounded-lg hover:bg-primary-500 transition-colors"
               >
                 Quay lại sản phẩm
               </Link>

@@ -42,7 +42,7 @@ export default function WishlistPage() {
         <div className="container mx-auto px-4 py-8">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-6">
-            <Link href="/" className="hover:text-primary-600">Trang chủ</Link>
+            <Link href="/" className="hover:text-primary-400">Trang chủ</Link>
             <span>/</span>
             <span className="text-gray-900">Danh sách yêu thích</span>
           </div>
@@ -60,7 +60,7 @@ export default function WishlistPage() {
             </p>
             <Link
               href="/san-pham"
-              className="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors"
+              className="inline-block bg-primary-400 text-white px-8 py-3 rounded-lg font-medium hover:bg-primary-500 transition-colors"
             >
               Khám phá sản phẩm
             </Link>
@@ -75,7 +75,7 @@ export default function WishlistPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-600 mb-6">
-          <Link href="/" className="hover:text-primary-600">Trang chủ</Link>
+          <Link href="/" className="hover:text-primary-400">Trang chủ</Link>
           <span>/</span>
           <span className="text-gray-900">Danh sách yêu thích</span>
         </div>
@@ -151,7 +151,7 @@ export default function WishlistPage() {
               {/* Product Info */}
               <div className="p-4">
                 <Link href={`/san-pham/${item.slug}`}>
-                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-primary-600 transition-colors">
+                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-primary-400 transition-colors">
                     {item.ten}
                   </h3>
                 </Link>
@@ -211,7 +211,7 @@ export default function WishlistPage() {
                 <button
                   onClick={() => handleAddToCart(item)}
                   disabled={(item.tonKho || 0) === 0}
-                  className="w-full bg-primary-600 text-white py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full bg-primary-400 text-white py-2 rounded-lg font-medium hover:bg-primary-500 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <ShoppingCart className="w-5 h-5" />
                   {(item.tonKho || 0) > 0 ? 'Thêm vào giỏ' : 'Hết hàng'}

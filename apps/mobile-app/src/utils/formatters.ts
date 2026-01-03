@@ -1,3 +1,5 @@
+import { COLORS } from '../constants/config';
+
 export const formatPrice = (price: number): string => {
   return `₫${price.toLocaleString('vi-VN')}`;
 };
@@ -46,13 +48,13 @@ export const truncateText = (text: string, maxLength: number): string => {
 
 export const getOrderStatusColor = (status: string): string => {
   const statusColors: { [key: string]: string } = {
-    'cho-xac-nhan': '#F59E0B', // Accent Gold - Waiting
-    'dang-xu-ly': '#F59E0B', // Accent Gold - Processing
-    'dang-giao': '#DC2626', // Primary Red - Delivering
-    'hoan-thanh': '#16A34A', // Secondary Green - Completed
-    'da-huy': '#EF4444', // Danger Red - Cancelled
+    'cho-xac-nhan': COLORS.warning, // Orange - Waiting
+    'dang-xu-ly': COLORS.warning, // Orange - Processing
+    'dang-giao': COLORS.accent, // Blue - Delivering
+    'hoan-thanh': COLORS.success, // Green - Completed
+    'da-huy': COLORS.danger, // Red - Cancelled
   };
-  return statusColors[status] || '#6B7280';
+  return statusColors[status] || COLORS.gray[500];
 };
 
 export const getOrderStatusText = (status: string): string => {

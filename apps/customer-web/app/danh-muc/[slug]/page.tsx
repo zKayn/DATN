@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import ProductGrid from '@/components/product/ProductGrid';
 import ProductFilter from '@/components/product/ProductFilter';
+import Breadcrumb from '@/components/ui/Breadcrumb';
 import { api } from '@/lib/api';
 
 interface Category {
@@ -92,7 +93,7 @@ export default function CategoryPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Không tìm thấy danh mục</h2>
-          <a href="/" className="text-blue-600 hover:underline">
+          <a href="/" className="text-primary-500 hover:underline">
             Quay lại trang chủ
           </a>
         </div>
@@ -104,20 +105,20 @@ export default function CategoryPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-6">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-            <a href="/" className="hover:text-blue-600">Trang chủ</a>
-            <span>/</span>
-            <a href="/san-pham" className="hover:text-blue-600">Sản phẩm</a>
-            <span>/</span>
-            <span className="text-gray-900">{category.ten}</span>
-          </div>
+        <div className="container mx-auto px-4">
+          <Breadcrumb
+            items={[
+              { label: 'Sản phẩm', href: '/san-pham' },
+              { label: category.ten }
+            ]}
+          />
 
-          <h1 className="text-3xl font-bold text-gray-900">{category.ten}</h1>
-          {category.moTa && (
-            <p className="text-gray-600 mt-2">{category.moTa}</p>
-          )}
+          <div className="pb-6">
+            <h1 className="text-3xl font-bold text-gray-900">{category.ten}</h1>
+            {category.moTa && (
+              <p className="text-gray-600 mt-2">{category.moTa}</p>
+            )}
+          </div>
         </div>
       </div>
 

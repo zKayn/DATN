@@ -130,7 +130,7 @@ export default function NotificationsPage() {
       case 'don-hang-dang-chuan-bi':
       case 'don-hang-dang-giao':
       case 'don-hang-giao-thanh-cong':
-        return <Package className="w-5 h-5 text-primary-600" />;
+        return <Package className="w-5 h-5 text-primary-400" />;
       case 'don-hang-huy':
         return <X className="w-5 h-5 text-red-600" />;
       case 'danh-gia-moi':
@@ -164,7 +164,7 @@ export default function NotificationsPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                <Bell className="w-7 h-7 text-primary-600" />
+                <Bell className="w-7 h-7 text-primary-400" />
                 Thông báo
               </h1>
               {unreadCount > 0 && (
@@ -177,7 +177,7 @@ export default function NotificationsPage() {
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-primary-400 hover:bg-primary-50 rounded-lg transition-colors"
               >
                 <CheckCheck className="w-4 h-4" />
                 Đánh dấu tất cả đã đọc
@@ -191,7 +191,7 @@ export default function NotificationsPage() {
               onClick={() => setFilter('all')}
               className={`px-4 py-2 font-medium text-sm transition-colors relative ${
                 filter === 'all'
-                  ? 'text-primary-600 border-b-2 border-primary-600'
+                  ? 'text-primary-400 border-b-2 border-primary-400'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -201,7 +201,7 @@ export default function NotificationsPage() {
               onClick={() => setFilter('unread')}
               className={`px-4 py-2 font-medium text-sm transition-colors relative ${
                 filter === 'unread'
-                  ? 'text-primary-600 border-b-2 border-primary-600'
+                  ? 'text-primary-400 border-b-2 border-primary-400'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -249,7 +249,7 @@ export default function NotificationsPage() {
               <div
                 key={notification._id}
                 className={`bg-white rounded-xl p-4 transition-all hover:shadow-md cursor-pointer ${
-                  !notification.daDoc ? 'border-l-4 border-primary-600' : ''
+                  !notification.daDoc ? 'border-l-4 border-primary-400' : ''
                 }`}
                 onClick={() => handleNotificationClick(notification)}
               >
@@ -285,7 +285,7 @@ export default function NotificationsPage() {
                           e.stopPropagation();
                           handleMarkAsRead(notification._id);
                         }}
-                        className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                        className="p-2 text-primary-400 hover:bg-primary-50 rounded-lg transition-colors"
                         title="Đánh dấu đã đọc"
                       >
                         <Check className="w-4 h-4" />

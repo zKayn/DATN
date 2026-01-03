@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import ProductCard from '@/components/ui/ProductCard'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import ProductCardSkeleton from '@/components/ui/ProductCardSkeleton'
 import { api } from '@/lib/api'
 
 interface Product {
@@ -23,8 +23,6 @@ interface Product {
 export default function FeaturedProducts() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  const [startIndex, setStartIndex] = useState(0)
-  const itemsPerPage = 4
 
   useEffect(() => {
     loadFeaturedProducts()
@@ -33,7 +31,9 @@ export default function FeaturedProducts() {
   const loadFeaturedProducts = async () => {
     setLoading(true)
     try {
+      // Lấy sản phẩm bán chạy (sắp xếp theo số lượng đã bán)
       const response = await api.getBestsellerProducts()
+
       console.log('Bestseller products response:', response)
       if (response.success && response.data) {
         const data = Array.isArray(response.data) ? response.data : response.data.products || []
@@ -46,29 +46,11 @@ export default function FeaturedProducts() {
     setLoading(false)
   }
 
-  const nextSlide = () => {
-    if (startIndex + itemsPerPage < products.length) {
-      setStartIndex(startIndex + itemsPerPage)
-    }
-  }
-
-  const prevSlide = () => {
-    if (startIndex > 0) {
-      setStartIndex(Math.max(0, startIndex - itemsPerPage))
-    }
-  }
-
-  const visibleProducts = products.slice(startIndex, startIndex + itemsPerPage)
-
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="animate-pulse">
-            <div className="aspect-square bg-gray-200 rounded-2xl mb-4" />
-            <div className="h-4 bg-gray-200 rounded mb-2" />
-            <div className="h-4 bg-gray-200 rounded w-2/3" />
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 items-stretch">
+        {[...Array(5)].map((_, i) => (
+          <ProductCardSkeleton key={i} />
         ))}
       </div>
     )
@@ -84,65 +66,31 @@ export default function FeaturedProducts() {
 
   return (
     <div className="relative">
-      {/* Navigation Arrows */}
-      {startIndex > 0 && (
-        <button
-          onClick={prevSlide}
-          className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-100 transition-colors"
-          aria-label="Previous products"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-      )}
-
-      {startIndex + itemsPerPage < products.length && (
-        <button
-          onClick={nextSlide}
-          className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-100 transition-colors"
-          aria-label="Next products"
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
-      )}
-
       {/* Products Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
-        {visibleProducts.map((product) => (
-          <ProductCard
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 items-stretch">
+        {products.map((product, index) => (
+          <div
             key={product._id}
-            id={product._id}
-            name={product.ten}
-            slug={product.slug || product._id}
-            price={product.gia}
-            salePrice={product.giaKhuyenMai}
-            image={product.hinhAnh[0] || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&h=500&fit=crop'}
-            rating={product.danhGiaTrungBinh}
-            reviewCount={product.soLuongDanhGia}
-            isNew={product.sanPhamMoi}
-            isFeatured={product.noiBat}
-            soldCount={product.daBan}
-            stock={product.soLuongTonKho}
-          />
+            className="opacity-100 translate-y-0 scale-100 transition-all duration-700 ease-smooth"
+            style={{ transitionDelay: `${index * 100}ms` }}
+          >
+            <ProductCard
+              id={product._id}
+              name={product.ten}
+              slug={product.slug || product._id}
+              price={product.gia}
+              salePrice={product.giaKhuyenMai}
+              image={product.hinhAnh[0] || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&h=500&fit=crop'}
+              rating={product.danhGiaTrungBinh}
+              reviewCount={product.soLuongDanhGia}
+              isNew={product.sanPhamMoi}
+              isFeatured={product.noiBat}
+              soldCount={product.daBan}
+              stock={product.soLuongTonKho}
+            />
+          </div>
         ))}
       </div>
-
-      {/* Dots Indicator */}
-      {products.length > itemsPerPage && (
-        <div className="flex justify-center gap-2 mt-8">
-          {Array.from({ length: Math.ceil(products.length / itemsPerPage) }).map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setStartIndex(index * itemsPerPage)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                Math.floor(startIndex / itemsPerPage) === index
-                  ? 'bg-primary-600 w-6'
-                  : 'bg-gray-300 hover:bg-gray-400'
-              }`}
-              aria-label={`Go to page ${index + 1}`}
-            />
-          ))}
-        </div>
-      )}
     </div>
   )
 }

@@ -38,7 +38,7 @@ export default function TrustSection() {
                 className="flex flex-col items-center text-center gap-3 p-4 rounded-xl hover:bg-white hover:shadow-md transition-all duration-300 group"
               >
                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary-100 to-accent-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <Icon className="w-7 h-7 text-primary-600" />
+                  <Icon className="w-7 h-7 text-primary-400" />
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-900 mb-1 text-sm md:text-base">

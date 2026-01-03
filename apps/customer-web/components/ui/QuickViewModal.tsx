@@ -239,11 +239,17 @@ export default function QuickViewModal({ isOpen, onClose, productId }: QuickView
 
                   {/* Price */}
                   <div className="flex items-baseline gap-3">
-                    <span className="text-3xl font-bold text-red-600">
-                      {formatPrice(product.giaKhuyenMai || product.gia)}
-                    </span>
-                    {product.giaKhuyenMai && (
-                      <span className="text-lg text-gray-400 line-through">
+                    {product.giaKhuyenMai ? (
+                      <>
+                        <span className="text-3xl font-bold text-orange-600">
+                          {formatPrice(product.giaKhuyenMai)}
+                        </span>
+                        <span className="text-lg text-gray-400 line-through">
+                          {formatPrice(product.gia)}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-3xl font-bold text-gray-900">
                         {formatPrice(product.gia)}
                       </span>
                     )}
