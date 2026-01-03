@@ -26,7 +26,7 @@ router.put('/update-profile', protect, updateProfile);
 router.post('/upload-avatar', protect, uploadAvatar);
 router.put('/change-password', protect, changePassword);
 router.post('/forgot-password', forgotPassword);
-router.put('/reset-password/:token', resetPassword);
+router.post('/reset-password', resetPassword);
 
 // Address routes
 router.post('/addresses', protect, addAddress);

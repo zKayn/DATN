@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Montserrat, Poppins } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import ChatAI from '@/components/ChatAI'
+import ScrollToTop from '@/components/ui/ScrollToTop'
 import { Toaster } from 'react-hot-toast'
 import { CartProvider } from '@/contexts/CartContext'
 import { WishlistProvider } from '@/contexts/WishlistContext'
@@ -11,7 +12,26 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { SettingsProvider } from '@/contexts/SettingsContext'
 import { NotificationProvider } from '@/contexts/NotificationContext'
 
-const inter = Inter({ subsets: ['latin', 'vietnamese'] })
+// FONT SETUP - Bold & Vibrant Typography
+// INTER - Clean, readable body text
+const inter = Inter({
+  subsets: ['latin', 'vietnamese'],
+  variable: '--font-inter'
+})
+
+// MONTSERRAT - Bold, impactful headings
+const montserrat = Montserrat({
+  subsets: ['latin', 'vietnamese'],
+  weight: ['700', '800', '900'],
+  variable: '--font-montserrat'
+})
+
+// POPPINS - Friendly, modern CTAs & badges
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['600', '700'],
+  variable: '--font-poppins'
+})
 
 export const metadata: Metadata = {
   title: 'Cửa Hàng Thể Thao - Đồ Thể Thao Chính Hãng',
@@ -26,7 +46,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi">
-      <body className={inter.className}>
+      <body className={`${inter.variable} ${montserrat.variable} ${poppins.variable} font-body antialiased`}>
         <SettingsProvider>
           <AuthProvider>
             <NotificationProvider>
@@ -39,6 +59,7 @@ export default function RootLayout({
                     </main>
                     <Footer />
                     <ChatAI />
+                    <ScrollToTop />
                   </div>
                   <Toaster position="top-right" />
                 </CartProvider>

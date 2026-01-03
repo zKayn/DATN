@@ -147,14 +147,14 @@ export default function ReviewSection({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 pb-8 border-b">
         {/* Overall Rating */}
         <div className="text-center">
-          <div className="text-5xl font-bold text-gray-900 mb-2">
+          <div className="text-6xl font-bold text-gray-900 mb-3">
             {averageRating.toFixed(1)}
           </div>
-          <div className="flex items-center justify-center gap-1 mb-2">
+          <div className="flex items-center justify-center gap-1 mb-3">
             {[...Array(5)].map((_, i) => (
               <svg
                 key={i}
-                className={`w-6 h-6 ${i < Math.round(averageRating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                className={`w-8 h-8 ${i < Math.round(averageRating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
                 viewBox="0 0 20 20"
               >
                 <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
@@ -165,22 +165,22 @@ export default function ReviewSection({
         </div>
 
         {/* Rating Distribution */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           {ratingCounts.map(({ rating, count, percentage }) => (
             <button
               key={rating}
               onClick={() => setFilter(filter === rating ? 0 : rating)}
               className={`w-full flex items-center gap-3 hover:bg-gray-50 p-2 rounded transition-colors ${
-                filter === rating ? 'bg-blue-50' : ''
+                filter === rating ? 'bg-primary-50' : ''
               }`}
             >
               <div className="flex items-center gap-1 w-16">
                 <span className="text-sm font-medium">{rating}</span>
-                <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                <svg className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
                   <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
                 </svg>
               </div>
-              <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-yellow-400 transition-all"
                   style={{ width: `${percentage}%` }}
@@ -198,7 +198,7 @@ export default function ReviewSection({
           <select
             value={filter}
             onChange={(e) => setFilter(Number(e.target.value))}
-            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-700 focus:border-transparent"
           >
             <option value={0}>Tất cả đánh giá</option>
             <option value={5}>5 sao</option>
@@ -211,7 +211,7 @@ export default function ReviewSection({
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as 'newest' | 'helpful')}
-            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-700 focus:border-transparent"
           >
             <option value="newest">Mới nhất</option>
             <option value="helpful">Hữu ích nhất</option>
@@ -220,7 +220,7 @@ export default function ReviewSection({
 
         <button
           onClick={() => setShowReviewForm(!showReviewForm)}
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          className="bg-primary-500 text-white px-6 py-2 rounded-lg hover:bg-primary-800 transition-colors font-medium"
         >
           Viết Đánh Giá
         </button>
@@ -260,7 +260,7 @@ export default function ReviewSection({
               type="text"
               value={newReview.title}
               onChange={(e) => setNewReview({ ...newReview, title: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
               placeholder="Tóm tắt đánh giá của bạn"
               required
             />
@@ -272,7 +272,7 @@ export default function ReviewSection({
             <textarea
               value={newReview.content}
               onChange={(e) => setNewReview({ ...newReview, content: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 h-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 h-32 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
               placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm..."
               required
             />
@@ -282,7 +282,7 @@ export default function ReviewSection({
           <div className="flex gap-3">
             <button
               type="submit"
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              className="bg-primary-500 text-white px-6 py-2 rounded-lg hover:bg-primary-800 transition-colors font-medium"
             >
               Gửi Đánh Giá
             </button>
@@ -361,7 +361,7 @@ export default function ReviewSection({
               )}
 
               {/* Helpful Button */}
-              <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors">
+              <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary-500 transition-colors">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
                 </svg>
@@ -377,7 +377,7 @@ export default function ReviewSection({
         <div className="text-center mt-8">
           <button
             onClick={() => router.push(`/san-pham/${productSlug}/danh-gia`)}
-            className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-2"
+            className="text-primary-500 hover:text-primary-800 font-medium inline-flex items-center gap-2"
           >
             Xem tất cả {totalReviews} đánh giá
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

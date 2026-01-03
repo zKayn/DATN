@@ -90,7 +90,7 @@ export default function NotificationToast({ notification, onClose }: Notificatio
         {/* Progress bar */}
         <div className="h-1 bg-gray-100">
           <div
-            className="h-full bg-primary-600 animate-[shrink_5s_linear]"
+            className="h-full bg-primary-400 animate-[shrink_5s_linear]"
             style={{
               animation: 'shrink 5s linear forwards',
             }}
@@ -101,7 +101,7 @@ export default function NotificationToast({ notification, onClose }: Notificatio
           <div className="flex items-start gap-3">
             {/* Icon */}
             <div className="flex-shrink-0 w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
-              <Bell className="w-5 h-5 text-primary-600" />
+              <Bell className="w-5 h-5 text-primary-400" />
             </div>
 
             {/* Content */}

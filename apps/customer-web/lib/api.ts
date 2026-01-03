@@ -402,6 +402,74 @@ class ApiService {
     });
   }
 
+  // Cart APIs
+  async getCart(token: string) {
+    return this.request('/users/cart', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+
+  async addToCart(token: string, cartItem: {
+    sanPham: string;
+    ten: string;
+    slug: string;
+    hinhAnh: string;
+    gia: number;
+    giaKhuyenMai?: number;
+    kichThuoc: string;
+    mauSac: string;
+    soLuong: number;
+    tonKho: number;
+  }) {
+    return this.request('/users/cart', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(cartItem),
+    });
+  }
+
+  async updateCartItem(token: string, update: {
+    sanPham: string;
+    kichThuoc: string;
+    mauSac: string;
+    soLuong: number;
+  }) {
+    return this.request('/users/cart', {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(update),
+    });
+  }
+
+  async removeFromCart(token: string, item: {
+    sanPham: string;
+    kichThuoc: string;
+    mauSac: string;
+  }) {
+    return this.request('/users/cart/item', {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(item),
+    });
+  }
+
+  async clearCart(token: string) {
+    return this.request('/users/cart', {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+
   // Points
   async getMyPoints(token: string) {
     return this.request('/points/my-points', {
@@ -474,6 +542,50 @@ class ApiService {
   async deleteNotification(token: string, notificationId: string) {
     return this.request(`/notifications/${notificationId}`, {
       method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+
+  // Password Reset
+  async forgotPassword(email: string) {
+    return this.request('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async resetPassword(token: string, matKhauMoi: string) {
+    return this.request('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, matKhauMoi }),
+    });
+  }
+
+  // Stripe Payment APIs
+  async createStripePaymentIntent(token: string, orderId: string, amount: number) {
+    return this.request('/payment/stripe/create-intent', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ orderId, amount, currency: 'vnd' }),
+    });
+  }
+
+  async confirmStripePayment(token: string, paymentIntentId: string) {
+    return this.request('/payment/stripe/confirm', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ paymentIntentId }),
+    });
+  }
+
+  async getStripePaymentStatus(token: string, orderId: string) {
+    return this.request(`/payment/stripe/status/${orderId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

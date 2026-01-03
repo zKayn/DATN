@@ -1,10 +1,11 @@
 // API Configuration
 export const API_URL = __DEV__
-  ? 'http://192.168.100.51:5000/api' // Android Emulator
+  ? 'http://192.168.1.68:5000/api' // Android Emulator (maps to localhost)
   : 'https://your-production-api.com/api';
 
 // Alternative for iOS Simulator: 'http://localhost:5000/api'
-// Alternative for Physical Device: 'http://YOUR_IP:5000/api'
+// Alternative for Physical Device: Replace with your computer's IP address
+// To find your IP: ipconfig (Windows) or ifconfig (Mac/Linux)
 
 export const CONFIG = {
   API_TIMEOUT: 30000,
@@ -14,28 +15,28 @@ export const CONFIG = {
 };
 
 export const COLORS = {
-  // Festive Theme Colors (Christmas & Tết)
-  primary: '#DC2626', // Red - Christmas/Tết
-  primaryDark: '#B91C1C', // Darker Red
-  primaryLight: '#EF4444', // Lighter Red
-  secondary: '#16A34A', // Green - Christmas tree
-  secondaryDark: '#15803D', // Darker Green
-  secondaryLight: '#22C55E', // Lighter Green
-  accent: '#F59E0B', // Gold/Amber - Lucky money
-  accentDark: '#D97706', // Darker Gold
-  accentLight: '#FBBF24', // Lighter Gold
+  // Modern Gradient Theme - Green to Cyan
+  primary: '#43e97b', // Green - Fresh & vibrant
+  primaryDark: '#2bd66a', // Darker Green
+  primaryLight: '#6bef9a', // Lighter Green
+  secondary: '#43e97b', // Same as primary for consistency
+  secondaryDark: '#2bd66a',
+  secondaryLight: '#6bef9a',
+  accent: '#38f9d7', // Cyan - Complements green
+  accentDark: '#14d4bc', // Darker Cyan
+  accentLight: '#5ffbe2', // Lighter Cyan
 
   // Utility Colors
   success: '#10B981',
   danger: '#EF4444',
-  warning: '#F59E0B',
-  info: '#3B82F6',
+  warning: '#F97316', // Orange for sales
+  info: '#0EA5E9',
   dark: '#1F2937',
   light: '#F3F4F6',
   white: '#FFFFFF',
   black: '#000000',
   background: '#F9FAFB',
-  error: '#DC2626',
+  error: '#EF4444',
   gray: {
     50: '#F9FAFB',
     100: '#F3F4F6',
@@ -75,8 +76,8 @@ export const SIZES = {
   // Spacing
   padding: 16,
   margin: 16,
-  borderRadius: 8,
-  borderRadiusLg: 16,
+  borderRadius: 12, // Increased from 8 for modern look
+  borderRadiusLg: 20, // Increased from 16 for modern look
 
   // Icon sizes
   icon: 24,

@@ -54,7 +54,7 @@ export default function CartPage() {
               <p className="text-gray-600 mb-8">Bạn chưa có sản phẩm nào trong giỏ hàng</p>
               <Link
                 href="/san-pham"
-                className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                className="inline-block bg-primary-500 text-white px-8 py-3 rounded-lg hover:bg-primary-800 transition-colors font-semibold"
               >
                 Tiếp Tục Mua Sắm
               </Link>
@@ -86,7 +86,7 @@ export default function CartPage() {
                   type="checkbox"
                   checked={selectedItems.length === cartItems.length}
                   onChange={toggleSelectAll}
-                  className="w-5 h-5 text-blue-600 rounded"
+                  className="w-5 h-5 text-primary-500 rounded"
                 />
                 <span className="font-medium text-gray-900">
                   Chọn tất cả ({cartItems.length} sản phẩm)
@@ -110,7 +110,7 @@ export default function CartPage() {
                             type="checkbox"
                             checked={selectedItems.includes(item.id)}
                             onChange={() => toggleSelectItem(item.id)}
-                            className="w-5 h-5 text-blue-600 rounded"
+                            className="w-5 h-5 text-primary-500 rounded"
                           />
                         </div>
 
@@ -131,7 +131,7 @@ export default function CartPage() {
                         <div className="flex-1 min-w-0">
                           <Link
                             href={`/san-pham/${item.slug}`}
-                            className="font-semibold text-gray-900 hover:text-blue-600 line-clamp-2"
+                            className="font-semibold text-gray-900 hover:text-primary-500 line-clamp-2"
                           >
                             {item.name}
                           </Link>
@@ -143,18 +143,22 @@ export default function CartPage() {
 
                           {/* Price */}
                           <div className="flex items-center gap-2 mt-2">
-                            <span className="text-lg font-bold text-red-600">
-                              ₫{finalPrice.toLocaleString('vi-VN')}
-                            </span>
-                            {item.salePrice && (
+                            {item.salePrice ? (
                               <>
-                                <span className="text-sm text-gray-500 line-through">
+                                <span className="text-lg font-bold text-orange-600">
+                                  ₫{finalPrice.toLocaleString('vi-VN')}
+                                </span>
+                                <span className="text-sm text-gray-400 line-through">
                                   ₫{item.price.toLocaleString('vi-VN')}
                                 </span>
-                                <span className="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded">
+                                <span className="bg-orange-100 text-orange-600 text-xs px-2 py-0.5 rounded">
                                   -{discountPercent}%
                                 </span>
                               </>
+                            ) : (
+                              <span className="text-lg font-bold text-gray-900">
+                                ₫{finalPrice.toLocaleString('vi-VN')}
+                              </span>
                             )}
                           </div>
                         </div>
@@ -211,7 +215,7 @@ export default function CartPage() {
             <div className="mt-6">
               <Link
                 href="/san-pham"
-                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+                className="inline-flex items-center gap-2 text-primary-500 hover:text-primary-800 font-medium"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -244,8 +248,8 @@ export default function CartPage() {
               </div>
 
               {subtotal > 0 && subtotal < freeShippingThreshold && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                  <p className="text-sm text-blue-800">
+                <div className="bg-primary-50 border border-primary-200 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-primary-800">
                     💡 Mua thêm ₫{(freeShippingThreshold - subtotal).toLocaleString('vi-VN')} để được miễn phí vận chuyển
                   </p>
                 </div>
@@ -253,14 +257,14 @@ export default function CartPage() {
 
               <div className="flex justify-between text-lg font-bold text-gray-900 mb-6">
                 <span>Tổng cộng</span>
-                <span className="text-red-600">₫{total.toLocaleString('vi-VN')}</span>
+                <span className="text-orange-600">₫{total.toLocaleString('vi-VN')}</span>
               </div>
 
               <Link
                 href="/thanh-toan"
                 className={`block w-full text-center py-4 rounded-lg font-semibold transition-colors ${
                   selectedCartItems.length > 0
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    ? 'bg-primary-500 text-white hover:bg-primary-800'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed pointer-events-none'
                 }`}
               >

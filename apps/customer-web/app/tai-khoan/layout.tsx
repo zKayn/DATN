@@ -82,7 +82,7 @@ export default function AccountLayout({
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-400"></div>
       </div>
     );
   }
@@ -140,7 +140,7 @@ export default function AccountLayout({
                       href={item.href}
                       className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-blue-50 text-blue-600'
+                          ? 'bg-primary-50 text-primary-500'
                           : 'text-gray-700 hover:bg-gray-50'
                       }`}
                     >

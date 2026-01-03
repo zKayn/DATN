@@ -131,14 +131,16 @@ const CartScreen = ({ navigation }: any) => {
           </View>
 
           <View style={styles.priceRow}>
-            <Text style={styles.itemPrice}>₫{finalPrice.toLocaleString('vi-VN')}</Text>
-            {item.salePrice && (
+            {item.salePrice ? (
               <>
+                <Text style={styles.itemPrice}>₫{finalPrice.toLocaleString('vi-VN')}</Text>
                 <Text style={styles.originalPrice}>₫{item.price.toLocaleString('vi-VN')}</Text>
                 <View style={styles.discountBadge}>
                   <Text style={styles.discountText}>-{discountPercent}%</Text>
                 </View>
               </>
+            ) : (
+              <Text style={styles.itemRegularPrice}>₫{finalPrice.toLocaleString('vi-VN')}</Text>
             )}
           </View>
 
@@ -313,8 +315,13 @@ const styles = StyleSheet.create({
   itemPrice: {
     fontSize: SIZES.body,
     fontWeight: 'bold',
-    color: COLORS.danger,
+    color: COLORS.warning, // Orange for sale price
     marginRight: 8,
+  },
+  itemRegularPrice: {
+    fontSize: SIZES.body,
+    fontWeight: 'bold',
+    color: COLORS.gray[700], // Dark gray for regular price
   },
   originalPrice: {
     fontSize: SIZES.small,
@@ -323,7 +330,7 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   discountBadge: {
-    backgroundColor: COLORS.danger,
+    backgroundColor: COLORS.warning, // Orange background
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -452,7 +459,7 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: SIZES.h3,
     fontWeight: 'bold',
-    color: COLORS.danger,
+    color: COLORS.warning, // Orange for total
   },
   checkoutButton: {
     paddingVertical: 16,

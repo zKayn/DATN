@@ -66,7 +66,7 @@ export default function LoginPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-400"></div>
       </div>
     );
   }
@@ -77,12 +77,12 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white p-3 rounded-xl">
+            <div className="bg-gradient-to-br from-primary-400 to-accent-400 text-white p-3 rounded-xl">
               <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z" />
               </svg>
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+            <span className="text-2xl font-bold bg-gradient-to-r from-primary-400 to-accent-400 bg-clip-text text-transparent">
               Cửa Hàng Thể Thao
             </span>
           </Link>
@@ -110,7 +110,7 @@ export default function LoginPage() {
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                   placeholder="ten@email.com"
                 />
               </div>
@@ -131,7 +131,7 @@ export default function LoginPage() {
                   required
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                   placeholder="••••••••"
                 />
                 <button
@@ -151,14 +151,14 @@ export default function LoginPage() {
                   id="remember"
                   name="remember"
                   type="checkbox"
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary-400 focus:ring-primary-400 border-gray-300 rounded"
                 />
                 <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">
                   Ghi nhớ đăng nhập
                 </label>
               </div>
 
-              <Link href="/quen-mat-khau" className="text-sm font-medium text-primary-600 hover:text-primary-700">
+              <Link href="/quen-mat-khau" className="text-sm font-medium text-primary-400 hover:text-primary-500">
                 Quên mật khẩu?
               </Link>
             </div>
@@ -167,7 +167,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-primary-600 to-secondary-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-primary-700 hover:to-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-primary-400 to-accent-400 text-white py-3 px-4 rounded-lg font-semibold hover:from-primary-500 hover:to-accent-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -199,7 +199,7 @@ export default function LoginPage() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Chưa có tài khoản?{' '}
-              <Link href="/dang-ky" className="font-medium text-primary-600 hover:text-primary-700">
+              <Link href="/dang-ky" className="font-medium text-primary-400 hover:text-primary-500">
                 Đăng ký ngay
               </Link>
             </p>

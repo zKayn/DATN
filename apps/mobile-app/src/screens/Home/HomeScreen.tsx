@@ -19,6 +19,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, SIZES } from '../../constants/config';
 import ProductCard from '../../components/ProductCard';
 import AnimatedTouchable from '../../components/AnimatedTouchable';
+import Newsletter from '../../components/Newsletter';
 import { useCart } from '../../contexts/CartContext';
 import { useNotification } from '../../contexts/NotificationContext';
 import api from '../../services/api';
@@ -31,26 +32,8 @@ type NavigationProp = CompositeNavigationProp<
 >;
 
 const { width, height } = Dimensions.get('window');
-const BANNER_HEIGHT = width * 0.5; // Shopee-style compact banner
-const CARD_WIDTH = (width - 48) / 2; // 2 columns with spacing
-
-// Festive Color Palette (matching customer-web)
-const SHOPEE_COLORS = {
-  primary: '#DC2626', // Red - matches customer-web
-  primaryDark: '#B91C1C',
-  secondary: '#16A34A', // Green - matches customer-web
-  red: '#DC2626',
-  orange: '#F59E0B',
-  yellow: '#FBBF24',
-  green: '#16A34A',
-  blue: '#3B82F6',
-  purple: '#9333EA',
-  pink: '#EC4899',
-  teal: '#14B8A6',
-  white: '#FFFFFF',
-  lightGray: '#F3F4F6', // matches COLORS.gray[100]
-  darkGray: '#6B7280', // matches COLORS.gray[500]
-};
+const BANNER_HEIGHT = width * 0.5; // Modern compact banner
+const CARD_WIDTH = (width - 24) / 2; // 2 columns: (width - paddingHorizontal*2 - gap) / 2 = (width - 16 - 8) / 2
 
 const banners = [
   {
@@ -94,23 +77,23 @@ const getCategoryIcon = (categoryName: string): string => {
   return 'cube-outline';
 };
 
-// Color gradients pool
+// Modern Teal-Blue gradient pool
 const GRADIENT_COLORS = [
-  [SHOPEE_COLORS.blue, '#0066CC'],
-  [SHOPEE_COLORS.pink, '#DB2777'],
-  [SHOPEE_COLORS.purple, '#7C3AED'],
-  [SHOPEE_COLORS.teal, '#0D9488'],
-  [SHOPEE_COLORS.orange, SHOPEE_COLORS.primaryDark],
-  [SHOPEE_COLORS.secondary, '#EAB308'],
-  [SHOPEE_COLORS.green, '#15803D'],
-  [SHOPEE_COLORS.red, '#B91C1C'],
+  [COLORS.primary, COLORS.accent], // Teal to Blue
+  [COLORS.accent, COLORS.primary], // Blue to Teal
+  [COLORS.primary, COLORS.primaryDark], // Teal gradient
+  [COLORS.accent, COLORS.accentDark], // Blue gradient
+  [COLORS.primary, COLORS.accentLight], // Teal to Light Blue
+  [COLORS.primaryLight, COLORS.accent], // Light Teal to Blue
+  [COLORS.warning, COLORS.accent], // Orange to Blue
+  [COLORS.success, COLORS.primary], // Green to Teal
 ] as const;
 
 const quickActions = [
-  { id: 1, title: 'Flash Sale', icon: 'flash', gradient: [SHOPEE_COLORS.red, '#DC2626'] as const, filter: 'sale' },
-  { id: 2, title: 'Hàng mới về', icon: 'sparkles', gradient: [SHOPEE_COLORS.pink, '#DB2777'] as const, filter: 'new' },
-  { id: 3, title: 'Bán chạy', icon: 'trophy', gradient: [SHOPEE_COLORS.orange, '#EAB308'] as const, filter: 'bestseller' },
-  { id: 5, title: 'Tất cả sản phẩm', icon: 'apps', gradient: [SHOPEE_COLORS.blue, '#0066CC'] as const, filter: 'all' },
+  { id: 1, title: 'Flash Sale', icon: 'flash', gradient: [COLORS.warning, '#D97706'] as const, filter: 'sale' },
+  { id: 2, title: 'Hàng mới về', icon: 'sparkles', gradient: [COLORS.accent, COLORS.accentDark] as const, filter: 'new' },
+  { id: 3, title: 'Bán chạy', icon: 'trophy', gradient: [COLORS.warning, COLORS.accent] as const, filter: 'bestseller' },
+  { id: 5, title: 'Tất cả sản phẩm', icon: 'apps', gradient: [COLORS.accent, COLORS.accentLight] as const, filter: 'all' },
 ];
 
 const HomeScreen = () => {
@@ -248,22 +231,22 @@ const HomeScreen = () => {
     handleQuickAction(action);
   };
 
-  // HEADER - Shopee/Lazada Style
+  // HEADER - Modern Style
   const renderHeader = () => (
     <LinearGradient
-      colors={[SHOPEE_COLORS.primary, SHOPEE_COLORS.primaryDark]}
-      style={[styles.header, { paddingTop: insets.top + 8 }]}
+      colors={[COLORS.primary, COLORS.primaryDark]}
+      style={[styles.header, { paddingTop: insets.top + SIZES.safeAreaTop }]}
     >
       {/* Top Bar */}
       <View style={styles.headerTop}>
         <View style={styles.logoContainer}>
           <Text style={styles.logoText}>LP Shop</Text>
-          <Ionicons name="star" size={16} color={SHOPEE_COLORS.secondary} />
+          <Ionicons name="star" size={16} color={COLORS.accent} />
         </View>
         <View style={styles.headerIcons}>
           <AnimatedTouchable onPress={() => navigation.navigate('Notifications')} scaleValue={0.9}>
             <View style={styles.notificationIcon}>
-              <Ionicons name="notifications-outline" size={24} color={SHOPEE_COLORS.white} />
+              <Ionicons name="notifications-outline" size={24} color={COLORS.white} />
               {unreadCount > 0 && (
                 <View style={styles.notificationBadge}>
                   <Text style={styles.notificationBadgeText}>
@@ -275,7 +258,7 @@ const HomeScreen = () => {
           </AnimatedTouchable>
           <AnimatedTouchable onPress={() => navigation.navigate('Cart')} scaleValue={0.9}>
             <View style={styles.cartIcon}>
-              <Ionicons name="cart-outline" size={24} color={SHOPEE_COLORS.white} />
+              <Ionicons name="cart-outline" size={24} color={COLORS.white} />
               {cartCount > 0 && (
                 <View style={styles.cartBadge}>
                   <Text style={styles.cartBadgeText}>{cartCount}</Text>
@@ -292,7 +275,7 @@ const HomeScreen = () => {
         onPress={() => navigation.navigate('Search')}
         activeOpacity={0.8}
       >
-        <Ionicons name="search" size={20} color={SHOPEE_COLORS.darkGray} />
+        <Ionicons name="search" size={20} color={COLORS.gray[500]} />
         <Text style={styles.searchPlaceholder}>Tìm kiếm sản phẩm...</Text>
       </TouchableOpacity>
     </LinearGradient>
@@ -302,13 +285,13 @@ const HomeScreen = () => {
   const renderFlashSale = () => (
     <View style={styles.flashSaleSection}>
       <LinearGradient
-        colors={[SHOPEE_COLORS.red, SHOPEE_COLORS.primaryDark]}
+        colors={[COLORS.warning, COLORS.accentDark]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.flashSaleHeader}
       >
         <View style={styles.flashSaleTitleContainer}>
-          <Ionicons name="flash" size={24} color={SHOPEE_COLORS.white} />
+          <Ionicons name="flash" size={24} color={COLORS.white} />
           <Text style={styles.flashSaleTitle}>FLASH SALE</Text>
         </View>
         <View style={styles.flashSaleTimer}>
@@ -329,7 +312,7 @@ const HomeScreen = () => {
           onPress={() => handleQuickAction('sale')}
         >
           <Text style={styles.seeAllFlashText}>Xem tất cả</Text>
-          <Ionicons name="chevron-forward" size={16} color={SHOPEE_COLORS.white} />
+          <Ionicons name="chevron-forward" size={16} color={COLORS.white} />
         </TouchableOpacity>
       </LinearGradient>
 
@@ -434,7 +417,7 @@ const HomeScreen = () => {
               colors={category.gradient}
               style={styles.categoryIconContainer}
             >
-              <Ionicons name={category.icon as any} size={28} color={SHOPEE_COLORS.white} />
+              <Ionicons name={category.icon as any} size={28} color={COLORS.white} />
             </LinearGradient>
             <Text style={styles.categoryName} numberOfLines={2}>{category.name}</Text>
           </AnimatedTouchable>
@@ -458,7 +441,7 @@ const HomeScreen = () => {
               colors={action.gradient}
               style={styles.quickActionIcon}
             >
-              <Ionicons name={action.icon as any} size={28} color={SHOPEE_COLORS.white} />
+              <Ionicons name={action.icon as any} size={28} color={COLORS.white} />
             </LinearGradient>
             <Text style={styles.quickActionText} numberOfLines={2}>{action.title}</Text>
           </AnimatedTouchable>
@@ -513,12 +496,19 @@ const HomeScreen = () => {
                 <Text style={styles.productName} numberOfLines={2}>{product.ten}</Text>
 
                 <View style={styles.productPriceRow}>
-                  <Text style={styles.productPrice}>₫{(product.giaKhuyenMai || product.gia || 0).toLocaleString('vi-VN')}</Text>
+                  {product.giaKhuyenMai ? (
+                    <>
+                      <Text style={styles.productPrice}>₫{product.giaKhuyenMai.toLocaleString('vi-VN')}</Text>
+                      <Text style={styles.productOldPrice}>₫{product.gia.toLocaleString('vi-VN')}</Text>
+                    </>
+                  ) : (
+                    <Text style={styles.productRegularPrice}>₫{(product.gia || 0).toLocaleString('vi-VN')}</Text>
+                  )}
                 </View>
 
                 <View style={styles.productFooter}>
                   <View style={styles.productRating}>
-                    <Ionicons name="star" size={12} color={SHOPEE_COLORS.secondary} />
+                    <Ionicons name="star" size={12} color={COLORS.success} />
                     <Text style={styles.ratingText}>{(product.danhGiaTrungBinh || 4.5).toFixed(1)}</Text>
                   </View>
                   <Text style={styles.soldText}>Đã bán {product.daBan || 0}</Text>
@@ -540,10 +530,10 @@ const HomeScreen = () => {
         activeOpacity={0.9}
       >
         <LinearGradient
-          colors={[SHOPEE_COLORS.primary, SHOPEE_COLORS.primaryDark]}
+          colors={[COLORS.primary, COLORS.primaryDark]}
           style={styles.floatingChatGradient}
         >
-          <Ionicons name="chatbubble-ellipses" size={24} color={SHOPEE_COLORS.white} />
+          <Ionicons name="chatbubble-ellipses" size={24} color={COLORS.white} />
         </LinearGradient>
       </TouchableOpacity>
     </>
@@ -568,13 +558,14 @@ const HomeScreen = () => {
 
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={SHOPEE_COLORS.primary} />
+            <ActivityIndicator size="large" color={COLORS.primary} />
             <Text style={styles.loadingText}>Đang tải...</Text>
           </View>
         ) : (
           <>
-            {renderProductSection(featuredProducts, 'GỢI Ý HÔM NAY', SHOPEE_COLORS.white, 'featured')}
-            {renderProductSection(newProducts, 'HÀNG MỚI VỀ', SHOPEE_COLORS.lightGray, 'new')}
+            {renderProductSection(featuredProducts, 'GỢI Ý HÔM NAY', COLORS.white, 'featured')}
+            {renderProductSection(newProducts, 'HÀNG MỚI VỀ', COLORS.gray[100], 'new')}
+            <Newsletter />
           </>
         )}
 
@@ -593,7 +584,7 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: SHOPEE_COLORS.lightGray,
+    backgroundColor: COLORS.gray[100],
   },
 
   // HEADER
@@ -620,7 +611,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 22,
     fontWeight: '800',
-    color: SHOPEE_COLORS.white,
+    color: COLORS.white,
     letterSpacing: 0.5,
   },
   headerIcons: {
@@ -635,7 +626,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -8,
     right: -8,
-    backgroundColor: SHOPEE_COLORS.red,
+    backgroundColor: COLORS.warning,
     minWidth: 18,
     height: 18,
     borderRadius: 9,
@@ -643,10 +634,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 4,
     borderWidth: 1.5,
-    borderColor: SHOPEE_COLORS.white,
+    borderColor: COLORS.white,
   },
   notificationBadgeText: {
-    color: SHOPEE_COLORS.white,
+    color: COLORS.white,
     fontSize: 10,
     fontWeight: 'bold',
     lineHeight: 12,
@@ -658,7 +649,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -8,
     right: -8,
-    backgroundColor: SHOPEE_COLORS.secondary,
+    backgroundColor: COLORS.success,
     minWidth: 18,
     height: 18,
     borderRadius: 9,
@@ -667,15 +658,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   cartBadgeText: {
-    color: SHOPEE_COLORS.white,
+    color: COLORS.white,
     fontSize: 10,
     fontWeight: '700',
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: SHOPEE_COLORS.white,
-    borderRadius: 4,
+    backgroundColor: COLORS.white,
+    borderRadius: SIZES.borderRadius,
     paddingHorizontal: 12,
     paddingVertical: 10,
     gap: 10,
@@ -683,13 +674,14 @@ const styles = StyleSheet.create({
   searchPlaceholder: {
     flex: 1,
     fontSize: 14,
-    color: SHOPEE_COLORS.darkGray,
+    color: COLORS.gray[500],
   },
 
   // BANNER
   bannerSection: {
-    marginTop: 120, // Account for fixed header
-    marginBottom: 8,
+    marginTop: 160, // Account for fixed header with SafeAreaInsets (increased to prevent overlap)
+    marginBottom: 12,
+    paddingVertical: 8,
   },
   bannerItem: {
     width,
@@ -699,19 +691,19 @@ const styles = StyleSheet.create({
   bannerImage: {
     width: width - 16,
     height: BANNER_HEIGHT,
-    borderRadius: 8,
+    borderRadius: SIZES.borderRadius,
   },
   bannerBadge: {
     position: 'absolute',
     top: 12,
     right: 20,
-    backgroundColor: SHOPEE_COLORS.red,
+    backgroundColor: COLORS.warning,
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
   },
   bannerBadgeText: {
-    color: SHOPEE_COLORS.white,
+    color: COLORS.white,
     fontSize: 11,
     fontWeight: '800',
   },
@@ -726,18 +718,18 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: SHOPEE_COLORS.darkGray,
+    backgroundColor: COLORS.gray[500],
     opacity: 0.3,
   },
   bannerDotActive: {
     width: 20,
-    backgroundColor: SHOPEE_COLORS.primary,
+    backgroundColor: COLORS.primary,
     opacity: 1,
   },
 
   // CATEGORIES
   categoriesSection: {
-    backgroundColor: SHOPEE_COLORS.white,
+    backgroundColor: COLORS.white,
     paddingVertical: 16,
     marginBottom: 8,
   },
@@ -764,32 +756,31 @@ const styles = StyleSheet.create({
   },
   categoryName: {
     fontSize: 11,
-    color: SHOPEE_COLORS.darkGray,
+    color: COLORS.gray[500],
     textAlign: 'center',
     fontWeight: '500',
   },
 
   // QUICK ACTIONS
   quickActionsSection: {
-    backgroundColor: SHOPEE_COLORS.white,
+    backgroundColor: COLORS.white,
     paddingVertical: 16,
     marginBottom: 8,
   },
   quickActionsList: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
     alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 16, // Đều 2 bên lề
+    justifyContent: 'space-between', // Phân bố đều
   },
   quickActionItem: {
     alignItems: 'center',
-    flex: 1,
-    maxWidth: 90,
+    flex: 1, // Chia đều 4 phần
   },
   quickActionIcon: {
     width: 64,
     height: 64,
-    borderRadius: 12,
+    borderRadius: SIZES.borderRadius,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
@@ -801,15 +792,16 @@ const styles = StyleSheet.create({
   },
   quickActionText: {
     fontSize: 12,
-    color: SHOPEE_COLORS.darkGray,
+    color: COLORS.gray[500],
     textAlign: 'center',
     fontWeight: '600',
     lineHeight: 16,
+    minHeight: 32, // Luôn chiếm 2 dòng (2 × 16 lineHeight) để đều nhau
   },
 
   // FLASH SALE
   flashSaleSection: {
-    backgroundColor: SHOPEE_COLORS.white,
+    backgroundColor: COLORS.white,
     marginBottom: 8,
     paddingBottom: 16,
   },
@@ -828,7 +820,7 @@ const styles = StyleSheet.create({
   flashSaleTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: SHOPEE_COLORS.white,
+    color: COLORS.white,
     letterSpacing: 1,
   },
   flashSaleTimer: {
@@ -845,12 +837,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   timerText: {
-    color: SHOPEE_COLORS.white,
+    color: COLORS.white,
     fontSize: 14,
     fontWeight: '800',
   },
   timerSeparator: {
-    color: SHOPEE_COLORS.white,
+    color: COLORS.white,
     fontSize: 14,
     fontWeight: '800',
   },
@@ -860,7 +852,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   seeAllFlashText: {
-    color: SHOPEE_COLORS.white,
+    color: COLORS.white,
     fontSize: 13,
     fontWeight: '600',
   },
@@ -870,8 +862,8 @@ const styles = StyleSheet.create({
   },
   flashSaleCard: {
     width: 120,
-    backgroundColor: SHOPEE_COLORS.white,
-    borderRadius: 8,
+    backgroundColor: COLORS.white,
+    borderRadius: SIZES.borderRadius,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: COLORS.gray[200],
@@ -879,19 +871,19 @@ const styles = StyleSheet.create({
   flashSaleImage: {
     width: '100%',
     height: 120,
-    backgroundColor: SHOPEE_COLORS.lightGray,
+    backgroundColor: COLORS.gray[100],
   },
   flashSaleBadge: {
     position: 'absolute',
     top: 0,
     right: 0,
-    backgroundColor: SHOPEE_COLORS.secondary,
+    backgroundColor: COLORS.success,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderBottomLeftRadius: 8,
   },
   flashSaleBadgeText: {
-    color: SHOPEE_COLORS.white,
+    color: COLORS.white,
     fontSize: 11,
     fontWeight: '800',
   },
@@ -900,13 +892,13 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   flashSalePriceText: {
-    color: SHOPEE_COLORS.red,
+    color: COLORS.warning,
     fontSize: 16,
     fontWeight: '700',
   },
   flashSaleProgress: {
     height: 12,
-    backgroundColor: SHOPEE_COLORS.red + '20', // 20% opacity red
+    backgroundColor: COLORS.warning + '20', // 20% opacity red
     marginHorizontal: 8,
     marginTop: 6,
     borderRadius: 6,
@@ -914,11 +906,11 @@ const styles = StyleSheet.create({
   },
   flashSaleProgressBar: {
     height: '100%',
-    backgroundColor: SHOPEE_COLORS.red,
+    backgroundColor: COLORS.warning,
   },
   flashSaleSold: {
     fontSize: 10,
-    color: SHOPEE_COLORS.darkGray,
+    color: COLORS.gray[500],
     paddingHorizontal: 8,
     paddingVertical: 6,
   },
@@ -938,25 +930,25 @@ const styles = StyleSheet.create({
   productTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: SHOPEE_COLORS.darkGray,
+    color: COLORS.gray[500],
     letterSpacing: 0.5,
   },
   seeAllText: {
     fontSize: 14,
-    color: SHOPEE_COLORS.primary,
+    color: COLORS.primary,
     fontWeight: '600',
   },
   productsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: 8,
+    gap: 8, // Khoảng cách đều giữa các card
   },
   productCard: {
     width: CARD_WIDTH,
-    backgroundColor: SHOPEE_COLORS.white,
-    marginHorizontal: 4,
+    backgroundColor: COLORS.white,
     marginBottom: 8,
-    borderRadius: 4,
+    borderRadius: SIZES.borderRadius,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: COLORS.gray[200],
@@ -964,18 +956,18 @@ const styles = StyleSheet.create({
   productImage: {
     width: '100%',
     height: CARD_WIDTH,
-    backgroundColor: SHOPEE_COLORS.lightGray,
+    backgroundColor: COLORS.gray[100],
   },
   discountBadge: {
     position: 'absolute',
     top: 0,
     left: 0,
-    backgroundColor: SHOPEE_COLORS.secondary,
+    backgroundColor: COLORS.success,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
   discountText: {
-    color: SHOPEE_COLORS.white,
+    color: COLORS.white,
     fontSize: 10,
     fontWeight: '800',
   },
@@ -983,24 +975,27 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 6,
     right: 6,
-    backgroundColor: SHOPEE_COLORS.red,
+    backgroundColor: COLORS.warning,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 2,
   },
   mallText: {
-    color: SHOPEE_COLORS.white,
+    color: COLORS.white,
     fontSize: 9,
     fontWeight: '700',
   },
   productInfo: {
-    padding: 8,
+    padding: 10,
+    flex: 1,
+    justifyContent: 'space-between',
   },
   productName: {
     fontSize: 13,
-    color: SHOPEE_COLORS.darkGray,
-    marginBottom: 6,
+    color: COLORS.gray[500],
+    marginBottom: 8,
     lineHeight: 18,
+    minHeight: 36, // Luôn chiếm 2 dòng (2 × 18 lineHeight)
   },
   productPriceRow: {
     flexDirection: 'row',
@@ -1010,7 +1005,18 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 15,
     fontWeight: '700',
-    color: SHOPEE_COLORS.red,
+    color: COLORS.warning, // Orange for sale price
+  },
+  productOldPrice: {
+    fontSize: 12,
+    color: COLORS.gray[400],
+    textDecorationLine: 'line-through',
+    marginLeft: 6,
+  },
+  productRegularPrice: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.gray[700], // Dark gray for regular price
   },
   productFooter: {
     flexDirection: 'row',
@@ -1024,11 +1030,11 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 11,
-    color: SHOPEE_COLORS.darkGray,
+    color: COLORS.gray[500],
   },
   soldText: {
     fontSize: 11,
-    color: SHOPEE_COLORS.darkGray,
+    color: COLORS.gray[500],
   },
 
   // FLOATING BUTTONS
@@ -1060,7 +1066,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: SHOPEE_COLORS.darkGray,
+    color: COLORS.gray[500],
   },
 });
 

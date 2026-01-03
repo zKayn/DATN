@@ -32,11 +32,12 @@ export interface IOrder extends Document {
     xa: string;
     diaChiChiTiet: string;
   };
-  phuongThucThanhToan: 'cod' | 'vnpay' | 'momo' | 'the-atm';
+  phuongThucThanhToan: 'cod' | 'stripe' | 'the-atm';
   trangThaiThanhToan: 'chua-thanh-toan' | 'da-thanh-toan' | 'hoan-tien';
   trangThaiDonHang: 'cho-xac-nhan' | 'da-xac-nhan' | 'dang-chuan-bi' | 'dang-giao' | 'da-giao' | 'da-huy' | 'tra-hang';
   ghiChu?: string;
   lyDoHuy?: string;
+  stripePaymentId?: mongoose.Types.ObjectId;
   thanhToanLuc?: Date;
   giaoDuKienLuc?: Date;
   giaoThanhCongLuc?: Date;
@@ -150,8 +151,12 @@ const OrderSchema = new Schema<IOrder>(
     },
     phuongThucThanhToan: {
       type: String,
-      enum: ['cod', 'vnpay', 'momo', 'the-atm'],
+      enum: ['cod', 'stripe', 'the-atm'],
       required: true
+    },
+    stripePaymentId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Payment'
     },
     trangThaiThanhToan: {
       type: String,
@@ -191,11 +196,35 @@ OrderSchema.virtual('trangThai').get(function() {
 OrderSchema.set('toJSON', { virtuals: true });
 OrderSchema.set('toObject', { virtuals: true });
 
+// Helper function to generate random order code
+function generateOrderCode(): string {
+  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let code = 'DH';
+  for (let i = 0; i < 8; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
 // Tạo mã đơn hàng tự động
 OrderSchema.pre('save', async function(next) {
   if (!this.maDonHang) {
-    const count = await mongoose.model('Order').countDocuments();
-    this.maDonHang = `DH${Date.now()}${String(count + 1).padStart(4, '0')}`;
+    // Generate unique order code
+    let orderCode = generateOrderCode();
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    // Check for uniqueness (very rare collision with 36^8 possibilities)
+    while (attempts < maxAttempts) {
+      const existing = await mongoose.model('Order').findOne({ maDonHang: orderCode });
+      if (!existing) {
+        break;
+      }
+      orderCode = generateOrderCode();
+      attempts++;
+    }
+
+    this.maDonHang = orderCode;
   }
   next();
 });

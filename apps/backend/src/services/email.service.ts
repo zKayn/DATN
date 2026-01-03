@@ -1,10 +1,9 @@
 import nodemailer from 'nodemailer';
 
 class EmailService {
-  private transporter: nodemailer.Transporter;
-
-  constructor() {
-    this.transporter = nodemailer.createTransport({
+  // Tạo transporter mỗi lần gọi để tránh cache credentials cũ
+  private createTransporter() {
+    return nodemailer.createTransport({
       host: process.env.EMAIL_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.EMAIL_PORT || '587'),
       secure: false, // true for 465, false for other ports
@@ -17,6 +16,7 @@ class EmailService {
 
   async sendWelcomeEmail(email: string) {
     try {
+      const transporter = this.createTransporter();
       const mailOptions = {
         from: `"Sport Store" <${process.env.EMAIL_USER}>`,
         to: email,
@@ -87,7 +87,7 @@ class EmailService {
         `,
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
+      const info = await transporter.sendMail(mailOptions);
       console.log('Email sent:', info.messageId);
       return { success: true, messageId: info.messageId };
     } catch (error) {
@@ -98,6 +98,7 @@ class EmailService {
 
   async sendPromotionalEmail(email: string, subject: string, content: string) {
     try {
+      const transporter = this.createTransporter();
       const mailOptions = {
         from: `"Sport Store" <${process.env.EMAIL_USER}>`,
         to: email,
@@ -105,10 +106,89 @@ class EmailService {
         html: content,
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
+      const info = await transporter.sendMail(mailOptions);
       return { success: true, messageId: info.messageId };
     } catch (error) {
       console.error('Error sending promotional email:', error);
+      throw error;
+    }
+  }
+
+  async sendPasswordResetEmail(email: string, resetToken: string) {
+    try {
+      const transporter = this.createTransporter();
+      const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:3001'}/dat-lai-mat-khau?token=${resetToken}`;
+
+      const mailOptions = {
+        from: `"LP Shop" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: '🔐 Yêu cầu đặt lại mật khẩu',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 40px 20px; text-align: center; border-radius: 10px 10px 0 0; }
+              .content { background: #f9fafb; padding: 30px 20px; border-radius: 0 0 10px 10px; }
+              .button { display: inline-block; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white !important; padding: 15px 40px; text-decoration: none; border-radius: 8px; margin: 25px 0; font-weight: bold; font-size: 16px; }
+              .warning { background: #FEF3C7; padding: 15px; border-radius: 8px; margin: 20px 0; font-size: 14px; color: #92400E; border-left: 4px solid #F59E0B; }
+              .footer { text-align: center; color: #6B7280; font-size: 14px; margin-top: 30px; padding: 20px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1 style="margin: 15px 0;">🔐 Đặt lại mật khẩu</h1>
+                <p style="font-size: 16px; margin: 10px 0;">Yêu cầu đặt lại mật khẩu cho tài khoản của bạn</p>
+              </div>
+
+              <div class="content">
+                <p style="font-size: 16px;">Xin chào,</p>
+                <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản <strong>${email}</strong> của bạn tại LP Shop.</p>
+
+                <p>Nếu đây là yêu cầu của bạn, vui lòng nhấn vào nút bên dưới để đặt lại mật khẩu:</p>
+
+                <center>
+                  <a href="${resetUrl}" class="button">
+                    Đặt lại mật khẩu
+                  </a>
+                </center>
+
+                <div class="warning">
+                  <strong>⚠️ Lưu ý quan trọng:</strong>
+                  <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>Link này chỉ có hiệu lực trong <strong>30 phút</strong></li>
+                    <li>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này</li>
+                    <li>Không chia sẻ link này với bất kỳ ai</li>
+                  </ul>
+                </div>
+
+                <p style="margin-top: 25px; font-size: 14px; color: #6B7280;">
+                  Nếu nút bên trên không hoạt động, bạn có thể copy và paste link sau vào trình duyệt:<br>
+                  <a href="${resetUrl}" style="color: #43e97b; word-break: break-all;">${resetUrl}</a>
+                </p>
+
+                <p style="margin-top: 30px;">Trân trọng,<br><strong>Đội ngũ LP Shop</strong></p>
+              </div>
+
+              <div class="footer">
+                <p style="margin: 0;">Bạn nhận được email này vì có yêu cầu đặt lại mật khẩu từ địa chỉ IP của bạn</p>
+                <p style="margin: 10px 0 0 0; font-size: 12px;">© ${new Date().getFullYear()} LP Shop. All rights reserved.</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+      };
+
+      const info = await transporter.sendMail(mailOptions);
+      console.log('Password reset email sent:', info.messageId);
+      return { success: true, messageId: info.messageId };
+    } catch (error) {
+      console.error('Error sending password reset email:', error);
       throw error;
     }
   }
@@ -123,6 +203,7 @@ class EmailService {
     moTa?: string;
   }) {
     try {
+      const transporter = this.createTransporter();
       // Format giá trị giảm
       const discountText = voucher.loai === 'phan-tram'
         ? `${voucher.giaTriGiam}%${voucher.giamToiDa ? ` (tối đa ${voucher.giamToiDa.toLocaleString('vi-VN')}₫)` : ''}`
@@ -236,7 +317,7 @@ class EmailService {
         `,
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
+      const info = await transporter.sendMail(mailOptions);
       console.log('Voucher email sent:', info.messageId);
       return { success: true, messageId: info.messageId };
     } catch (error) {

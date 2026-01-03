@@ -22,7 +22,7 @@ export default function HuongDanMuaHangPage() {
           <div className="flex gap-6">
             <div className="flex-shrink-0">
               <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
-                <Search className="w-8 h-8 text-primary-600" />
+                <Search className="w-8 h-8 text-primary-400" />
               </div>
             </div>
             <div>
@@ -39,7 +39,7 @@ export default function HuongDanMuaHangPage() {
           <div className="flex gap-6">
             <div className="flex-shrink-0">
               <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
-                <ShoppingCart className="w-8 h-8 text-primary-600" />
+                <ShoppingCart className="w-8 h-8 text-primary-400" />
               </div>
             </div>
             <div>
@@ -56,7 +56,7 @@ export default function HuongDanMuaHangPage() {
           <div className="flex gap-6">
             <div className="flex-shrink-0">
               <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
-                <CreditCard className="w-8 h-8 text-primary-600" />
+                <CreditCard className="w-8 h-8 text-primary-400" />
               </div>
             </div>
             <div>
@@ -75,7 +75,7 @@ export default function HuongDanMuaHangPage() {
           <div className="flex gap-6">
             <div className="flex-shrink-0">
               <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
-                <Truck className="w-8 h-8 text-primary-600" />
+                <Truck className="w-8 h-8 text-primary-400" />
               </div>
             </div>
             <div>
@@ -96,19 +96,19 @@ export default function HuongDanMuaHangPage() {
           <h3 className="text-xl font-bold text-gray-900 mb-4">Lưu Ý Quan Trọng</h3>
           <ul className="space-y-2 text-gray-700">
             <li className="flex items-start gap-2">
-              <span className="text-primary-600 font-bold">•</span>
+              <span className="text-primary-400 font-bold">•</span>
               <span>Vui lòng cung cấp đầy đủ và chính xác thông tin giao hàng</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-primary-600 font-bold">•</span>
+              <span className="text-primary-400 font-bold">•</span>
               <span>Kiểm tra kỹ sản phẩm trước khi nhận hàng</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-primary-600 font-bold">•</span>
+              <span className="text-primary-400 font-bold">•</span>
               <span>Giữ lại hóa đơn để được hỗ trợ bảo hành, đổi trả</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-primary-600 font-bold">•</span>
+              <span className="text-primary-400 font-bold">•</span>
               <span>Liên hệ hotline 0855062747 nếu cần hỗ trợ</span>
             </li>
           </ul>
@@ -119,7 +119,7 @@ export default function HuongDanMuaHangPage() {
           <p className="text-gray-600 mb-4">Bắt đầu mua sắm ngay hôm nay!</p>
           <a
             href="/san-pham"
-            className="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
+            className="inline-block bg-primary-400 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-500 transition-colors"
           >
             Khám Phá Sản Phẩm
           </a>

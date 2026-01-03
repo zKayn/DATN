@@ -107,7 +107,7 @@ export default function ChinhSachDoiTraPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href="tel:0855062747"
-              className="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
+              className="inline-block bg-primary-400 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-500 transition-colors"
             >
               Gọi Ngay: 0855062747
             </a>

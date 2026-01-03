@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import ImageGallery from '@/components/product/ImageGallery';
 import ReviewSection from '@/components/product/ReviewSection';
 import ProductCard from '@/components/ui/ProductCard';
+import Breadcrumb from '@/components/ui/Breadcrumb';
 import { api } from '@/lib/api';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
@@ -212,7 +213,7 @@ export default function ProductDetailPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Không tìm thấy sản phẩm</h2>
-          <a href="/san-pham" className="text-blue-600 hover:underline">
+          <a href="/san-pham" className="text-primary-500 hover:underline">
             Quay lại danh sách sản phẩm
           </a>
         </div>
@@ -228,14 +229,13 @@ export default function ProductDetailPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumb */}
       <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <a href="/" className="hover:text-blue-600">Trang chủ</a>
-            <span>/</span>
-            <a href="/san-pham" className="hover:text-blue-600">Sản phẩm</a>
-            <span>/</span>
-            <span className="text-gray-900">{product.ten}</span>
-          </div>
+        <div className="container mx-auto px-4">
+          <Breadcrumb
+            items={[
+              { label: 'Sản phẩm', href: '/san-pham' },
+              { label: product.ten }
+            ]}
+          />
         </div>
       </div>
 
@@ -248,7 +248,7 @@ export default function ProductDetailPage() {
           {/* Product Details */}
           <div className="bg-white rounded-lg p-6">
             <div className="mb-4">
-              <span className="text-sm text-blue-600 font-medium">{product.thuongHieu}</span>
+              <span className="text-sm text-primary-500 font-medium">{product.thuongHieu}</span>
               <h1 className="text-3xl font-bold text-gray-900 mt-2">{product.ten}</h1>
             </div>
 
@@ -273,18 +273,22 @@ export default function ProductDetailPage() {
             {/* Price */}
             <div className="bg-gray-50 rounded-lg p-4 mb-6">
               <div className="flex items-center gap-3">
-                <span className="text-3xl font-bold text-red-600">
-                  ₫{(product.giaKhuyenMai || product.gia).toLocaleString('vi-VN')}
-                </span>
-                {product.giaKhuyenMai && (
+                {product.giaKhuyenMai ? (
                   <>
-                    <span className="text-lg text-gray-500 line-through">
+                    <span className="text-3xl font-bold text-orange-600">
+                      ₫{product.giaKhuyenMai.toLocaleString('vi-VN')}
+                    </span>
+                    <span className="text-lg text-gray-400 line-through">
                       ₫{product.gia.toLocaleString('vi-VN')}
                     </span>
-                    <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-sm font-medium">
+                    <span className="bg-orange-100 text-orange-600 px-2 py-1 rounded text-sm font-medium">
                       -{discountPercent}%
                     </span>
                   </>
+                ) : (
+                  <span className="text-3xl font-bold text-gray-900">
+                    ₫{product.gia.toLocaleString('vi-VN')}
+                  </span>
                 )}
               </div>
             </div>
@@ -293,7 +297,7 @@ export default function ProductDetailPage() {
             {product.mauSac && product.mauSac.length > 0 && (
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-900 mb-3">
-                  Màu sắc: {selectedColor && <span className="text-blue-600">{selectedColor}</span>}
+                  Màu sắc: {selectedColor && <span className="text-primary-500">{selectedColor}</span>}
                 </label>
                 <div className="flex flex-wrap gap-3">
                   {product.mauSac.map((color) => (
@@ -302,12 +306,12 @@ export default function ProductDetailPage() {
                       onClick={() => setSelectedColor(color.ten)}
                       className={`w-12 h-12 rounded-full border-2 transition-all ${
                         selectedColor === color.ten
-                          ? 'border-blue-600 scale-110'
+                          ? 'border-primary-500 scale-110'
                           : 'border-gray-300 hover:scale-105'
                       }`}
                       style={{
                         backgroundColor: color.ma,
-                        boxShadow: selectedColor === color.ten ? '0 0 0 2px white, 0 0 0 4px #3B82F6' : 'none'
+                        boxShadow: selectedColor === color.ten ? '0 0 0 2px white, 0 0 0 4px rgb(51, 65, 85)' : 'none'
                       }}
                       title={color.ten}
                     />
@@ -320,7 +324,7 @@ export default function ProductDetailPage() {
             {product.kichThuoc && product.kichThuoc.length > 0 && (
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-900 mb-3">
-                  Kích thước: {selectedSize && <span className="text-blue-600">{selectedSize}</span>}
+                  Kích thước: {selectedSize && <span className="text-primary-500">{selectedSize}</span>}
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {product.kichThuoc.map((size) => (
@@ -329,7 +333,7 @@ export default function ProductDetailPage() {
                       onClick={() => setSelectedSize(size)}
                       className={`px-6 py-3 rounded-lg border-2 font-medium transition-colors ${
                         selectedSize === size
-                          ? 'border-blue-600 bg-blue-50 text-blue-600'
+                          ? 'border-primary-500 bg-primary-50 text-primary-500'
                           : 'border-gray-300 text-gray-700 hover:border-gray-400'
                       }`}
                     >
@@ -394,7 +398,7 @@ export default function ProductDetailPage() {
                   <div className="flex gap-3">
                     <button
                       onClick={handleAddToCart}
-                      className="flex-1 bg-blue-600 text-white px-6 py-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                      className="flex-1 bg-primary-500 text-white px-6 py-4 rounded-lg font-semibold hover:bg-primary-800 transition-colors"
                     >
                       Thêm Vào Giỏ Hàng
                     </button>

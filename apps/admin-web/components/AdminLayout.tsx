@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import NotificationBell from './NotificationBell';
+import ScrollToTop from './ui/ScrollToTop';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -236,6 +237,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           aria-label="Close menu"
         />
       )}
+
+      {/* Scroll to Top Button */}
+      <ScrollToTop />
     </div>
   );
 }

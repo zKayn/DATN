@@ -11,7 +11,7 @@ const quickActions = [
     link: '/khuyen-mai',
     gradient: 'from-primary-500 to-primary-600',
     iconBg: 'bg-primary-100',
-    iconColor: 'text-primary-600'
+    iconColor: 'text-primary-400'
   },
   {
     id: 2,
@@ -27,7 +27,7 @@ const quickActions = [
     title: 'Voucher',
     icon: Gift,
     link: '/khuyen-mai',
-    gradient: 'from-secondary-500 to-secondary-600',
+    gradient: 'from-secondary-500 to-accent-400',
     iconBg: 'bg-secondary-100',
     iconColor: 'text-secondary-600'
   },
@@ -54,9 +54,9 @@ const quickActions = [
     title: 'Miễn Phí Ship',
     icon: Package,
     link: '/san-pham',
-    gradient: 'from-blue-500 to-blue-600',
-    iconBg: 'bg-blue-100',
-    iconColor: 'text-blue-600'
+    gradient: 'from-primary-500 to-primary-700',
+    iconBg: 'bg-primary-100',
+    iconColor: 'text-primary-500'
   },
 ]
 

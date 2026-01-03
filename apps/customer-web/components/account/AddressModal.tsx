@@ -33,6 +33,25 @@ export default function AddressModal({ isOpen, onClose, onSave, address, mode }:
   });
   const [saving, setSaving] = useState(false);
 
+  // Location data
+  const [provinces, setProvinces] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<any[]>([]);
+  const [wards, setWards] = useState<any[]>([]);
+
+  // Load provinces on mount
+  useEffect(() => {
+    const loadProvinces = async () => {
+      try {
+        const response = await fetch('https://provinces.open-api.vn/api/p/');
+        const data = await response.json();
+        setProvinces(data);
+      } catch (error) {
+        console.error('Lỗi khi tải danh sách tỉnh/thành phố:', error);
+      }
+    };
+    loadProvinces();
+  }, []);
+
   useEffect(() => {
     if (address && mode === 'edit') {
       setFormData(address);
@@ -46,8 +65,54 @@ export default function AddressModal({ isOpen, onClose, onSave, address, mode }:
         diaChiChiTiet: '',
         macDinh: false
       });
+      // Reset location data when opening for add mode
+      setDistricts([]);
+      setWards([]);
     }
   }, [address, mode, isOpen]);
+
+  // Handle province/city selection
+  const handleCityChange = async (provinceCode: string) => {
+    const selectedProvince = provinces.find(p => p.code.toString() === provinceCode);
+    if (selectedProvince) {
+      setFormData({ ...formData, tinh: selectedProvince.name, huyen: '', xa: '' });
+      setWards([]);
+
+      // Load districts
+      try {
+        const response = await fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`);
+        const data = await response.json();
+        setDistricts(data.districts || []);
+      } catch (error) {
+        console.error('Lỗi khi tải danh sách quận/huyện:', error);
+      }
+    }
+  };
+
+  // Handle district selection
+  const handleDistrictChange = async (districtCode: string) => {
+    const selectedDistrict = districts.find(d => d.code.toString() === districtCode);
+    if (selectedDistrict) {
+      setFormData({ ...formData, huyen: selectedDistrict.name, xa: '' });
+
+      // Load wards
+      try {
+        const response = await fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`);
+        const data = await response.json();
+        setWards(data.wards || []);
+      } catch (error) {
+        console.error('Lỗi khi tải danh sách phường/xã:', error);
+      }
+    }
+  };
+
+  // Handle ward selection
+  const handleWardChange = (wardCode: string) => {
+    const selectedWard = wards.find(w => w.code.toString() === wardCode);
+    if (selectedWard) {
+      setFormData({ ...formData, xa: selectedWard.name });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +158,7 @@ export default function AddressModal({ isOpen, onClose, onSave, address, mode }:
                     type="text"
                     value={formData.hoTen}
                     onChange={(e) => setFormData({ ...formData, hoTen: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                     required
                   />
                 </div>
@@ -106,7 +171,7 @@ export default function AddressModal({ isOpen, onClose, onSave, address, mode }:
                     type="tel"
                     value={formData.soDienThoai}
                     onChange={(e) => setFormData({ ...formData, soDienThoai: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                     required
                     pattern="[0-9]{10,11}"
                   />
@@ -118,42 +183,59 @@ export default function AddressModal({ isOpen, onClose, onSave, address, mode }:
                   <label className="block text-sm font-medium text-gray-900 mb-2">
                     Tỉnh/Thành phố <span className="text-red-600">*</span>
                   </label>
-                  <input
-                    type="text"
-                    value={formData.tinh}
-                    onChange={(e) => setFormData({ ...formData, tinh: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="VD: TP. Hồ Chí Minh"
+                  <select
+                    value={provinces.find(p => p.name === formData.tinh)?.code || ''}
+                    onChange={(e) => handleCityChange(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                     required
-                  />
+                  >
+                    <option value="">Chọn Tỉnh/Thành phố</option>
+                    {provinces.map((province) => (
+                      <option key={province.code} value={province.code}>
+                        {province.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">
                     Quận/Huyện <span className="text-red-600">*</span>
                   </label>
-                  <input
-                    type="text"
-                    value={formData.huyen}
-                    onChange={(e) => setFormData({ ...formData, huyen: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="VD: Quận 1"
+                  <select
+                    value={districts.find(d => d.name === formData.huyen)?.code || ''}
+                    onChange={(e) => handleDistrictChange(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent disabled:bg-gray-100"
+                    disabled={!formData.tinh}
                     required
-                  />
+                  >
+                    <option value="">Chọn Quận/Huyện</option>
+                    {districts.map((district) => (
+                      <option key={district.code} value={district.code}>
+                        {district.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">
                     Phường/Xã <span className="text-red-600">*</span>
                   </label>
-                  <input
-                    type="text"
-                    value={formData.xa}
-                    onChange={(e) => setFormData({ ...formData, xa: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="VD: Phường XYZ"
+                  <select
+                    value={wards.find(w => w.name === formData.xa)?.code || ''}
+                    onChange={(e) => handleWardChange(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent disabled:bg-gray-100"
+                    disabled={!formData.huyen}
                     required
-                  />
+                  >
+                    <option value="">Chọn Phường/Xã</option>
+                    {wards.map((ward) => (
+                      <option key={ward.code} value={ward.code}>
+                        {ward.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -164,7 +246,7 @@ export default function AddressModal({ isOpen, onClose, onSave, address, mode }:
                 <textarea
                   value={formData.diaChiChiTiet}
                   onChange={(e) => setFormData({ ...formData, diaChiChiTiet: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-700 focus:border-transparent"
                   placeholder="Số nhà, tên đường..."
                   rows={3}
                   required
@@ -177,7 +259,7 @@ export default function AddressModal({ isOpen, onClose, onSave, address, mode }:
                   id="macDinh"
                   checked={formData.macDinh}
                   onChange={(e) => setFormData({ ...formData, macDinh: e.target.checked })}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-primary-500 rounded focus:ring-primary-700"
                 />
                 <label htmlFor="macDinh" className="ml-2 text-sm text-gray-900">
                   Đặt làm địa chỉ mặc định
@@ -196,7 +278,7 @@ export default function AddressModal({ isOpen, onClose, onSave, address, mode }:
               </button>
               <button
                 type="submit"
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium disabled:bg-blue-400"
+                className="px-6 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-800 font-medium disabled:bg-primary-400"
                 disabled={saving}
               >
                 {saving ? 'Đang lưu...' : mode === 'add' ? 'Thêm Địa Chỉ' : 'Cập Nhật'}

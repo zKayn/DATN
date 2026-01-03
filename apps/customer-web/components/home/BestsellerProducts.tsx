@@ -125,7 +125,7 @@ export default function BestsellerProducts() {
               onClick={() => setStartIndex(index * itemsPerPage)}
               className={`w-2 h-2 rounded-full transition-all ${
                 Math.floor(startIndex / itemsPerPage) === index
-                  ? 'bg-primary-600 w-6'
+                  ? 'bg-primary-400 w-6'
                   : 'bg-gray-300 hover:bg-gray-400'
               }`}
               aria-label={`Go to page ${index + 1}`}

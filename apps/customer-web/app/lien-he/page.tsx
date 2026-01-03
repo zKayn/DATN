@@ -26,7 +26,7 @@ export default function LienHePage() {
           <div className="space-y-6">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <MapPin className="w-6 h-6 text-primary-600" />
+                <MapPin className="w-6 h-6 text-primary-400" />
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-1">Địa Chỉ</h3>
@@ -38,11 +38,11 @@ export default function LienHePage() {
 
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Phone className="w-6 h-6 text-primary-600" />
+                <Phone className="w-6 h-6 text-primary-400" />
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-1">Điện Thoại</h3>
-                <a href="tel:0855062747" className="text-primary-600 hover:text-primary-700">
+                <a href="tel:0855062747" className="text-primary-400 hover:text-primary-500">
                   0855062747
                 </a>
               </div>
@@ -50,11 +50,11 @@ export default function LienHePage() {
 
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Mail className="w-6 h-6 text-primary-600" />
+                <Mail className="w-6 h-6 text-primary-400" />
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
-                <a href="mailto:contact@sportstore.vn" className="text-primary-600 hover:text-primary-700">
+                <a href="mailto:contact@sportstore.vn" className="text-primary-400 hover:text-primary-500">
                   contact@sportstore.vn
                 </a>
               </div>
@@ -62,7 +62,7 @@ export default function LienHePage() {
 
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Clock className="w-6 h-6 text-primary-600" />
+                <Clock className="w-6 h-6 text-primary-400" />
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-1">Giờ Làm Việc</h3>
@@ -104,7 +104,7 @@ export default function LienHePage() {
                 id="name"
                 name="name"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400"
                 placeholder="Nhập họ và tên"
               />
             </div>
@@ -118,7 +118,7 @@ export default function LienHePage() {
                 id="email"
                 name="email"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400"
                 placeholder="example@email.com"
               />
             </div>
@@ -131,7 +131,7 @@ export default function LienHePage() {
                 type="tel"
                 id="phone"
                 name="phone"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400"
                 placeholder="0123456789"
               />
             </div>
@@ -145,7 +145,7 @@ export default function LienHePage() {
                 id="subject"
                 name="subject"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400"
                 placeholder="Tiêu đề tin nhắn"
               />
             </div>
@@ -159,14 +159,14 @@ export default function LienHePage() {
                 name="message"
                 rows={6}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400"
                 placeholder="Nhập nội dung tin nhắn..."
               />
             </div>
 
             <button
               type="submit"
-              className="w-full bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
+              className="w-full bg-primary-400 text-white py-3 rounded-lg font-semibold hover:bg-primary-500 transition-colors"
             >
               Gửi Tin Nhắn
             </button>

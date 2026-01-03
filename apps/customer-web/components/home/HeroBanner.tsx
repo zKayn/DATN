@@ -1,37 +1,33 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const banners = [
   {
     id: 1,
-    title: '🎄 Giáng Sinh Vui Vẻ - Sale Khủng 2025',
-    subtitle: 'Giảm giá đến 50% cho tất cả đồ thể thao - Quà tặng hấp dẫn',
-    cta: '🎁 Mua Ngay',
+    title: 'GIẢI PHÓNG SỨC MẠNH',
+    titleHighlight: 'TIỀM NĂNG',
+    subtitle: 'Khám phá bộ sưu tập thể thao 2025 với công nghệ tiên tiến và thiết kế đột phá',
+    cta: 'KHÁM PHÁ NGAY',
     ctaLink: '/san-pham',
-    image: 'https://images.unsplash.com/photo-1556906781-9a412961c28c?w=1920&h=600&fit=crop',
-    bgColor: 'from-primary-600 to-primary-800'
   },
   {
     id: 2,
-    title: '🧧 Tết Đến - Lộc Về',
-    subtitle: 'Sắm Tết vui vẻ - Nhận lì xì may mắn khi mua hàng',
-    cta: '🎊 Khám Phá',
+    title: 'TRANG BỊ CHO',
+    titleHighlight: 'THÀNH CÔNG',
+    subtitle: 'Giày thể thao chính hãng - Đa dạng mẫu mã, chất lượng cao, giá tốt nhất',
+    cta: 'MUA NGAY',
     ctaLink: '/danh-muc/giay-the-thao',
-    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1920&h=600&fit=crop',
-    bgColor: 'from-accent-600 to-accent-800'
   },
   {
     id: 3,
-    title: '✨ Ưu Đãi Mùa Lễ Hội',
-    subtitle: 'Trang bị thể thao chất lượng - Giá tốt nhất năm',
-    cta: '🎉 Xem Thêm',
+    title: 'ƯU ĐÃI',
+    titleHighlight: 'ĐẶC BIỆT',
+    subtitle: 'Ưu đãi đặc biệt - Giảm giá lên đến 50% cho các sản phẩm chọn lọc',
+    cta: 'XEM NGAY',
     ctaLink: '/khuyen-mai',
-    image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920&h=600&fit=crop',
-    bgColor: 'from-secondary-600 to-secondary-800'
   }
 ]
 
@@ -41,7 +37,7 @@ export default function HeroBanner() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % banners.length)
-    }, 5000) // Auto-play every 5 seconds
+    }, 6000)
 
     return () => clearInterval(timer)
   }, [])
@@ -54,82 +50,147 @@ export default function HeroBanner() {
     setCurrentSlide((prev) => (prev - 1 + banners.length) % banners.length)
   }
 
-  return (
-    <div className="relative w-full h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden">
-      {/* Slides */}
-      {banners.map((banner, index) => (
-        <div
-          key={banner.id}
-          className={`absolute inset-0 transition-opacity duration-1000 ${
-            index === currentSlide ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          {/* Background Image */}
-          <div className="absolute inset-0">
-            <Image
-              src={banner.image}
-              alt={banner.title}
-              fill
-              className="object-cover"
-              priority={index === 0}
-            />
-            <div className={`absolute inset-0 bg-gradient-to-r ${banner.bgColor} opacity-70`} />
+  const particles = Array.from({ length: 15 }, (_, i) => ({
+    id: i,
+    size: Math.random() * 80 + 50,
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 100}%`,
+    delay: `${Math.random() * 5}s`,
+    duration: `${Math.random() * 10 + 10}s`
+  }))
 
-            {/* Festive overlay pattern */}
-            <div className="absolute inset-0 bg-snow-overlay opacity-10 pointer-events-none" />
+  return (
+    <div className="w-full bg-gray-50 py-4">
+      <div className="container mx-auto px-4">
+        <div className="relative flex items-center gap-6">
+          {/* Left Decorative Image */}
+          <div className="hidden xl:block flex-shrink-0 w-48 h-[380px] rounded-2xl overflow-hidden shadow-xl bg-gradient-to-br from-primary-500 to-accent-500 relative">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg className="w-32 h-32 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+            <div className="absolute bottom-4 left-4 right-4 text-white font-bold text-lg text-center">
+              NEW SEASON
+            </div>
           </div>
 
-          {/* Content */}
-          <div className="relative h-full container mx-auto px-4 flex items-center">
-            <div className="max-w-2xl text-white animate-fade-in">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 animate-slide-up">
-                {banner.title}
-              </h1>
-              <p className="text-lg md:text-xl lg:text-2xl mb-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-                {banner.subtitle}
-              </p>
-              <Link
-                href={banner.ctaLink}
-                className="inline-block bg-gradient-to-r from-accent-500 to-accent-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:from-accent-600 hover:to-accent-700 transition-all hover:scale-105 shadow-glow-gold shadow-lg animate-slide-up"
-                style={{ animationDelay: '0.2s' }}
+          {/* Main Banner */}
+          <div className="relative flex-1 h-[300px] md:h-[340px] lg:h-[380px] rounded-2xl overflow-hidden shadow-2xl">
+            {/* Slides */}
+            {banners.map((banner, index) => (
+              <div
+                key={banner.id}
+                className={`absolute inset-0 transition-opacity duration-700 ease-smooth ${
+                  index === currentSlide ? 'opacity-100' : 'opacity-0'
+                }`}
               >
-                {banner.cta}
-              </Link>
+                {/* Animated Gradient Background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary-500 via-secondary-500 to-accent-500 bg-[length:200%_200%] animate-gradient-shift" />
+
+                {/* Floating Particles */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  {particles.map((particle) => (
+                    <div
+                      key={particle.id}
+                      className="absolute rounded-full bg-white/10 backdrop-blur-sm animate-float-particle"
+                      style={{
+                        width: `${particle.size}px`,
+                        height: `${particle.size}px`,
+                        left: particle.left,
+                        top: particle.top,
+                        animationDelay: particle.delay,
+                        animationDuration: particle.duration,
+                      }}
+                    />
+                  ))}
+                </div>
+
+                {/* Content */}
+                <div className="relative z-10 h-full flex items-center justify-center text-center px-4 md:px-8">
+                  <div className="max-w-5xl">
+                    {/* Heading */}
+                    <h1 className="font-heading text-3xl md:text-5xl lg:text-6xl mb-4 leading-tight">
+                      <span className="block text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+                        {banner.title}
+                      </span>
+                      <span className="block mt-1 text-gradient-vibrant drop-shadow-[0_4px_20px_rgba(0,0,0,0.3)] animate-pulse-subtle">
+                        {banner.titleHighlight}
+                      </span>
+                    </h1>
+
+                    {/* Subtitle */}
+                    <p className="text-base md:text-xl lg:text-2xl text-white/95 mb-6 max-w-3xl mx-auto drop-shadow-md leading-relaxed">
+                      {banner.subtitle}
+                    </p>
+
+                    {/* CTA Button */}
+                    <Link href={banner.ctaLink}>
+                      <button className="group relative px-10 md:px-12 py-3.5 md:py-4.5 bg-white text-primary-500 font-accent text-base md:text-xl font-bold rounded-full transform transition-all duration-300 hover:scale-110 hover:shadow-[0_20px_60px_rgba(255,165,0,0.5)] active:scale-95 overflow-hidden focus:outline-none focus:ring-4 focus:ring-white/50">
+                        <span className="absolute inset-0 bg-gradient-to-r from-accent-400 to-secondary-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
+                        <span className="relative z-10 group-hover:text-white transition-colors duration-300 flex items-center justify-center gap-2">
+                          {banner.cta}
+                          <svg className="w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </span>
+                        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-transparent via-white/40 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-full" />
+                        <div className="absolute inset-0 -z-20 bg-gradient-to-r from-accent-400 to-secondary-400 opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-300" />
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Navigation Arrows */}
+            <button
+              onClick={prevSlide}
+              className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 p-3 md:p-3.5 rounded-full backdrop-blur-sm transition-all duration-300 ease-smooth hover:scale-125 hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] active:scale-95 shadow-lg z-20 focus:outline-none focus:ring-4 focus:ring-white/50"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft className="w-6 h-6 md:w-7 md:h-7" />
+            </button>
+
+            <button
+              onClick={nextSlide}
+              className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 p-3 md:p-3.5 rounded-full backdrop-blur-sm transition-all duration-300 ease-smooth hover:scale-125 hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] active:scale-95 shadow-lg z-20 focus:outline-none focus:ring-4 focus:ring-white/50"
+              aria-label="Next slide"
+            >
+              <ChevronRight className="w-6 h-6 md:w-7 md:h-7" />
+            </button>
+
+            {/* Dots Indicator */}
+            <div className="absolute bottom-5 md:bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20">
+              {banners.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentSlide(index)}
+                  className={`h-2.5 rounded-full transition-all duration-300 ease-smooth ${
+                    index === currentSlide
+                      ? 'bg-white w-12 shadow-lg'
+                      : 'bg-white/60 hover:bg-white/90 w-2.5 hover:w-5'
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Right Decorative Image */}
+          <div className="hidden xl:block flex-shrink-0 w-48 h-[380px] rounded-2xl overflow-hidden shadow-xl bg-gradient-to-br from-secondary-500 to-success-500 relative">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg className="w-32 h-32 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+            <div className="absolute bottom-4 left-4 right-4 text-white font-bold text-lg text-center">
+              BEST DEALS
             </div>
           </div>
         </div>
-      ))}
-
-      {/* Navigation Arrows */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white p-3 rounded-full backdrop-blur-sm transition-all z-10"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft className="w-6 h-6" />
-      </button>
-      <button
-        onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white p-3 rounded-full backdrop-blur-sm transition-all z-10"
-        aria-label="Next slide"
-      >
-        <ChevronRight className="w-6 h-6" />
-      </button>
-
-      {/* Dots Indicator */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-10">
-        {banners.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all ${
-              index === currentSlide
-                ? 'bg-white w-8'
-                : 'bg-white/50 hover:bg-white/75'
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
       </div>
     </div>
   )

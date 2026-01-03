@@ -118,7 +118,7 @@ export default function ChatAI() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-primary-600 via-accent-600 to-secondary-600 text-white rounded-full shadow-lg shadow-glow-gold hover:shadow-2xl transform hover:scale-110 transition-all duration-300 flex items-center justify-center z-50"
+          className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-primary-400 via-accent-600 to-accent-400 text-white rounded-full shadow-lg shadow-glow-gold hover:shadow-2xl transform hover:scale-110 transition-all duration-300 flex items-center justify-center z-50"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -134,7 +134,7 @@ export default function ChatAI() {
       {isOpen && (
         <div className="fixed inset-0 md:inset-auto md:bottom-6 md:right-6 md:w-[420px] md:h-[650px] w-full h-full bg-white md:rounded-3xl shadow-2xl flex flex-col z-50 border border-gray-100 overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-br from-primary-600 via-accent-600 to-secondary-600 text-white p-5 flex items-center justify-between relative overflow-hidden shadow-glow-gold">
+          <div className="bg-gradient-to-br from-primary-400 via-accent-600 to-accent-400 text-white p-5 flex items-center justify-between relative overflow-hidden shadow-glow-gold">
             <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
             <div className="flex items-center gap-3 relative z-10">
               <div className="relative">
@@ -177,7 +177,7 @@ export default function ChatAI() {
                   )}
                   <div className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-3 md:px-4 py-2 md:py-3 shadow-sm ${
                     message.role === 'user'
-                      ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-br-sm shadow-glow-red'
+                      ? 'bg-gradient-to-br from-primary-400 to-primary-700 text-white rounded-br-sm shadow-glow-red'
                       : 'bg-white text-gray-800 border border-gray-100 rounded-bl-sm'
                   }`}>
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
@@ -236,7 +236,7 @@ export default function ChatAI() {
                             <div className="flex items-center gap-2">
                               {product.giaKhuyenMai ? (
                                 <>
-                                  <span className="text-base font-bold text-primary-600">
+                                  <span className="text-base font-bold text-primary-400">
                                     {product.giaKhuyenMai.toLocaleString('vi-VN')}₫
                                   </span>
                                   <span className="text-xs text-gray-400 line-through">
@@ -244,7 +244,7 @@ export default function ChatAI() {
                                   </span>
                                 </>
                               ) : (
-                                <span className="text-base font-bold text-primary-600">
+                                <span className="text-base font-bold text-primary-400">
                                   {product.gia.toLocaleString('vi-VN')}₫
                                 </span>
                               )}

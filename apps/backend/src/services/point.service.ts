@@ -1,4 +1,5 @@
 import User from '../models/User';
+import Order from '../models/Order';
 import PointTransaction from '../models/PointTransaction';
 import mongoose from 'mongoose';
 
@@ -51,6 +52,10 @@ export const addPointsForOrder = async (
       };
     }
 
+    // Lấy thông tin đơn hàng để có mã đơn hàng
+    const order = await Order.findById(orderId);
+    const orderCode = order?.maDonHang || orderId.toString();
+
     // Cập nhật điểm cho user
     const user = await User.findByIdAndUpdate(
       userId,
@@ -72,7 +77,7 @@ export const addPointsForOrder = async (
       nguoiDung: userId,
       loai: 'cong',
       soLuong: points,
-      moTa: `Nhận điểm từ đơn hàng #${orderId}`,
+      moTa: `Nhận điểm từ đơn hàng #${orderCode}`,
       donHang: orderId,
       soDuSau: user.diemTichLuy
     });
@@ -144,13 +149,20 @@ export const usePoints = async (
     // Tính số tiền giảm giá
     const discountAmount = calculateDiscountFromPoints(pointsToUse);
 
+    // Lấy mã đơn hàng nếu có orderId
+    let orderCode = '';
+    if (orderId) {
+      const order = await Order.findById(orderId);
+      orderCode = order?.maDonHang || orderId.toString();
+    }
+
     // Tạo bản ghi giao dịch điểm
     await PointTransaction.create({
       nguoiDung: userId,
       loai: 'tru',
       soLuong: pointsToUse,
       moTa: orderId
-        ? `Sử dụng điểm cho đơn hàng #${orderId}`
+        ? `Sử dụng điểm cho đơn hàng #${orderCode}`
         : 'Sử dụng điểm tích lũy',
       donHang: orderId,
       soDuSau: user.diemTichLuy

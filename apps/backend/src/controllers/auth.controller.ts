@@ -2,7 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
+import bcrypt from 'bcryptjs';
 import User from '../models/User';
+import emailService from '../services/email.service';
 
 // Tạo JWT token
 const signToken = (id: string): string => {
@@ -299,49 +301,6 @@ export const changePassword = async (
     res.json({
       success: true,
       message: 'Đổi mật khẩu thành công'
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// @desc    Quên mật khẩu
-// @route   POST /api/auth/forgot-password
-// @access  Public
-export const forgotPassword = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    // TODO: Implement forgot password logic
-    // 1. Tìm user theo email
-    // 2. Tạo reset token
-    // 3. Gửi email chứa link reset
-
-    res.json({
-      success: true,
-      message: 'Email khôi phục mật khẩu đã được gửi'
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// @desc    Reset mật khẩu
-// @route   PUT /api/auth/reset-password/:token
-// @access  Public
-export const resetPassword = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    // TODO: Implement reset password logic
-
-    res.json({
-      success: true,
-      message: 'Mật khẩu đã được đặt lại'
     });
   } catch (error) {
     next(error);
@@ -650,6 +609,499 @@ export const uploadAvatar = async (
       }
     });
   } catch (error: any) {
+    next(error);
+  }
+};
+
+// @desc    Lấy danh sách yêu thích
+// @route   GET /api/users/wishlist
+// @access  Private
+export const getWishlist = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = await User.findById(req.user?._id).populate(
+      'danhSachYeuThich',
+      'ten slug hinhAnh gia giaKhuyenMai danhGia soLuongTonKho'
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng'
+      });
+    }
+
+    // Map soLuongTonKho to tonKho for frontend compatibility
+    const wishlistWithStock = (user.danhSachYeuThich as any[]).map((item: any) => ({
+      ...item.toObject(),
+      tonKho: item.soLuongTonKho
+    }));
+
+    res.json({
+      success: true,
+      data: wishlistWithStock
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Thêm sản phẩm vào danh sách yêu thích
+// @route   POST /api/users/wishlist
+// @access  Private
+export const addToWishlist = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { sanPham } = req.body;
+
+    if (!sanPham) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng cung cấp ID sản phẩm'
+      });
+    }
+
+    const user = await User.findById(req.user?._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng'
+      });
+    }
+
+    // Kiểm tra sản phẩm đã có trong danh sách chưa
+    if (user.danhSachYeuThich.includes(sanPham)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Sản phẩm đã có trong danh sách yêu thích'
+      });
+    }
+
+    user.danhSachYeuThich.push(sanPham);
+    await user.save();
+
+    // Populate để trả về thông tin sản phẩm
+    await user.populate('danhSachYeuThich', 'ten slug hinhAnh gia giaKhuyenMai danhGia tonKho');
+
+    res.json({
+      success: true,
+      message: 'Đã thêm vào danh sách yêu thích',
+      data: user.danhSachYeuThich
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Xóa sản phẩm khỏi danh sách yêu thích
+// @route   DELETE /api/users/wishlist/:productId
+// @access  Private
+export const removeFromWishlist = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { productId } = req.params;
+
+    const user = await User.findById(req.user?._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng'
+      });
+    }
+
+    user.danhSachYeuThich = user.danhSachYeuThich.filter(
+      (id) => id.toString() !== productId
+    );
+
+    await user.save();
+
+    await user.populate('danhSachYeuThich', 'ten slug hinhAnh gia giaKhuyenMai danhGia tonKho');
+
+    res.json({
+      success: true,
+      message: 'Đã xóa khỏi danh sách yêu thích',
+      data: user.danhSachYeuThich
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// @desc    Lấy giỏ hàng
+// @route   GET /api/users/cart
+// @access  Private
+export const getCart = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = await User.findById(req.user?._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: user.gioHang || []
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Thêm sản phẩm vào giỏ hàng
+// @route   POST /api/users/cart
+// @access  Private
+export const addToCart = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { sanPham, ten, slug, hinhAnh, gia, giaKhuyenMai, kichThuoc, mauSac, soLuong, tonKho } = req.body;
+
+    if (!sanPham || !ten || !slug || !hinhAnh || !gia || !kichThuoc || !mauSac || !soLuong || !tonKho) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng cung cấp đầy đủ thông tin sản phẩm'
+      });
+    }
+
+    const user = await User.findById(req.user?._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng'
+      });
+    }
+
+    // Kiểm tra sản phẩm đã có trong giỏ hàng chưa (cùng sản phẩm, size, màu)
+    const existingItemIndex = user.gioHang.findIndex(
+      (item) =>
+        item.sanPham.toString() === sanPham &&
+        item.kichThuoc === kichThuoc &&
+        item.mauSac === mauSac
+    );
+
+    if (existingItemIndex > -1) {
+      // Nếu đã có, tăng số lượng
+      user.gioHang[existingItemIndex].soLuong += soLuong;
+    } else {
+      // Nếu chưa có, thêm mới
+      user.gioHang.push({
+        sanPham,
+        ten,
+        slug,
+        hinhAnh,
+        gia,
+        giaKhuyenMai,
+        kichThuoc,
+        mauSac,
+        soLuong,
+        tonKho
+      });
+    }
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Đã thêm vào giỏ hàng',
+      data: user.gioHang
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Cập nhật số lượng sản phẩm trong giỏ hàng
+// @route   PUT /api/users/cart
+// @access  Private
+export const updateCartItem = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { sanPham, kichThuoc, mauSac, soLuong } = req.body;
+
+    if (!sanPham || !kichThuoc || !mauSac || !soLuong || soLuong < 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng cung cấp đầy đủ thông tin và số lượng phải lớn hơn 0'
+      });
+    }
+
+    const user = await User.findById(req.user?._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng'
+      });
+    }
+
+    const cartItemIndex = user.gioHang.findIndex(
+      (item) =>
+        item.sanPham.toString() === sanPham &&
+        item.kichThuoc === kichThuoc &&
+        item.mauSac === mauSac
+    );
+
+    if (cartItemIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy sản phẩm trong giỏ hàng'
+      });
+    }
+
+    user.gioHang[cartItemIndex].soLuong = soLuong;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Đã cập nhật giỏ hàng',
+      data: user.gioHang
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Xóa sản phẩm khỏi giỏ hàng
+// @route   DELETE /api/users/cart/item
+// @access  Private (body: {sanPham, kichThuoc, mauSac})
+export const removeFromCart = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { sanPham, kichThuoc, mauSac } = req.body;
+
+    if (!sanPham || !kichThuoc || !mauSac) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng cung cấp đầy đủ thông tin sản phẩm'
+      });
+    }
+
+    const user = await User.findById(req.user?._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng'
+      });
+    }
+
+    // Sử dụng filter để xóa item khỏi mảng
+    const initialLength = user.gioHang.length;
+    user.gioHang = user.gioHang.filter(
+      (item) =>
+        !(
+          item.sanPham.toString() === sanPham &&
+          item.kichThuoc === kichThuoc &&
+          item.mauSac === mauSac
+        )
+    );
+
+    if (user.gioHang.length === initialLength) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy sản phẩm trong giỏ hàng'
+      });
+    }
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Đã xóa khỏi giỏ hàng',
+      data: user.gioHang
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Xóa toàn bộ giỏ hàng
+// @route   DELETE /api/users/cart
+// @access  Private
+export const clearCart = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = await User.findById(req.user?._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng'
+      });
+    }
+
+    user.gioHang = [];
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Đã xóa toàn bộ giỏ hàng',
+      data: []
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Quên mật khẩu - Gửi email reset
+// @route   POST /api/auth/forgot-password
+// @access  Public
+export const forgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng nhập email'
+      });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy tài khoản với email này'
+      });
+    }
+
+    // Tạo reset token
+    const resetToken = user.taoResetPasswordToken();
+    await user.save({ validateBeforeSave: false });
+
+    // Trong môi trường development, trả về token để test
+    const isDevelopment = process.env.NODE_ENV === 'development';
+
+    // Gửi email
+    try {
+      await emailService.sendPasswordResetEmail(email, resetToken);
+
+      res.json({
+        success: true,
+        message: 'Email đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư của bạn.',
+        ...(isDevelopment && { resetToken, resetUrl: `${process.env.CLIENT_URL || 'http://localhost:3001'}/dat-lai-mat-khau?token=${resetToken}` })
+      });
+    } catch (emailError) {
+      console.error('Email error:', emailError);
+
+      // Trong development, vẫn trả về thành công với token để test
+      if (isDevelopment) {
+        return res.json({
+          success: true,
+          message: 'Chế độ development: Email service không khả dụng, sử dụng link bên dưới để test',
+          resetToken,
+          resetUrl: `${process.env.CLIENT_URL || 'http://localhost:3001'}/dat-lai-mat-khau?token=${resetToken}`
+        });
+      }
+
+      // Production: Xóa token và báo lỗi
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save({ validateBeforeSave: false });
+
+      return res.status(500).json({
+        success: false,
+        message: 'Không thể gửi email. Vui lòng thử lại sau.'
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Đặt lại mật khẩu
+// @route   POST /api/auth/reset-password
+// @access  Public
+export const resetPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { token, matKhauMoi } = req.body;
+
+    if (!token || !matKhauMoi) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng cung cấp đầy đủ thông tin'
+      });
+    }
+
+    if (matKhauMoi.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Mật khẩu phải có ít nhất 6 ký tự'
+      });
+    }
+
+    // Tìm user có resetPasswordExpire > hiện tại
+    const users = await User.find({
+      resetPasswordExpire: { $gt: Date.now() }
+    }).select('+resetPasswordToken');
+
+    // Tìm user có token khớp
+    let user = null;
+    for (const u of users) {
+      if (u.resetPasswordToken && bcrypt.compareSync(token, u.resetPasswordToken)) {
+        user = u;
+        break;
+      }
+    }
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Token không hợp lệ hoặc đã hết hạn'
+      });
+    }
+
+    // Đặt mật khẩu mới
+    user.matKhau = matKhauMoi;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Đặt lại mật khẩu thành công. Bạn có thể đăng nhập với mật khẩu mới.'
+    });
+  } catch (error) {
     next(error);
   }
 };

@@ -144,7 +144,7 @@ export default function ChinhSachBaoMatPage() {
           </p>
           <a
             href="/lien-he"
-            className="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
+            className="inline-block bg-primary-400 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-500 transition-colors"
           >
             Liên Hệ Ngay
           </a>
