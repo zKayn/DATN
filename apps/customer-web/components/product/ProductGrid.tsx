@@ -31,7 +31,7 @@ export default function ProductGrid({ filters }: ProductGridProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
+  const itemsPerPage = 24;
 
   // Fetch products from API
   useEffect(() => {
@@ -133,7 +133,7 @@ export default function ProductGrid({ filters }: ProductGridProps) {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {[...Array(8)].map((_, i) => (
           <div key={i} className="bg-white rounded-lg p-4 animate-pulse">
             <div className="aspect-square bg-gray-200 rounded-lg mb-4" />
@@ -170,7 +170,7 @@ export default function ProductGrid({ filters }: ProductGridProps) {
       </div>
 
       {/* Product Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 items-stretch">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6 items-stretch">
         {paginatedProducts.map((product) => (
           <ProductCard
             key={product._id}

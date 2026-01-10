@@ -315,13 +315,13 @@ const styles = StyleSheet.create({
   itemPrice: {
     fontSize: SIZES.body,
     fontWeight: 'bold',
-    color: COLORS.warning, // Orange for sale price
+    color: COLORS.danger, // Red for sale price
     marginRight: 8,
   },
   itemRegularPrice: {
     fontSize: SIZES.body,
     fontWeight: 'bold',
-    color: COLORS.gray[700], // Dark gray for regular price
+    color: COLORS.danger, // Red for regular price
   },
   originalPrice: {
     fontSize: SIZES.small,
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   discountBadge: {
-    backgroundColor: COLORS.warning, // Orange background
+    backgroundColor: COLORS.danger, // Red background
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -459,7 +459,7 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: SIZES.h3,
     fontWeight: 'bold',
-    color: COLORS.warning, // Orange for total
+    color: COLORS.danger, // Red for total
   },
   checkoutButton: {
     paddingVertical: 16,

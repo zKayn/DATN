@@ -50,7 +50,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         );
 
         if (needsFetch) {
-          console.log('Fetching full product details for wishlist items...');
+          // Fetching full product details for wishlist items
           const detailedItems = await Promise.all(
             items.map(async (item: any) => {
               try {
@@ -61,7 +61,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
                 }
                 return null;
               } catch (error) {
-                console.error('Error fetching product details:', error);
+                // Silent error - skip this item
                 return null;
               }
             })
@@ -76,7 +76,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       // Nếu lỗi 403 hoặc 404, có thể do backend chưa hỗ trợ wishlist
       // Fallback to localStorage
       if (error.response?.status === 403 || error.response?.status === 404) {
-        console.log('Wishlist API not available, using local storage');
+        // Wishlist API not available, using local storage
         try {
           const localData = await AsyncStorage.getItem('wishlist_local');
           if (localData) {
@@ -93,7 +93,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
                     }
                     return null;
                   } catch (error) {
-                    console.error('Error fetching product details:', error);
+                    // Silent error - skip this item
                     return null;
                   }
                 })
@@ -104,10 +104,10 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
             }
           }
         } catch (e) {
-          console.error('Error loading local wishlist:', e);
+          // Silent error - local wishlist not available
         }
       } else {
-        console.error('Error loading wishlist:', error);
+        // Silent error - wishlist not loaded
       }
       setWishlist([]);
     }
@@ -125,7 +125,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       // Fallback to local storage if API fails
       if (error.response?.status === 403 || error.response?.status === 404) {
-        console.log('Using local wishlist storage');
+        // Using local wishlist storage
         try {
           // Fetch full product details
           const productResponse = await api.getProductById(productId);
@@ -136,7 +136,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
             await AsyncStorage.setItem('wishlist_local', JSON.stringify(updated));
           }
         } catch (fetchError) {
-          console.error('Error fetching product details:', fetchError);
+          // Silent error - fallback to ID only
           // Fallback to just ID
           const newItem = { _id: productId, addedAt: new Date() };
           const updated = [...wishlist, newItem];
@@ -144,7 +144,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
           await AsyncStorage.setItem('wishlist_local', JSON.stringify(updated));
         }
       } else {
-        console.error('Error adding to wishlist:', error);
+        // Silent error - add to wishlist failed
         throw error;
       }
     }
@@ -161,12 +161,12 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       // Fallback to local storage if API fails
       if (error.response?.status === 403 || error.response?.status === 404) {
-        console.log('Using local wishlist storage');
+        // Using local wishlist storage
         const updated = wishlist.filter((item) => item._id !== productId);
         setWishlist(updated);
         await AsyncStorage.setItem('wishlist_local', JSON.stringify(updated));
       } else {
-        console.error('Error removing from wishlist:', error);
+        // Silent error - remove from wishlist failed
         throw error;
       }
     }

@@ -10,8 +10,10 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSettings } from '../../contexts/SettingsContext';
 import { COLORS, SIZES } from '../../constants/config';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -23,6 +25,7 @@ type NavigationProp = StackNavigationProp<RootStackParamList, 'Register'>;
 const RegisterScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { register } = useAuth();
+  const { settings } = useSettings();
   const [hoTen, setHoTen] = useState('');
   const [email, setEmail] = useState('');
   const [soDienThoai, setSoDienThoai] = useState('');
@@ -64,7 +67,18 @@ const RegisterScreen = () => {
     >
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
-          <Text style={styles.title}>Tạo tài khoản</Text>
+          <View style={styles.logoContainer}>
+            {settings?.storeLogo ? (
+              <Image
+                source={{ uri: settings.storeLogo }}
+                style={{ width: 60, height: 60 }}
+                resizeMode="contain"
+              />
+            ) : (
+              <Ionicons name="basketball" size={60} color={COLORS.primary} />
+            )}
+          </View>
+          <Text style={styles.title}>{settings?.storeName || 'Sport Store'}</Text>
           <Text style={styles.subtitle}>Đăng ký để bắt đầu mua sắm</Text>
         </View>
 
@@ -160,7 +174,16 @@ const RegisterScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.white },
   scrollContent: { flexGrow: 1, padding: SIZES.padding * 2 },
-  header: { marginBottom: 32, marginTop: 40 },
+  header: { alignItems: 'center', marginBottom: 32, marginTop: 40 },
+  logoContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: `${COLORS.primary}15`,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
   title: { fontSize: SIZES.h2, fontWeight: 'bold', color: COLORS.dark, marginBottom: 8 },
   subtitle: { fontSize: SIZES.body, color: COLORS.gray[500] },
   form: { width: '100%' },

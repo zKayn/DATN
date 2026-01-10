@@ -62,7 +62,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return apiCart;
       }
     } catch (error) {
-      console.error('Error loading cart from API:', error);
+      // Silent error - fallback to local storage
       // Fallback to AsyncStorage
       const savedCart = await AsyncStorage.getItem(CART_STORAGE_KEY);
       if (savedCart) {
@@ -96,7 +96,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         });
       }
     } catch (error) {
-      console.error('Error syncing cart to API:', error);
+      // Silent error - local cart still updated
     }
   };
 
@@ -146,7 +146,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               await syncCartToAPI(mergedCart);
             }
           } catch (error) {
-            console.error('Error merging local cart:', error);
+            // Silent error - skip merging
           }
         }
       } else {
@@ -159,7 +159,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setCartItems([]);
           }
         } catch (error) {
-          console.error('Load cart error:', error);
+          // Silent error - cart will be empty
           setCartItems([]);
         }
       }
@@ -176,7 +176,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         try {
           await AsyncStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
         } catch (error) {
-          console.error('Save cart error:', error);
+          // Silent error - cart state still in memory
         }
       }
     };
@@ -213,6 +213,13 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Sync to API if user is logged in
     if (isAuthenticated) {
       try {
+        // Validate required fields before sending to API
+        if (!item.productId || !item.name || !item.slug || !item.image ||
+            !item.price || !item.size || !item.color || !item.stock) {
+          // Skip API sync if required fields are missing
+          return;
+        }
+
         await api.addToCart({
           sanPham: item.productId,
           ten: item.name,
@@ -226,7 +233,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           tonKho: item.stock,
         });
       } catch (error) {
-        console.error('Error syncing add to cart:', error);
+        // Silent error - item added to local cart successfully
       }
     }
   };
@@ -245,7 +252,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           mauSac: itemToRemove.color,
         });
       } catch (error) {
-        console.error('Error syncing remove from cart:', error);
+        // Silent error - item removed from local cart successfully
       }
     }
   };
@@ -269,7 +276,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           soLuong: Math.max(1, Math.min(quantity, item.stock)),
         });
       } catch (error) {
-        console.error('Error syncing update quantity:', error);
+        // Silent error - quantity updated in local cart successfully
       }
     }
   };
@@ -282,7 +289,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         await api.clearCart();
       } catch (error) {
-        console.error('Error syncing clear cart:', error);
+        // Silent error - local cart cleared successfully
       }
     }
   };

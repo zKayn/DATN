@@ -52,6 +52,12 @@ class ApiService {
     return this.request(`/categories/slug/${slug}`);
   }
 
+  // Brands
+  async getBrands() {
+    const result = await this.request('/brands?trangThai=active');
+    return result.data || [];
+  }
+
   // Products
   async getProducts(params?: {
     danhMuc?: string;
@@ -90,15 +96,15 @@ class ApiService {
   }
 
   async getFeaturedProducts() {
-    return this.request('/products?noiBat=true&limit=8');
+    return this.request('/products?noiBat=true&limit=18');
   }
 
   async getNewProducts() {
-    return this.request('/products?sanPhamMoi=true&limit=8');
+    return this.request('/products?sanPhamMoi=true&sort=-createdAt&limit=18');
   }
 
   async getBestsellerProducts() {
-    return this.request('/products?sort=-daBan&limit=8');
+    return this.request('/products?sort=-daBan&limit=18');
   }
 
   async searchProducts(query: string) {
@@ -591,7 +597,39 @@ class ApiService {
       },
     });
   }
+
+  // PayOS Payment APIs
+  async createPayOSPaymentLink(token: string, orderId: string) {
+    return this.request('/payos/create-payment-link', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ orderId }),
+    });
+  }
+
+  async getPayOSPaymentStatus(token: string, orderId: string) {
+    return this.request(`/payos/status/${orderId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+
+  async cancelPayOSPayment(token: string, orderId: string) {
+    return this.request('/payos/cancel', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ orderId }),
+    });
+  }
 }
 
 export const api = new ApiService();
 export default api;
+
+// Named exports for convenience
+export const getBrands = () => api.getBrands();

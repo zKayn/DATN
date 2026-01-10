@@ -892,7 +892,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   flashSalePriceText: {
-    color: COLORS.warning,
+    color: COLORS.danger,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -1005,7 +1005,7 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 15,
     fontWeight: '700',
-    color: COLORS.warning, // Orange for sale price
+    color: COLORS.danger, // Red for sale price
   },
   productOldPrice: {
     fontSize: 12,
@@ -1016,7 +1016,7 @@ const styles = StyleSheet.create({
   productRegularPrice: {
     fontSize: 15,
     fontWeight: '700',
-    color: COLORS.gray[700], // Dark gray for regular price
+    color: COLORS.danger, // Red for regular price
   },
   productFooter: {
     flexDirection: 'row',

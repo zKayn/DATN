@@ -425,6 +425,22 @@ class ApiService {
     return response.data;
   }
 
+  // PayOS Payment APIs
+  async createPayOSPaymentLink(orderId: string) {
+    const response = await this.api.post('/payos/create-payment-link', { orderId });
+    return response.data;
+  }
+
+  async getPayOSPaymentStatus(orderId: string) {
+    const response = await this.api.get(`/payos/status/${orderId}`);
+    return response.data;
+  }
+
+  async cancelPayOSPayment(orderId: string) {
+    const response = await this.api.post('/payos/cancel', { orderId });
+    return response.data;
+  }
+
 }
 
 export default new ApiService();

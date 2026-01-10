@@ -10,8 +10,10 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSettings } from '../../contexts/SettingsContext';
 import { COLORS, SIZES } from '../../constants/config';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -23,6 +25,7 @@ type NavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
 const LoginScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { login } = useAuth();
+  const { settings } = useSettings();
   const [email, setEmail] = useState('');
   const [matKhau, setMatKhau] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -61,9 +64,17 @@ const LoginScreen = () => {
         {/* Logo/Header */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <Ionicons name="basketball" size={60} color={COLORS.primary} />
+            {settings?.storeLogo ? (
+              <Image
+                source={{ uri: settings.storeLogo }}
+                style={{ width: 60, height: 60 }}
+                resizeMode="contain"
+              />
+            ) : (
+              <Ionicons name="basketball" size={60} color={COLORS.primary} />
+            )}
           </View>
-          <Text style={styles.title}>Thể Thao Pro</Text>
+          <Text style={styles.title}>{settings?.storeName || 'Sport Store'}</Text>
           <Text style={styles.subtitle}>Đăng nhập để tiếp tục</Text>
         </View>
 

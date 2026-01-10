@@ -26,7 +26,7 @@ export default function CheckoutPage() {
     ward: '',
     note: ''
   });
-  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'stripe' | 'bankTransfer'>('cod');
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'stripe' | 'bankTransfer' | 'payos'>('cod');
   const [userPoints, setUserPoints] = useState(0);
   const [pointsToUse, setPointsToUse] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -332,13 +332,25 @@ export default function CheckoutPage() {
           } else {
             toast.error(paymentResponse.message || 'Không thể khởi tạo thanh toán');
           }
+        } else if (paymentMethod === 'payos') {
+          // PayOS - create payment link
+          toast('Đang khởi tạo thanh toán PayOS...');
+
+          const payosResponse = await api.createPayOSPaymentLink(token, order._id);
+
+          if (payosResponse.success) {
+            // Redirect to PayOS checkout URL
+            window.location.href = payosResponse.data.checkoutUrl;
+          } else {
+            toast.error(payosResponse.message || 'Không thể khởi tạo thanh toán PayOS');
+          }
         } else if (paymentMethod === 'cod') {
           // COD - clear cart and redirect
           toast.success('Đặt hàng thành công!');
           clearCart();
           router.push('/tai-khoan/don-hang');
         } else {
-          // Other payment methods
+          // Other payment methods (bankTransfer)
           toast.success('Đặt hàng thành công!');
           clearCart();
           router.push('/tai-khoan/don-hang');
@@ -644,7 +656,7 @@ export default function CheckoutPage() {
                           </svg>
                           <span className="font-semibold text-gray-900">Thẻ quốc tế</span>
                         </div>
-                        <p className="text-sm text-gray-600 mt-1">Thanh toán an toàn qua Stripe (Visa, Mastercard, JCB)</p>
+                        <p className="text-sm text-gray-600 mt-1">Thanh toán an toàn qua(Visa, Mastercard, JCB)</p>
                         <div className="flex gap-2 mt-2">
                           <div className="w-8 h-6 bg-gray-100 rounded flex items-center justify-center text-xs font-bold text-gray-700">VISA</div>
                           <div className="w-8 h-6 bg-gray-100 rounded flex items-center justify-center text-xs font-bold text-gray-700">MC</div>
@@ -654,7 +666,35 @@ export default function CheckoutPage() {
                     </label>
                   )}
 
-                  {settings?.paymentMethods?.bankTransfer && (
+                  {settings?.paymentMethods?.payos && (
+                    <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${paymentMethod === 'payos' ? 'border-primary-500 bg-primary-50' : 'border-gray-300'}`}>
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="payos"
+                        checked={paymentMethod === 'payos'}
+                        onChange={(e) => setPaymentMethod(e.target.value as any)}
+                        className="w-5 h-5 text-primary-500"
+                      />
+                      <div className="ml-4 flex-1">
+                        <div className="flex items-center gap-2">
+                          <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                          </svg>
+                          <span className="font-semibold text-gray-900">Chuyển khoản ngân hàng - QR Code</span>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">Thanh toán nhanh qua QR Code ngân hàng</p>
+                        <div className="flex gap-2 mt-2">
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Vietcombank</span>
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Techcombank</span>
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">MBBank</span>
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">+20 ngân hàng</span>
+                        </div>
+                      </div>
+                    </label>
+                  )}
+
+                  {/* {settings?.paymentMethods?.bankTransfer && (
                     <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${paymentMethod === 'bankTransfer' ? 'border-primary-500 bg-primary-50' : 'border-gray-300'}`}>
                       <input
                         type="radio"
@@ -674,7 +714,7 @@ export default function CheckoutPage() {
                         <p className="text-sm text-gray-600 mt-1">Thanh toán qua chuyển khoản ngân hàng</p>
                       </div>
                     </label>
-                  )}
+                  )} */}
                 </div>
               </div>
 

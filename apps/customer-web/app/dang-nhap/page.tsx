@@ -3,14 +3,17 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, isAuthenticated, loading: authLoading } = useAuth();
+  const { settings } = useSettings();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -77,13 +80,24 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="bg-gradient-to-br from-primary-400 to-accent-400 text-white p-3 rounded-xl">
-              <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z" />
-              </svg>
-            </div>
+            {settings?.storeLogo ? (
+              <div className="relative w-12 h-12">
+                <Image
+                  src={settings.storeLogo}
+                  alt={settings.storeName}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            ) : (
+              <div className="bg-gradient-to-br from-primary-400 to-accent-400 text-white p-3 rounded-xl">
+                <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z" />
+                </svg>
+              </div>
+            )}
             <span className="text-2xl font-bold bg-gradient-to-r from-primary-400 to-accent-400 bg-clip-text text-transparent">
-              Cửa Hàng Thể Thao
+              {settings?.storeName || 'Sport Store'}
             </span>
           </Link>
           <h2 className="text-3xl font-bold text-gray-900">Đăng Nhập</h2>

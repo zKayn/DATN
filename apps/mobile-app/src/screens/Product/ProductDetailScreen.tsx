@@ -660,12 +660,12 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: COLORS.warning, // Orange for sale price
+    color: COLORS.danger, // Red for sale price
   },
   regularPrice: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: COLORS.gray[700], // Dark gray for regular price
+    color: COLORS.danger, // Red for regular price
   },
   originalPrice: {
     fontSize: SIZES.body,
@@ -674,7 +674,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   discountBadge: {
-    backgroundColor: COLORS.warning, // Orange background
+    backgroundColor: COLORS.danger, // Red background
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,

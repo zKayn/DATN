@@ -205,11 +205,27 @@ export default function OrderDetailPage() {
               ))}
             </div>
 
-            <div className="mt-6 pt-6 border-t">
-              <div className="flex justify-between items-center">
-                <span className="text-lg font-semibold">Tổng tiền:</span>
+            <div className="mt-6 pt-6 border-t space-y-3">
+              <div className="flex justify-between text-gray-600">
+                <span>Tạm tính:</span>
+                <span>{order.tongTien.toLocaleString('vi-VN')}₫</span>
+              </div>
+              {order.phiVanChuyen !== undefined && order.phiVanChuyen > 0 && (
+                <div className="flex justify-between text-gray-600">
+                  <span>Phí vận chuyển:</span>
+                  <span>{order.phiVanChuyen.toLocaleString('vi-VN')}₫</span>
+                </div>
+              )}
+              {order.giamGia !== undefined && order.giamGia > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span>Giảm giá:</span>
+                  <span>-{order.giamGia.toLocaleString('vi-VN')}₫</span>
+                </div>
+              )}
+              <div className="flex justify-between items-center pt-3 border-t">
+                <span className="text-lg font-semibold">Tổng thanh toán:</span>
                 <span className="text-2xl font-bold text-blue-600">
-                  {order.tongTien.toLocaleString('vi-VN')}₫
+                  {(order.tongThanhToan || order.tongTien).toLocaleString('vi-VN')}₫
                 </span>
               </div>
             </div>

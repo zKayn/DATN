@@ -38,7 +38,12 @@
       "Bash(ls:*)",
       "Bash(chmod:*)",
       "Bash(./cleanup-nul.sh:*)",
-      "Bash(tasklist:*)"
+      "Bash(tasklist:*)",
+      "Bash($env:NEXT_DISABLE_SWC_PATCH=\"1\")",
+      "Bash(export NEXT_IGNORE_INCORRECT_LOCKFILE=1)",
+      "Bash(cross-env NEXT_IGNORE_INCORRECT_LOCKFILE=1 npm run build:*)",
+      "Bash(npx cross-env NEXT_IGNORE_INCORRECT_LOCKFILE=1 cd apps/customer-web)",
+      "Bash(du:*)"
     ],
     "deny": [],
     "ask": []

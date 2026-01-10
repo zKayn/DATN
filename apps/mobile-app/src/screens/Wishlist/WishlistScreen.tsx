@@ -51,7 +51,7 @@ const WishlistScreen = ({ navigation }: any) => {
             try {
               await removeFromWishlist(productId);
             } catch (error) {
-              console.error('Error removing from wishlist:', error);
+              // Silent error
             } finally {
               setRemovingIds(removingIds.filter((id) => id !== productId));
             }
@@ -74,15 +74,15 @@ const WishlistScreen = ({ navigation }: any) => {
         // Add directly to cart with default values
         await addToCart({
           productId: item._id,
-          name: item.tenSanPham || item.name || 'Sản phẩm',
+          name: item.ten || item.tenSanPham || item.name || 'Sản phẩm',
           slug: item.slug || item._id || '',
-          price: item.giaBan || item.price || 0,
+          price: item.gia || item.giaBan || item.price || 0,
           salePrice: item.giaKhuyenMai || item.salePrice || null,
           image: item.hinhAnh?.[0] || item.image || '',
           quantity: 1,
           color: '',
           size: '',
-          stock: item.soLuongTonKho || item.stock || 0,
+          stock: item.tonKho || item.soLuongTonKho || item.stock || 0,
         });
         Alert.alert('Thành công', 'Đã thêm sản phẩm vào giỏ hàng');
       }
@@ -114,19 +114,19 @@ const WishlistScreen = ({ navigation }: any) => {
                 try {
                   await addToCart({
                     productId: item._id,
-                    name: item.tenSanPham || item.name || 'Sản phẩm',
+                    name: item.ten || item.tenSanPham || item.name || 'Sản phẩm',
                     slug: item.slug || item._id || '',
-                    price: item.giaBan || item.price || 0,
+                    price: item.gia || item.giaBan || item.price || 0,
                     salePrice: item.giaKhuyenMai || item.salePrice || null,
                     image: item.hinhAnh?.[0] || item.image || '',
                     quantity: 1,
                     color: '',
                     size: '',
-                    stock: item.soLuongTonKho || item.stock || 0,
+                    stock: item.tonKho || item.soLuongTonKho || item.stock || 0,
                   });
                   addedCount++;
                 } catch (error) {
-                  console.error('Error adding to cart:', error);
+                  // Silent error
                 }
               } else {
                 skippedCount++;
@@ -156,19 +156,19 @@ const WishlistScreen = ({ navigation }: any) => {
 
   const renderWishlistItem = ({ item }: any) => {
     // Nếu item chỉ có _id (từ local storage), skip render
-    if (!item.tenSanPham && !item.name) {
+    if (!item.ten && !item.tenSanPham && !item.name) {
       return null;
     }
 
     const isRemoving = removingIds.includes(item._id);
-    const productName = item.tenSanPham || item.name || 'Sản phẩm';
+    const productName = item.ten || item.tenSanPham || item.name || 'Sản phẩm';
     const productSlug = item.slug || item._id || '';
-    const productPrice = item.giaBan || item.price || 0;
+    const productPrice = item.gia || item.giaBan || item.price || 0;
     const productSalePrice = item.giaKhuyenMai || item.salePrice;
     const productImage = item.hinhAnh?.[0] || item.image || '';
-    const productRating = item.danhGiaTrungBinh || item.rating || 0;
+    const productRating = item.danhGia || item.danhGiaTrungBinh || item.rating || 0;
     const productReviews = item.soLuongDanhGia || item.reviewCount || 0;
-    const productStock = item.soLuongTonKho || item.stock || 0;
+    const productStock = item.tonKho || item.soLuongTonKho || item.stock || 0;
     const productBrand = item.thuongHieu || item.brand;
 
     const discountPercent = productSalePrice && productPrice
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: SIZES.body,
     fontWeight: 'bold',
-    color: COLORS.primary,
+    color: COLORS.danger,
   },
   salePrice: {
     fontSize: SIZES.body,

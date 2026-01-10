@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DropdownSelect from '../../components/DropdownSelect';
@@ -321,14 +322,51 @@ const CheckoutScreen = ({ route, navigation }: any) => {
       const response = await api.createOrder(orderData);
 
       if (response.success) {
-        // Clear cart after successful order
-        clearCart();
+        const order = response.data;
 
-        // Navigate to success screen
-        navigation.replace('OrderSuccess', {
-          orderId: response.data._id,
-          orderCode: response.data.maDonHang,
-        });
+        // Handle PayOS payment
+        if (phuongThucThanhToan === 'payos') {
+          try {
+            const payosResponse = await api.createPayOSPaymentLink(order._id);
+
+            if (payosResponse.success && payosResponse.data?.checkoutUrl) {
+              // Open PayOS payment URL
+              const canOpen = await Linking.canOpenURL(payosResponse.data.checkoutUrl);
+              if (canOpen) {
+                await Linking.openURL(payosResponse.data.checkoutUrl);
+
+                // Navigate to order list (user will return to app after payment)
+                Alert.alert(
+                  'Thanh toán PayOS',
+                  'Vui lòng hoàn tất thanh toán trên trang web PayOS. Sau khi thanh toán xong, bạn có thể quay lại ứng dụng.',
+                  [
+                    {
+                      text: 'OK',
+                      onPress: () => {
+                        clearCart();
+                        navigation.replace('MainTab', { screen: 'Account' });
+                      }
+                    }
+                  ]
+                );
+              } else {
+                Alert.alert('Lỗi', 'Không thể mở trang thanh toán PayOS');
+              }
+            } else {
+              Alert.alert('Lỗi', payosResponse.message || 'Không thể khởi tạo thanh toán PayOS');
+            }
+          } catch (error: any) {
+            console.error('PayOS payment error:', error);
+            Alert.alert('Lỗi', 'Không thể khởi tạo thanh toán PayOS');
+          }
+        } else {
+          // For other payment methods (COD, bankTransfer, etc.)
+          clearCart();
+          navigation.replace('OrderSuccess', {
+            orderId: order._id,
+            orderCode: order.maDonHang,
+          });
+        }
       } else {
         Alert.alert('Lỗi', response.message || 'Không thể tạo đơn hàng');
       }
@@ -586,7 +624,32 @@ const CheckoutScreen = ({ route, navigation }: any) => {
             </TouchableOpacity>
           )}
 
-          {settings?.paymentMethods?.bankTransfer && (
+          {settings?.paymentMethods?.payos && (
+            <TouchableOpacity
+              style={[
+                styles.paymentMethod,
+                phuongThucThanhToan === 'payos' && styles.paymentMethodActive,
+              ]}
+              onPress={() => setPhuongThucThanhToan('payos')}
+            >
+              <View style={styles.paymentMethodContent}>
+                <View style={styles.paymentIcon}>
+                  <Ionicons name="qr-code-outline" size={24} color={COLORS.primary} />
+                </View>
+                <View style={styles.paymentInfo}>
+                  <Text style={styles.paymentName}>Chuyển khoản ngân hàng - QR Code</Text>
+                  <Text style={styles.paymentDescription}>
+                    Thanh toán nhanh qua QR Code ngân hàng
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.radio}>
+                {phuongThucThanhToan === 'payos' && <View style={styles.radioInner} />}
+              </View>
+            </TouchableOpacity>
+          )}
+
+          {/* {settings?.paymentMethods?.bankTransfer && (
             <TouchableOpacity
               style={[
                 styles.paymentMethod,
@@ -609,7 +672,7 @@ const CheckoutScreen = ({ route, navigation }: any) => {
                 {phuongThucThanhToan === 'bankTransfer' && <View style={styles.radioInner} />}
               </View>
             </TouchableOpacity>
-          )}
+          )} */}
         </View>
 
         {/* Voucher Section */}
@@ -826,7 +889,7 @@ const styles = StyleSheet.create({
   itemPrice: {
     fontSize: SIZES.body,
     fontWeight: 'bold',
-    color: COLORS.primary,
+    color: COLORS.danger,
   },
   inputGroup: {
     marginBottom: 16,

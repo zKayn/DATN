@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: SIZES.body,
     fontWeight: 'bold',
-    color: COLORS.primary,
+    color: COLORS.danger,
   },
   salePrice: {
     fontSize: SIZES.body,

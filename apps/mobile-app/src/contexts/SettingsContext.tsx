@@ -6,6 +6,8 @@ interface PaymentMethods {
   vnpay: boolean;
   momo: boolean;
   bankTransfer: boolean;
+  stripe: boolean;
+  payos: boolean;
 }
 
 interface SocialLinks {
@@ -72,6 +74,8 @@ const defaultSettings: Settings = {
     vnpay: true,
     momo: false,
     bankTransfer: false,
+    stripe: true,
+    payos: true,
   },
   socialLinks: {
     facebook: '',

@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
   },
   productPrice: {
     fontSize: SIZES.body,
-    color: COLORS.primary,
+    color: COLORS.danger,
     fontWeight: '600',
   },
   productQuantity: {
@@ -561,7 +561,7 @@ const styles = StyleSheet.create({
   productTotal: {
     fontSize: SIZES.body,
     fontWeight: 'bold',
-    color: COLORS.dark,
+    color: COLORS.danger,
   },
   addressCard: {
     backgroundColor: COLORS.gray[100],

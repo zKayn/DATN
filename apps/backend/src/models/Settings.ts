@@ -21,6 +21,7 @@ export interface ISettings extends Document {
     cod: boolean;
     stripe: boolean;
     bankTransfer: boolean;
+    payos: boolean;
   };
   socialLinks: {
     facebook: string;
@@ -58,7 +59,8 @@ const settingsSchema = new Schema<ISettings>(
     paymentMethods: {
       cod: { type: Boolean, default: true },
       stripe: { type: Boolean, default: true },
-      bankTransfer: { type: Boolean, default: false }
+      bankTransfer: { type: Boolean, default: false },
+      payos: { type: Boolean, default: true }
     },
     socialLinks: {
       facebook: { type: String, default: '' },

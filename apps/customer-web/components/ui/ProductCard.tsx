@@ -258,18 +258,16 @@ export default function ProductCard({
               </span>
             </>
           ) : (
-            <span className="text-xl font-bold text-gray-900">
+            <span className="text-xl font-bold text-red-600">
               {formatPrice(price)}
             </span>
           )}
         </div>
 
         {/* Sold Count */}
-        {soldCount && soldCount > 0 && (
-          <p className="text-sm text-gray-500">
-            Đã bán: <span className="font-semibold text-gray-700">{soldCount.toLocaleString()}</span>
-          </p>
-        )}
+        <p className="text-sm text-gray-500">
+          Đã bán <span className="font-semibold text-gray-700">{(soldCount || 0).toLocaleString()}</span>
+        </p>
       </div>
 
       {/* Quick View Modal */}

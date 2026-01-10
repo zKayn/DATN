@@ -32,12 +32,13 @@ export interface IOrder extends Document {
     xa: string;
     diaChiChiTiet: string;
   };
-  phuongThucThanhToan: 'cod' | 'stripe' | 'the-atm';
-  trangThaiThanhToan: 'chua-thanh-toan' | 'da-thanh-toan' | 'hoan-tien';
-  trangThaiDonHang: 'cho-xac-nhan' | 'da-xac-nhan' | 'dang-chuan-bi' | 'dang-giao' | 'da-giao' | 'da-huy' | 'tra-hang';
+  phuongThucThanhToan: 'cod' | 'stripe' | 'the-atm' | 'payos';
+  trangThaiThanhToan: 'chua-thanh-toan' | 'da-thanh-toan' | 'hoan-tien' | 'that-bai' | 'da-huy';
+  trangThaiDonHang: 'cho-xac-nhan' | 'da-xac-nhan' | 'dang-chuan-bi' | 'dang-giao' | 'da-giao' | 'da-huy' | 'tra-hang' | 'dang-xu-ly';
   ghiChu?: string;
   lyDoHuy?: string;
   stripePaymentId?: mongoose.Types.ObjectId;
+  payosOrderCode?: number;
   thanhToanLuc?: Date;
   giaoDuKienLuc?: Date;
   giaoThanhCongLuc?: Date;
@@ -151,21 +152,24 @@ const OrderSchema = new Schema<IOrder>(
     },
     phuongThucThanhToan: {
       type: String,
-      enum: ['cod', 'stripe', 'the-atm'],
+      enum: ['cod', 'stripe', 'the-atm', 'payos'],
       required: true
     },
     stripePaymentId: {
       type: Schema.Types.ObjectId,
       ref: 'Payment'
     },
+    payosOrderCode: {
+      type: Number
+    },
     trangThaiThanhToan: {
       type: String,
-      enum: ['chua-thanh-toan', 'da-thanh-toan', 'hoan-tien'],
+      enum: ['chua-thanh-toan', 'da-thanh-toan', 'hoan-tien', 'that-bai', 'da-huy'],
       default: 'chua-thanh-toan'
     },
     trangThaiDonHang: {
       type: String,
-      enum: ['cho-xac-nhan', 'da-xac-nhan', 'dang-chuan-bi', 'dang-giao', 'da-giao', 'da-huy', 'tra-hang'],
+      enum: ['cho-xac-nhan', 'da-xac-nhan', 'dang-chuan-bi', 'dang-giao', 'da-giao', 'da-huy', 'tra-hang', 'dang-xu-ly'],
       default: 'cho-xac-nhan'
     },
     ghiChu: String,
